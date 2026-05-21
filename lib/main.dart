@@ -19,7 +19,7 @@ class BirrNoteApp extends StatelessWidget {
       title: 'BirrNote',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF1E88E5)), // We can tweak this later!
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF1E88E5)), // We can tweak this later???
         useMaterial3: true,
       ),
       home: const ExpenseEntryScreen()

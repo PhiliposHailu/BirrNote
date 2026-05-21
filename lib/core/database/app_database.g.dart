@@ -67,6 +67,18 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _quantityMeta = const VerificationMeta(
+    'quantity',
+  );
+  @override
+  late final GeneratedColumn<int> quantity = GeneratedColumn<int>(
+    'quantity',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
   static const VerificationMeta _isPendingAiMeta = const VerificationMeta(
     'isPendingAi',
   );
@@ -89,6 +101,7 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
     amount,
     category,
     date,
+    quantity,
     isPendingAi,
   ];
   @override
@@ -134,6 +147,12 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
     } else if (isInserting) {
       context.missing(_dateMeta);
     }
+    if (data.containsKey('quantity')) {
+      context.handle(
+        _quantityMeta,
+        quantity.isAcceptableOrUnknown(data['quantity']!, _quantityMeta),
+      );
+    }
     if (data.containsKey('is_pending_ai')) {
       context.handle(
         _isPendingAiMeta,
@@ -172,6 +191,10 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}date'],
       )!,
+      quantity: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}quantity'],
+      )!,
       isPendingAi: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}is_pending_ai'],
@@ -191,6 +214,7 @@ class Expense extends DataClass implements Insertable<Expense> {
   final double amount;
   final String category;
   final DateTime date;
+  final int quantity;
   final bool isPendingAi;
   const Expense({
     required this.id,
@@ -198,6 +222,7 @@ class Expense extends DataClass implements Insertable<Expense> {
     required this.amount,
     required this.category,
     required this.date,
+    required this.quantity,
     required this.isPendingAi,
   });
   @override
@@ -208,6 +233,7 @@ class Expense extends DataClass implements Insertable<Expense> {
     map['amount'] = Variable<double>(amount);
     map['category'] = Variable<String>(category);
     map['date'] = Variable<DateTime>(date);
+    map['quantity'] = Variable<int>(quantity);
     map['is_pending_ai'] = Variable<bool>(isPendingAi);
     return map;
   }
@@ -219,6 +245,7 @@ class Expense extends DataClass implements Insertable<Expense> {
       amount: Value(amount),
       category: Value(category),
       date: Value(date),
+      quantity: Value(quantity),
       isPendingAi: Value(isPendingAi),
     );
   }
@@ -234,6 +261,7 @@ class Expense extends DataClass implements Insertable<Expense> {
       amount: serializer.fromJson<double>(json['amount']),
       category: serializer.fromJson<String>(json['category']),
       date: serializer.fromJson<DateTime>(json['date']),
+      quantity: serializer.fromJson<int>(json['quantity']),
       isPendingAi: serializer.fromJson<bool>(json['isPendingAi']),
     );
   }
@@ -246,6 +274,7 @@ class Expense extends DataClass implements Insertable<Expense> {
       'amount': serializer.toJson<double>(amount),
       'category': serializer.toJson<String>(category),
       'date': serializer.toJson<DateTime>(date),
+      'quantity': serializer.toJson<int>(quantity),
       'isPendingAi': serializer.toJson<bool>(isPendingAi),
     };
   }
@@ -256,6 +285,7 @@ class Expense extends DataClass implements Insertable<Expense> {
     double? amount,
     String? category,
     DateTime? date,
+    int? quantity,
     bool? isPendingAi,
   }) => Expense(
     id: id ?? this.id,
@@ -263,6 +293,7 @@ class Expense extends DataClass implements Insertable<Expense> {
     amount: amount ?? this.amount,
     category: category ?? this.category,
     date: date ?? this.date,
+    quantity: quantity ?? this.quantity,
     isPendingAi: isPendingAi ?? this.isPendingAi,
   );
   Expense copyWithCompanion(ExpensesCompanion data) {
@@ -272,6 +303,7 @@ class Expense extends DataClass implements Insertable<Expense> {
       amount: data.amount.present ? data.amount.value : this.amount,
       category: data.category.present ? data.category.value : this.category,
       date: data.date.present ? data.date.value : this.date,
+      quantity: data.quantity.present ? data.quantity.value : this.quantity,
       isPendingAi: data.isPendingAi.present
           ? data.isPendingAi.value
           : this.isPendingAi,
@@ -286,6 +318,7 @@ class Expense extends DataClass implements Insertable<Expense> {
           ..write('amount: $amount, ')
           ..write('category: $category, ')
           ..write('date: $date, ')
+          ..write('quantity: $quantity, ')
           ..write('isPendingAi: $isPendingAi')
           ..write(')'))
         .toString();
@@ -293,7 +326,7 @@ class Expense extends DataClass implements Insertable<Expense> {
 
   @override
   int get hashCode =>
-      Object.hash(id, rawNote, amount, category, date, isPendingAi);
+      Object.hash(id, rawNote, amount, category, date, quantity, isPendingAi);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -303,6 +336,7 @@ class Expense extends DataClass implements Insertable<Expense> {
           other.amount == this.amount &&
           other.category == this.category &&
           other.date == this.date &&
+          other.quantity == this.quantity &&
           other.isPendingAi == this.isPendingAi);
 }
 
@@ -312,6 +346,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
   final Value<double> amount;
   final Value<String> category;
   final Value<DateTime> date;
+  final Value<int> quantity;
   final Value<bool> isPendingAi;
   const ExpensesCompanion({
     this.id = const Value.absent(),
@@ -319,6 +354,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     this.amount = const Value.absent(),
     this.category = const Value.absent(),
     this.date = const Value.absent(),
+    this.quantity = const Value.absent(),
     this.isPendingAi = const Value.absent(),
   });
   ExpensesCompanion.insert({
@@ -327,6 +363,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     this.amount = const Value.absent(),
     this.category = const Value.absent(),
     required DateTime date,
+    this.quantity = const Value.absent(),
     this.isPendingAi = const Value.absent(),
   }) : rawNote = Value(rawNote),
        date = Value(date);
@@ -336,6 +373,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     Expression<double>? amount,
     Expression<String>? category,
     Expression<DateTime>? date,
+    Expression<int>? quantity,
     Expression<bool>? isPendingAi,
   }) {
     return RawValuesInsertable({
@@ -344,6 +382,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
       if (amount != null) 'amount': amount,
       if (category != null) 'category': category,
       if (date != null) 'date': date,
+      if (quantity != null) 'quantity': quantity,
       if (isPendingAi != null) 'is_pending_ai': isPendingAi,
     });
   }
@@ -354,6 +393,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     Value<double>? amount,
     Value<String>? category,
     Value<DateTime>? date,
+    Value<int>? quantity,
     Value<bool>? isPendingAi,
   }) {
     return ExpensesCompanion(
@@ -362,6 +402,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
       amount: amount ?? this.amount,
       category: category ?? this.category,
       date: date ?? this.date,
+      quantity: quantity ?? this.quantity,
       isPendingAi: isPendingAi ?? this.isPendingAi,
     );
   }
@@ -384,6 +425,9 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     if (date.present) {
       map['date'] = Variable<DateTime>(date.value);
     }
+    if (quantity.present) {
+      map['quantity'] = Variable<int>(quantity.value);
+    }
     if (isPendingAi.present) {
       map['is_pending_ai'] = Variable<bool>(isPendingAi.value);
     }
@@ -398,6 +442,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
           ..write('amount: $amount, ')
           ..write('category: $category, ')
           ..write('date: $date, ')
+          ..write('quantity: $quantity, ')
           ..write('isPendingAi: $isPendingAi')
           ..write(')'))
         .toString();
@@ -422,6 +467,7 @@ typedef $$ExpensesTableCreateCompanionBuilder =
       Value<double> amount,
       Value<String> category,
       required DateTime date,
+      Value<int> quantity,
       Value<bool> isPendingAi,
     });
 typedef $$ExpensesTableUpdateCompanionBuilder =
@@ -431,6 +477,7 @@ typedef $$ExpensesTableUpdateCompanionBuilder =
       Value<double> amount,
       Value<String> category,
       Value<DateTime> date,
+      Value<int> quantity,
       Value<bool> isPendingAi,
     });
 
@@ -465,6 +512,11 @@ class $$ExpensesTableFilterComposer
 
   ColumnFilters<DateTime> get date => $composableBuilder(
     column: $table.date,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get quantity => $composableBuilder(
+    column: $table.quantity,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -508,6 +560,11 @@ class $$ExpensesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get quantity => $composableBuilder(
+    column: $table.quantity,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get isPendingAi => $composableBuilder(
     column: $table.isPendingAi,
     builder: (column) => ColumnOrderings(column),
@@ -537,6 +594,9 @@ class $$ExpensesTableAnnotationComposer
 
   GeneratedColumn<DateTime> get date =>
       $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumn<int> get quantity =>
+      $composableBuilder(column: $table.quantity, builder: (column) => column);
 
   GeneratedColumn<bool> get isPendingAi => $composableBuilder(
     column: $table.isPendingAi,
@@ -577,6 +637,7 @@ class $$ExpensesTableTableManager
                 Value<double> amount = const Value.absent(),
                 Value<String> category = const Value.absent(),
                 Value<DateTime> date = const Value.absent(),
+                Value<int> quantity = const Value.absent(),
                 Value<bool> isPendingAi = const Value.absent(),
               }) => ExpensesCompanion(
                 id: id,
@@ -584,6 +645,7 @@ class $$ExpensesTableTableManager
                 amount: amount,
                 category: category,
                 date: date,
+                quantity: quantity,
                 isPendingAi: isPendingAi,
               ),
           createCompanionCallback:
@@ -593,6 +655,7 @@ class $$ExpensesTableTableManager
                 Value<double> amount = const Value.absent(),
                 Value<String> category = const Value.absent(),
                 required DateTime date,
+                Value<int> quantity = const Value.absent(),
                 Value<bool> isPendingAi = const Value.absent(),
               }) => ExpensesCompanion.insert(
                 id: id,
@@ -600,6 +663,7 @@ class $$ExpensesTableTableManager
                 amount: amount,
                 category: category,
                 date: date,
+                quantity: quantity,
                 isPendingAi: isPendingAi,
               ),
           withReferenceMapper: (p0) => p0
