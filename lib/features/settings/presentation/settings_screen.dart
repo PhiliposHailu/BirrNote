@@ -44,7 +44,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             const SizedBox(height: 24),
             
-            // The Input Field
             TextField(
               controller: _keyController,
               decoration: InputDecoration(
