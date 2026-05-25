@@ -20,7 +20,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Watch the current API key state
+    // Keep watch the current API key state
     final currentKey = ref.watch(apiKeyProvider);
     final hasKey = currentKey != null && currentKey.isNotEmpty;
 

@@ -16,7 +16,7 @@ class ExpenseEntryScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
-              // This is Flutter's standard way to push a new screen onto the stack
+              // standard way to push a new screen onto the stack
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (context) => const SettingsScreen()),
               );
