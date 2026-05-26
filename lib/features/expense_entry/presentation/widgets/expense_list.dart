@@ -22,13 +22,31 @@ class ExpenseList extends ConsumerWidget {
           reverse: true, // newest at the bottom
           itemCount: expenses.length,
           itemBuilder: (context, index) {
+            // We reverse the list so the newest items show up at the bottom
             final expense = expenses.reversed.toList()[index];
+            
+            // HERE IS THE UPDATED LIST TILE
             return ListTile(
-              title: Text(expense.rawNote),
-              subtitle: Text('Qty: ${expense.quantity} • ${expense.date.toString().split('.')[0]}'),
+              // 1. TITLE: 
+              // If pending, show what they typed in italics. 
+              // If processed, show "Category - ETB Amount" in bold.
+              title: expense.isPendingAi 
+                  ? Text(expense.rawNote, style: const TextStyle(fontStyle: FontStyle.italic))
+                  : Text('${expense.category} - ETB ${expense.amount.toStringAsFixed(2)}', 
+                         style: const TextStyle(fontWeight: FontWeight.bold)),
+              
+              // 2. SUBTITLE: 
+              // If pending, tell the user it's waiting for AI.
+              // If processed, keep a record of their original raw note + quantity.
+              subtitle: expense.isPendingAi
+                  ? Text('Waiting for AI... • ${expense.date.toString().split('.')[0]}')
+                  : Text('Note: "${expense.rawNote}" • Qty: ${expense.quantity}'),
+              
+              // 3. TRAILING ICON: 
+              // Orange spinning/sync icon when pending, Green checkmark when done!
               trailing: expense.isPendingAi 
                   ? const Icon(Icons.sync, color: Colors.orange)
-                  : null,
+                  : const Icon(Icons.check_circle, color: Colors.green),
             );
           },
         );
