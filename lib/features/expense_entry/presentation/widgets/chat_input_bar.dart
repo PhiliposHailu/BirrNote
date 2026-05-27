@@ -10,7 +10,6 @@ class ChatInputBar extends ConsumerStatefulWidget {
 }
 
 class _ChatInputBarState extends ConsumerState<ChatInputBar> {
-  // this is like: const inputRef = useRef<HTMLInputElement>(null);
   final TextEditingController _noteController = TextEditingController();
 
   void _submitNote() {

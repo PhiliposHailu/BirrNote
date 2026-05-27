@@ -7,7 +7,6 @@ class ExpenseList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // This is exactly like: const { data, loading, error } = useQuery(expensesStream);
     final expensesStream = ref.watch(expensesStreamProvider);
 
     return expensesStream.when(
@@ -19,16 +18,12 @@ class ExpenseList extends ConsumerWidget {
         }
         
         return ListView.builder(
-          reverse: true, // newest at the bottom
           itemCount: expenses.length,
           itemBuilder: (context, index) {
             // We reverse the list so the newest items show up at the bottom
-            final expense = expenses.reversed.toList()[index];
+             final expense = expenses[index];
             
-            // HERE IS THE UPDATED LIST TILE
             return ListTile(
-              // 1. TITLE: 
-              // If pending, show what they typed in italics. 
               // If processed, show "Category - ETB Amount" in bold.
               title: expense.isPendingAi 
                   ? Text(expense.rawNote, style: const TextStyle(fontStyle: FontStyle.italic))

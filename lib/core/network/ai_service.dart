@@ -8,45 +8,56 @@ class AiService {
 
   AiService(this.apiKey);
 
-  Future<Map<String, dynamic>?> parseNoteToExpense(String note) async {
+  // returns a List of Maps!
+  Future<List<Map<String, dynamic>>?> parseNoteToExpenses(String note) async {
     if (apiKey == null || apiKey!.isEmpty) return null;
 
-    // 1. Initialize the Model (Gemini Flash is incredibly fast and cheap)
     final model = GenerativeModel(
-      model: 'gemini-1.5-flash',
+      model: 'gemini-3.1-flash-lite',
       apiKey: apiKey!,
-      // 2. THE ZOD EQUIVALENT: We force the AI to return exactly this JSON structure.
+      systemInstruction: Content.system('''
+        You are a financial parser for BirrNote.
+        Extract a LIST of expenses from the user's note.
+        
+        RULES:
+        1. If the user lists multiple items with distinct prices (e.g., "Gas 200, Food 100"), return multiple objects.
+        2. If the user lists multiple items but only ONE total price (e.g., "Gas and food 500"), return ONE object. Sum the quantity if applicable, and use a broad category like 'Mixed' or 'General'.
+        3. For 'extractedNote', write a short, clean name for the item (e.g., "Gas", "Food", or "Gas and food").
+        4. If currency is not specified, assume Ethiopian Birr (ETB).
+      '''),
       generationConfig: GenerationConfig(
         responseMimeType: 'application/json',
-        responseSchema: Schema.object(
-          properties: {
-            'amount': Schema.number(description: 'The total cost or price mentioned. If none, return 0.0.'),
-            'category': Schema.string(description: 'A 1-2 word category (e.g., Food, Transport, Utilities, Entertainment, Groceries, Drink).'),
-            'quantity': Schema.integer(description: 'The number of items bought. Default to 1 unless the user explicitly mentions a different quantity.'),
-          },
-          requiredProperties: ['amount', 'category', 'quantity'],
+        responseSchema: Schema.array(
+          items: Schema.object(
+            properties: {
+              'extractedNote': Schema.string(description: 'A short, clean name for this specific expense.'),
+              'amount': Schema.number(description: 'The total cost.'),
+              'category': Schema.string(description: 'A 1-2 word broad category.'),
+              'quantity': Schema.integer(description: 'Number of items. Default to 1.'),
+            },
+            requiredProperties: ['extractedNote', 'amount', 'category', 'quantity'],
+          ),
         ),
       ),
     );
 
     try {
-      // 3. Send the note to the AI
-      final prompt = 'Extract the financial details from this note: "$note"';
-      final response = await model.generateContent([Content.text(prompt)]);
+      final response = await model.generateContent([Content.text(note)]);
 
-      // 4. Parse the guaranteed JSON response
       if (response.text != null) {
-        return jsonDecode(response.text!) as Map<String, dynamic>;
+        // Decode the JSON array
+        final List<dynamic> decodedList = jsonDecode(response.text!);
+        // Cast it safely to a List of Maps
+        return decodedList.cast<Map<String, dynamic>>();
       }
     } catch (e) {
       print('AI Parsing Error: $e');
-      return null; // If offline or fails, we return null so the note stays "pending"
+      return null;
     }
     return null;
   }
 }
 
-// A provider that automatically updates if the user changes their API key in Settings
 final aiServiceProvider = Provider<AiService>((ref) {
   final apiKey = ref.watch(apiKeyProvider);
   return AiService(apiKey);
