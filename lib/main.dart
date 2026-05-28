@@ -1,12 +1,10 @@
 import 'features/expense_entry/presentation/expense_entry_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'features/navigation/presentation/main_nav_screen.dart';
+
 void main() {
-  runApp(
-    const ProviderScope(
-      child: BirrNoteApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: BirrNoteApp()));
 }
 
 class BirrNoteApp extends StatelessWidget {
@@ -18,10 +16,12 @@ class BirrNoteApp extends StatelessWidget {
       title: 'BirrNote',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF1E88E5)),// update color ???
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF1E88E5),
+        ), // update color ???
         useMaterial3: true,
       ),
-      home: const ExpenseEntryScreen()
+      home: const MainNavScreen(),
     );
   }
 }

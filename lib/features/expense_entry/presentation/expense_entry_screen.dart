@@ -48,27 +48,11 @@ class _ExpenseEntryScreenState extends ConsumerState<ExpenseEntryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('BirrNote'),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const SettingsScreen()),
-              );
-            },
-          ),
-        ],
-      ),
-      body: const Column(
+    return const Column(
         children: [
           Expanded(child: ExpenseList()),
           ChatInputBar(),
         ],
-      ),
-    );
+      );
   }
 }
