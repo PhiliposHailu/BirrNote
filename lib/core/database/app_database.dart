@@ -6,43 +6,52 @@ import 'package:path/path.dart' as p;
 
 part 'app_database.g.dart';
 
-// 1. DEFINE OUR TABLE
 class Expenses extends Table {
-  // The unique ID for each expense
   IntColumn get id => integer().autoIncrement()();
-
-  // The exact text the user typed (e.g., "Coffee 50")
   TextColumn get rawNote => text().withLength(min: 1, max: 1000)();
-
-  // The structured data the AI (or manual form) will fill out
   RealColumn get amount => real().withDefault(const Constant(0.0))();
-  TextColumn get category =>
-      text().withDefault(const Constant('Uncategorized'))();
+  TextColumn get category => text().withDefault(const Constant('Uncategorized'))();
   DateTimeColumn get date => dateTime()();
   IntColumn get quantity => integer().withDefault(const Constant(1))();
-
-  // THE OFFLINE MAGIC: If this is true, it means the AI hasn't parsed this note yet.
   BoolColumn get isPendingAi => boolean().withDefault(const Constant(false))();
 }
 
-// 2. CREATE THE DATABASE CLASS
+class CategorySum {
+  final String category;
+  final double total;
+  CategorySum(this.category, this.total);
+}
+
 @DriftDatabase(tables: [Expenses])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1; // If we add new columns later, we change this to 2
+  int get schemaVersion => 1;
+
+  Stream<List<CategorySum>> watchTotalSpentByCategory() {
+    // We write standard SQL to group by category and sum the amounts.
+    // We only include items that are NOT pending (is_pending_ai = 0).
+    final query = customSelect(
+      'SELECT category, SUM(amount) as total FROM expenses WHERE is_pending_ai = 0 GROUP BY category',
+      // Drift needs to know which table changes should trigger a UI update.
+      readsFrom: {expenses}, 
+    );
+
+    // We map the raw SQL rows into our clean Dart object
+    return query.watch().map((rows) {
+      return rows.map((row) => CategorySum(
+        row.read<String>('category'),
+        row.read<double>('total'),
+      )).toList();
+    });
+  }
 }
 
-// 3. SECURELY STORE THE DATABASE FILE
 LazyDatabase _openConnection() {
-  // THE WHY: LazyDatabase ensures we don't block the UI when the app starts.
-  // It only opens the database the exact moment we need to save or read data.
   return LazyDatabase(() async {
-    // Finds the correct safe folder on iOS/Android to store app data
     final dbFolder = await getApplicationDocumentsDirectory();
     final file = File(p.join(dbFolder.path, 'birr_note_db.sqlite'));
-
     return NativeDatabase.createInBackground(file);
   });
 }

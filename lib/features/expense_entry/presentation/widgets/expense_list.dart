@@ -16,31 +16,51 @@ class ExpenseList extends ConsumerWidget {
         if (expenses.isEmpty) {
           return const Center(child: Text('No expenses yet. Start typing!'));
         }
-        
+
         return ListView.builder(
           itemCount: expenses.length,
           itemBuilder: (context, index) {
             // We reverse the list so the newest items show up at the bottom
-             final expense = expenses[index];
-            
+            final expense = expenses[index];
+
             return ListTile(
               // If processed, show "Category - ETB Amount" in bold.
-              title: expense.isPendingAi 
-                  ? Text(expense.rawNote, style: const TextStyle(fontStyle: FontStyle.italic))
-                  : Text('${expense.category} - ETB ${expense.amount.toStringAsFixed(2)}', 
-                         style: const TextStyle(fontWeight: FontWeight.bold)),
-              
-              // 2. SUBTITLE: 
+              title: expense.isPendingAi
+                  ? Text(
+                      expense.rawNote,
+                      style: const TextStyle(fontStyle: FontStyle.italic),
+                    )
+                  : Text(
+                      '${expense.category} - ETB ${expense.amount.toStringAsFixed(2)}',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+
+              // 2. SUBTITLE:
               // If pending, tell the user it's waiting for AI.
               // If processed, keep a record of their original raw note + quantity.
               subtitle: expense.isPendingAi
-                  ? Text('Waiting for AI... • ${expense.date.toString().split('.')[0]}')
-                  : Text('Note: "${expense.rawNote}" • Qty: ${expense.quantity}'),
-              
-              // 3. TRAILING ICON: 
+                  ? Text(
+                      'Waiting for AI... • ${expense.date.toString().split('.')[0]}',
+                    )
+                  : Text(
+                      'Note: "${expense.rawNote}" • Qty: ${expense.quantity}',
+                    ),
+
+              // 3. TRAILING ICON:
               // Orange spinning/sync icon when pending, Green checkmark when done!
-              trailing: expense.isPendingAi 
-                  ? const Icon(Icons.sync, color: Colors.orange)
+              trailing: expense.isPendingAi
+                  // Wrap the icon in an IconButton!
+                  ? IconButton(
+                      icon: const Icon(Icons.sync, color: Colors.orange),
+                      onPressed: () {
+                        // Provide instant user feedback
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Retrying AI Sync...')),
+                        );
+                        // Manually trigger the queue!
+                        ref.read(expenseLogicProvider).syncPendingNotes();
+                      },
+                    )
                   : const Icon(Icons.check_circle, color: Colors.green),
             );
           },
