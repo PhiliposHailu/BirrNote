@@ -29,14 +29,13 @@ class DashboardScreen extends ConsumerWidget {
           return const Center(child: Text('No data yet. Start tracking!'));
         }
 
-        // 2. Calculate the Grand Total (Like using array.reduce in JS)
+        // 2. Calculate the Grand Total 
         final grandTotal = totals.fold(0.0, (sum, item) => sum + item.total);
 
         return Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              // --- TOTAL SPENT CARD ---
               Card(
                 elevation: 2,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
