@@ -25,6 +25,7 @@ class AiService {
         3. For 'extractedNote', write a short, clean name for the item (e.g., "Gas", "Food", or "Gas and food").
         4. If currency is not specified, assume Ethiopian Birr (ETB).
       '''),
+      // needs more better categorizing rule prompt ??? doc 
       generationConfig: GenerationConfig(
         responseMimeType: 'application/json',
         responseSchema: Schema.array(
@@ -55,6 +56,39 @@ class AiService {
       return null;
     }
     return null;
+  }
+  // NEW: The Financial Advisor Chat Method
+  Future<String> askAdvisor(String userQuestion, String financialContext) async {
+    if (apiKey == null || apiKey!.isEmpty) {
+      return "Please add your Gemini API Key in Settings first!";
+    }
+
+    // 1. We initialize a conversational model (No JSON schema this time!)
+    final model = GenerativeModel(
+      model: 'gemini-3.1-flash-lite',
+      apiKey: apiKey!,
+      systemInstruction: Content.system('''
+        You are a friendly, professional financial advisor for the BirrNote app.
+        The user is asking you for financial advice. 
+        
+        Here is the user's current spending summary:
+        $financialContext
+        
+        RULES:
+        1. Base your advice STRICTLY on the spending summary provided above.
+        2. Keep your answers concise, practical, and conversational.
+        3. Do not use markdown formatting like **bold** or *italics* too heavily, keep it clean for a mobile screen.
+        4. If they ask something unrelated to finance, politely steer them back to their budget.
+      '''),
+    );
+
+    try {
+      final response = await model.generateContent([Content.text(userQuestion)]);
+      return response.text ?? "I'm sorry, I couldn't process that right now.";
+    } catch (e) {
+      print('Advisor AI Error: $e');
+      return "Looks like you're offline or there was an error connecting to the AI.";
+    }
   }
 }
 
