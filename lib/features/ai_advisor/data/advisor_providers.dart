@@ -10,7 +10,7 @@ final advisorChatProvider = StateProvider<List<Map<String, String>>>((ref) {
   ];
 });
 
-// A provider that handles the logic of sending the message
+// handles the logic of sending the message
 final advisorLogicProvider = Provider((ref) {
   return AdvisorLogic(ref);
 });
@@ -30,7 +30,7 @@ class AdvisorLogic {
     ];
 
     // 2. Fetch the latest financial data from our SQLite Dashboard Provider
-    // This is the "Retrieval" in RAG!
+    // This is the "Retrieval" in RAG! ???
     final asyncTotals = ref.read(categoryTotalsProvider);
     
     String financialContext = "No spending data available yet.";
