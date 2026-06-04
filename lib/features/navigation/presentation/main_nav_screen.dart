@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../expense_entry/presentation/expense_entry_screen.dart';
 import '../../settings/presentation/settings_screen.dart';
 import '../../dashboard/presentation/dashboard_screen.dart';
+import '../../ai_advisor/presentation/advisor_screen.dart';
 
 class MainNavScreen extends StatefulWidget {
   const MainNavScreen({super.key});
@@ -35,7 +36,7 @@ class _MainNavScreenState extends State<MainNavScreen> {
         children: const [
           ExpenseEntryScreen(), // Tab 0
           DashboardScreen(),
-          Center(child: Text('AI Advisor Coming Soon! 🤖')), // Tab 2: Placeholder
+          AdvisorScreen(), // Tab 2: Placeholder
         ],
       ),
       
