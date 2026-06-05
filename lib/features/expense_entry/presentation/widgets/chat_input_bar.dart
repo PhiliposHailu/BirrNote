@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/expense_providers.dart';
+import 'manual_entry_sheet.dart';
 
 class ChatInputBar extends ConsumerStatefulWidget {
   const ChatInputBar({super.key});
@@ -35,8 +36,13 @@ class _ChatInputBarState extends ConsumerState<ChatInputBar> {
               icon: const Icon(Icons.add_circle_outline),
               color: Theme.of(context).colorScheme.primary,
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Manual entry coming soon!')),
+                // The Flutter way to open a sliding bottom sheet
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled:
+                      true, // IMPORTANT: Allows the sheet to move up when keyboard opens
+                  useSafeArea: true,
+                  builder: (context) => const ManualEntrySheet(),
                 );
               },
             ),
@@ -48,7 +54,10 @@ class _ChatInputBarState extends ConsumerState<ChatInputBar> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(24),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                 ),
                 onSubmitted: (_) => _submitNote(),
               ),

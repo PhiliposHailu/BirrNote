@@ -97,7 +97,27 @@ class ExpenseLogic {
     }
   }
 
+  // Manual Entry bypasses the AI completely!
+  Future<void> addManualExpense({
+    required double amount,
+    required String category,
+    required int quantity,
+    required String note,
+  }) async {
+    await db.into(db.expenses).insert(
+      ExpensesCompanion.insert(
+        // If they didn't write a note, we just use the category name
+        rawNote: note.trim().isEmpty ? category : note,
+        amount: Value(amount),
+        category: Value(category),
+        quantity: Value(quantity),
+        date: DateTime.now(),
+        isPendingAi: const Value(false), // Mark as finished instantly!
+      ),
+    );
+  }
 }
+
 
 final expenseLogicProvider = Provider<ExpenseLogic>((ref) {
   final db = ref.watch(databaseProvider);

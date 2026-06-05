@@ -7,6 +7,7 @@ import 'widgets/chat_input_bar.dart';
 import '../../settings/presentation/settings_screen.dart';
 import '../data/expense_providers.dart';
 
+
 // ----------------------------------------------------------------------
 // CLASS 1: The Widget itself. Notice it extends ConsumerStatefulWidget!
 // ----------------------------------------------------------------------
