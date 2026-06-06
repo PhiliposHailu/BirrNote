@@ -10,6 +10,7 @@ final advisorChatProvider = StateProvider<List<Map<String, String>>>((ref) {
   ];
 });
 
+
 // handles the logic of sending the message
 final advisorLogicProvider = Provider((ref) {
   return AdvisorLogic(ref);
