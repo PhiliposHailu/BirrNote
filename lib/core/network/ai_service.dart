@@ -16,27 +16,42 @@ class AiService {
       model: 'gemini-3.1-flash-lite',
       apiKey: apiKey!,
       systemInstruction: Content.system('''
-        You are a financial parser for BirrNote.
-        Extract a LIST of expenses from the user's note.
+        You are the financial parser for BirrNote. Extract a JSON list of expenses.
         
         RULES:
-        1. If the user lists multiple items with distinct prices (e.g., "Gas 200, Food 100"), return multiple objects.
-        2. If the user lists multiple items but only ONE total price (e.g., "Gas and food 500"), return ONE object. Sum the quantity if applicable, and use a broad category like 'Mixed' or 'General'.
-        3. For 'extractedNote', write a short, clean name for the item (e.g., "Gas", "Food", or "Gas and food").
-        4. If currency is not specified, assume Ethiopian Birr (ETB).
+        1. CATEGORY: Strictly use ONLY one of: [Food, Transport, Shopping, Utilities, Entertainment, Health, Transfer, General].
+        2. NAME: Set 'extractedNote' to a short, clean name (e.g., "Coffee", "Gas").
+        3. PRICING & GROUPING:
+           - Distinct prices: "Gas 200, Food 100" -> Return 2 objects.
+           - Group total: "Groceries 500 for milk and eggs" -> Return 1 object (Amount: 500, Name: "Groceries").
+           - Partial prices: "Shirt, pants, and coffee 50" -> Return 3 objects. Coffee gets 50.0. Shirt and pants get 0.0.
+           - Missing price: Always use 0.0.
+        4. NOISE: If text contains no expenses (e.g., "Hello", "What's up"), return [].
+        5. CURRENCY: Assume Ethiopian Birr (ETB).
       '''),
-      // needs more better categorizing rule prompt ??? doc 
+      // needs more better categorizing rule prompt ??? doc
       generationConfig: GenerationConfig(
         responseMimeType: 'application/json',
         responseSchema: Schema.array(
           items: Schema.object(
             properties: {
-              'extractedNote': Schema.string(description: 'A short, clean name for this specific expense.'),
+              'extractedNote': Schema.string(
+                description: 'A short, clean name for this specific expense.',
+              ),
               'amount': Schema.number(description: 'The total cost.'),
-              'category': Schema.string(description: 'A 1-2 word broad category.'),
-              'quantity': Schema.integer(description: 'Number of items. Default to 1.'),
+              'category': Schema.string(
+                description: 'A 1-2 word broad category.',
+              ),
+              'quantity': Schema.integer(
+                description: 'Number of items. Default to 1.',
+              ),
             },
-            requiredProperties: ['extractedNote', 'amount', 'category', 'quantity'],
+            requiredProperties: [
+              'extractedNote',
+              'amount',
+              'category',
+              'quantity',
+            ],
           ),
         ),
       ),
@@ -57,8 +72,12 @@ class AiService {
     }
     return null;
   }
+
   // NEW: The Financial Advisor Chat Method
-  Future<String> askAdvisor(String userQuestion, String financialContext) async {
+  Future<String> askAdvisor(
+    String userQuestion,
+    String financialContext,
+  ) async {
     if (apiKey == null || apiKey!.isEmpty) {
       return "Please add your Gemini API Key in Settings first!";
     }
@@ -83,7 +102,9 @@ class AiService {
     );
 
     try {
-      final response = await model.generateContent([Content.text(userQuestion)]);
+      final response = await model.generateContent([
+        Content.text(userQuestion),
+      ]);
       return response.text ?? "I'm sorry, I couldn't process that right now.";
     } catch (e) {
       print('Advisor AI Error: $e');
