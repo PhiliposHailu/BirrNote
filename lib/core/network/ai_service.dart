@@ -29,7 +29,7 @@ class AiService {
         4. NOISE: If text contains no expenses (e.g., "Hello", "What's up"), return [].
         5. CURRENCY: Assume Ethiopian Birr (ETB).
       '''),
-      // needs more better categorizing rule prompt ??? doc
+      
       generationConfig: GenerationConfig(
         responseMimeType: 'application/json',
         responseSchema: Schema.array(
@@ -73,16 +73,16 @@ class AiService {
     return null;
   }
 
-  // NEW: The Financial Advisor Chat Method
+  // The Financial Advisor Chat Method
   Future<String> askAdvisor(
     String userQuestion,
     String financialContext,
   ) async {
     if (apiKey == null || apiKey!.isEmpty) {
-      return "Please add your Gemini API Key in Settings first!";
+      return "Please add your Gemini API Key in Settings first ;)";
     }
 
-    // 1. We initialize a conversational model (No JSON schema this time!)
+    // 1. We initialize a conversational model
     final model = GenerativeModel(
       model: 'gemini-3.1-flash-lite',
       apiKey: apiKey!,

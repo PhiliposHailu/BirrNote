@@ -6,7 +6,7 @@ import '../../dashboard/data/dashboard_providers.dart';
 // We use a StateProvider to hold the chat history so it stays on screen
 final advisorChatProvider = StateProvider<List<Map<String, String>>>((ref) {
   return [
-    {'role': 'ai', 'text': 'Hello! I am your BirrNote AI Advisor. Ask me anything about your spending!'}
+    {'role': 'BirrNoteAi', 'text': 'Hello! I am your BirrNote AI Advisor. Ask me anything about your spending ;)'}
   ];
 });
 
@@ -30,7 +30,7 @@ class AdvisorLogic {
     ];
 
     // 2. Fetch the latest financial data from our SQLite Dashboard Provider
-    // This is the "Retrieval" in RAG! ???
+    // This is the "Retrieval" in RAG!
     final asyncTotals = ref.read(categoryTotalsProvider);
     
     String financialContext = "No spending data available yet.";
