@@ -3,7 +3,6 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
-
 part 'app_database.g.dart';
 
 class Expenses extends Table {
@@ -38,7 +37,7 @@ class AppDatabase extends _$AppDatabase {
       readsFrom: {expenses}, 
     );
 
-    // We map the raw SQL rows into our clean Dart object
+    // We map the raw SQL rows into our clean Dart object ???
     return query.watch().map((rows) {
       return rows.map((row) => CategorySum(
         row.read<String>('category'),
