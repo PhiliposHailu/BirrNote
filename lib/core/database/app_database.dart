@@ -37,7 +37,7 @@ class AppDatabase extends _$AppDatabase {
       readsFrom: {expenses}, 
     );
 
-    // We map the raw SQL rows into our clean Dart object ???
+    // We map the raw SQL rows into our clean Dart object
     return query.watch().map((rows) {
       return rows.map((row) => CategorySum(
         row.read<String>('category'),
