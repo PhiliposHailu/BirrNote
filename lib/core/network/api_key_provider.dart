@@ -5,7 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 const _storage = FlutterSecureStorage();
 const _keyName = 'gemini_api_key';
 
-// 2. StateNotifier to manage the Key (Like a React Context + useState combined)
+// 2. StateNotifier to manage the Key
 class ApiKeyNotifier extends StateNotifier<String?> {
   ApiKeyNotifier() : super(null) {
     _loadKey();
