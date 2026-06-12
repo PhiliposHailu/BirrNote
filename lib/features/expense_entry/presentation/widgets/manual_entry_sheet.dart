@@ -34,7 +34,7 @@ class _ManualEntrySheetState extends ConsumerState<ManualEntrySheet> {
       note: _noteController.text,
     );
 
-    // Close the bottom sheet like a pro
+    // Close the bottom sheet
     Navigator.of(context).pop();
   }
 
