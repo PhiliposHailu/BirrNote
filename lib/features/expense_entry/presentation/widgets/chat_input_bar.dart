@@ -36,7 +36,7 @@ class _ChatInputBarState extends ConsumerState<ChatInputBar> {
               icon: const Icon(Icons.add_circle_outline),
               color: Theme.of(context).colorScheme.primary,
               onPressed: () {
-                // The Flutter way to open a sliding bottom sheet
+                // Open a sliding bottom sheet
                 showModalBottomSheet(
                   context: context,
                   isScrollControlled:
