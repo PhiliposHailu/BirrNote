@@ -110,7 +110,7 @@ class _ManualEntrySheetState extends ConsumerState<ManualEntrySheet> {
             ),
             const SizedBox(height: 16),
 
-            // OPTIONAL NOTE
+            // OPTIONAL MESSAGE
             TextField(
               controller: _noteController,
               decoration: const InputDecoration(
