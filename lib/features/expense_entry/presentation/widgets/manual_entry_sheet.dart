@@ -8,7 +8,6 @@ class ManualEntrySheet extends ConsumerStatefulWidget {
   @override
   ConsumerState<ManualEntrySheet> createState() => _ManualEntrySheetState();
 }
-
 class _ManualEntrySheetState extends ConsumerState<ManualEntrySheet> {
   final _amountController = TextEditingController();
   final _noteController = TextEditingController();
