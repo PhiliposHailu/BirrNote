@@ -4,11 +4,10 @@ import 'package:path_provider/path_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
-// This import "patches" GoogleSignIn with the authenticatedClient() method
 import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
 
 class CloudSyncService {
-  // We track the signed-in account ourselves now, since `currentUser` is gone.
+  
   GoogleSignInAccount? _currentAccount;
 
   Future<void> init() async {
