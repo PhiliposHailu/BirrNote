@@ -79,6 +79,64 @@ class CloudSyncService {
   }
 }
 
+  // RESTORE (Download Database)
+  Future<bool> restoreDatabase() async {
+    try {
+      await init();
+
+      var account = _currentAccount;
+      account ??= await GoogleSignIn.instance.attemptLightweightAuthentication();
+      _currentAccount = account;
+
+      if (account == null) {
+        account = await signIn();
+        if (account == null) return false;
+      }
+
+      const scopes = [drive.DriveApi.driveAppdataScope];
+      final authorization = await account.authorizationClient.authorizeScopes(scopes);
+      final httpClient = authorization.authClient(scopes: scopes);
+
+      final driveApi = drive.DriveApi(httpClient);
+
+      // Step A: Find the file in Google Drive
+      final fileList = await driveApi.files.list(
+        spaces: 'appDataFolder',
+        q: "name = 'birr_note_db.sqlite'",
+      );
+
+      if (fileList.files == null || fileList.files!.isEmpty) {
+        print("No backup found in Google Drive.");
+        return false; 
+      }
+
+      final fileId = fileList.files!.first.id!;
+
+      // Step B: Download the file
+      final drive.Media media = await driveApi.files.get(
+        fileId,
+        downloadOptions: drive.DownloadOptions.fullMedia,
+      ) as drive.Media;
+
+      // Step C: Find our local SQLite database path
+      final dbFolder = await getApplicationDocumentsDirectory();
+      final localFile = File(p.join(dbFolder.path, 'birr_note_db.sqlite'));
+
+      // Step D: Write the downloaded bytes over the local file
+      final sink = localFile.openWrite();
+      await media.stream.forEach((bytes) {
+        sink.add(bytes);
+      });
+      await sink.close();
+
+      print("Database restored successfully!");
+      return true;
+    } catch (e) {
+      print("Restore Error: $e");
+      return false;
+    }
+  }
+
   Future<void> signOut() async {
     await GoogleSignIn.instance.disconnect();
     _currentAccount = null;
