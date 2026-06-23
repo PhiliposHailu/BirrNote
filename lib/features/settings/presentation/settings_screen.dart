@@ -26,9 +26,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final hasKey = currentKey != null && currentKey.isNotEmpty;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-      ),
+      appBar: AppBar(title: const Text('Settings')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -44,29 +42,33 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               style: TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 24),
-            
+
             TextField(
               controller: _keyController,
               decoration: InputDecoration(
                 labelText: 'Gemini API Key',
-                hintText: hasKey ? '••••••••••••••••••••' : 'Paste your key here...',
+                hintText: hasKey
+                    ? '••••••••••••••••••••'
+                    : 'Paste your key here...',
                 border: const OutlineInputBorder(),
-                suffixIcon: hasKey 
-                  ? const Icon(Icons.check_circle, color: Colors.green)
-                  : null,
+                suffixIcon: hasKey
+                    ? const Icon(Icons.check_circle, color: Colors.green)
+                    : null,
               ),
               obscureText: true, // Hides the text like a password field
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Save Button
             SizedBox(
               width: double.infinity,
               child: FilledButton(
                 onPressed: () {
                   if (_keyController.text.isNotEmpty) {
-                    ref.read(apiKeyProvider.notifier).saveKey(_keyController.text);
+                    ref
+                        .read(apiKeyProvider.notifier)
+                        .saveKey(_keyController.text);
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('API Key securely saved!')),
                     );
@@ -85,12 +87,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   onPressed: () {
                     ref.read(apiKeyProvider.notifier).deleteKey();
                   },
-                  child: const Text('Remove Key', style: TextStyle(color: Colors.red)),
+                  child: const Text(
+                    'Remove Key',
+                    style: TextStyle(color: Colors.red),
+                  ),
                 ),
               ),
             ],
 
-            
             const SizedBox(height: 32), // Spacer
             const Divider(), // A nice line to separate sections
             const SizedBox(height: 16),
@@ -117,18 +121,86 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Connecting to Google...')),
                   );
-                  
+
                   // Call our provider!
                   final authService = ref.read(cloudSyncProvider);
                   final account = await authService.signIn();
-                  
+
                   if (account != null) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Success! Logged in as: ${account.email}')),
+                      SnackBar(
+                        content: Text(
+                          'Success! Logged in as: ${account.email}',
+                        ),
+                      ),
                     );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Login failed or canceled.')),
+                      const SnackBar(
+                        content: Text('Login failed or canceled.'),
+                      ),
+                    );
+                  }
+                },
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // THE RESTORE BUTTON
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.cloud_download),
+                label: const Text('Restore from Google Drive'),
+                onPressed: () async {
+                  // Standard Confirm Dialog so they don't accidentally overwrite current data
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Restore Database?'),
+                      content: const Text(
+                        'This will overwrite all current expenses on this device with the data from your cloud backup. Are you sure?',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: const Text('Cancel'),
+                        ),
+                        FilledButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          child: const Text('Restore'),
+                        ),
+                      ],
+                    ),
+                  );
+
+                  if (confirm != true) return;
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Downloading backup...')),
+                  );
+
+                  final authService = ref.read(cloudSyncProvider);
+                  final success = await authService.restoreDatabase();
+
+                  if (success) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Restore Successful! Please restart the app. 🎉',
+                        ),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Restore failed. No backup found or offline.',
+                        ),
+                        backgroundColor: Colors.red,
+                      ),
                     );
                   }
                 },
@@ -137,8 +209,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ],
         ),
       ),
-
-            
     );
   }
 }
