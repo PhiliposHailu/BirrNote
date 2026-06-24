@@ -95,8 +95,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
             ],
 
-            const SizedBox(height: 32), // Spacer
-            const Divider(), // A nice line to separate sections
+            // --------------------------------------------------
+            // GOOGLE SYNC SECTION (Now with both Backup and Restore!)
+            // --------------------------------------------------
+            const SizedBox(height: 32),
+            const Divider(),
             const SizedBox(height: 16),
 
             const Text(
@@ -110,34 +113,33 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Google Sign-In Button
+            // BUTTON 1: BACKUP TO GOOGLE DRIVE (This replaces the "Test Login" button!)
             SizedBox(
               width: double.infinity,
-              child: OutlinedButton.icon(
+              child: FilledButton.icon(
                 icon: const Icon(Icons.cloud_upload),
-                label: const Text('Test Google Login'),
+                label: const Text('Backup to Google Drive'),
                 onPressed: () async {
-                  // Show a quick loading message
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Connecting to Google...')),
+                    const SnackBar(content: Text('Starting cloud backup...')),
                   );
-
-                  // Call our provider!
+                  
                   final authService = ref.read(cloudSyncProvider);
-                  final account = await authService.signIn();
-
-                  if (account != null) {
+                  // CALLS THE BACKUP METHOD!
+                  final success = await authService.backupDatabase();
+                  
+                  if (success) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'Success! Logged in as: ${account.email}',
-                        ),
+                      const SnackBar(
+                        content: Text('Backup Successful! 🚀'), 
+                        backgroundColor: Colors.green,
                       ),
                     );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Login failed or canceled.'),
+                        content: Text('Backup failed. Check connection.'), 
+                        backgroundColor: Colors.red,
                       ),
                     );
                   }
@@ -147,20 +149,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
             const SizedBox(height: 12),
 
-            // THE RESTORE BUTTON
+            // BUTTON 2: RESTORE FROM GOOGLE DRIVE
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
                 icon: const Icon(Icons.cloud_download),
                 label: const Text('Restore from Google Drive'),
                 onPressed: () async {
-                  // Standard Confirm Dialog so they don't accidentally overwrite current data
+                  // Standard Confirm Dialog
                   final confirm = await showDialog<bool>(
                     context: context,
                     builder: (context) => AlertDialog(
                       title: const Text('Restore Database?'),
                       content: const Text(
-                        'This will overwrite all current expenses on this device with the data from your cloud backup. Are you sure?',
+                        'This will overwrite all current expenses on this device with the data from your cloud backup. Are you sure?'
                       ),
                       actions: [
                         TextButton(
@@ -180,25 +182,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Downloading backup...')),
                   );
-
+                  
                   final authService = ref.read(cloudSyncProvider);
+                  // CALLS THE RESTORE METHOD!
                   final success = await authService.restoreDatabase();
-
+                  
                   if (success) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text(
-                          'Restore Successful! Please restart the app. 🎉',
-                        ),
+                        content: Text('Restore Successful! Please restart the app. 🎉'), 
                         backgroundColor: Colors.green,
                       ),
                     );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text(
-                          'Restore failed. No backup found or offline.',
-                        ),
+                        content: Text('Restore failed. No backup found or offline.'), 
                         backgroundColor: Colors.red,
                       ),
                     );
