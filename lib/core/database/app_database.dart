@@ -52,7 +52,13 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 
-  // --- NEW SEEDING LOGIC ---
+  // Fetch all active categories from the database
+  Future<List<String>> getActiveCategories() async {
+    final rows = await select(categoryOptions).get();
+    return rows.map((row) => row.name).toList();
+  }
+
+  // --- SEEDING LOGIC ---
   @override
   MigrationStrategy get migration {
     return MigrationStrategy(

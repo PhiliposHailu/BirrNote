@@ -9,27 +9,31 @@ class AiService {
   AiService(this.apiKey);
 
   // returns a List of Maps!
-  Future<List<Map<String, dynamic>>?> parseNoteToExpenses(String note) async {
+  Future<List<Map<String, dynamic>>?> parseNoteToExpenses(
+    String note,
+    List<String> categories,
+  ) async {
     if (apiKey == null || apiKey!.isEmpty) return null;
+
+    // Turn the list of categories into a single comma-separated string (e.g. "Food, Transport, Bills")
+    final categoriesString = categories.join(', ');
 
     final model = GenerativeModel(
       model: 'gemini-3.1-flash-lite',
       apiKey: apiKey!,
       systemInstruction: Content.system('''
-        You are the financial parser for BirrNote. Extract a JSON list of expenses.
+        You are a financial parser for BirrNote.
+        Extract a LIST of expenses from the user's note.
         
         RULES:
-        1. CATEGORY: Strictly use ONLY one of: [Food, Transport, Shopping, Utilities, Entertainment, Health, Transfer, General].
-        2. NAME: Set 'extractedNote' to a short, clean name (e.g., "Coffee", "Gas").
-        3. PRICING & GROUPING:
-           - Distinct prices: "Gas 200, Food 100" -> Return 2 objects.
-           - Group total: "Groceries 500 for milk and eggs" -> Return 1 object (Amount: 500, Name: "Groceries").
-           - Partial prices: "Shirt, pants, and coffee 50" -> Return 3 objects. Coffee gets 50.0. Shirt and pants get 0.0.
-           - Missing price: Always use 0.0.
-        4. NOISE: If text contains no expenses (e.g., "Hello", "What's up"), return [].
-        5. CURRENCY: Assume Ethiopian Birr (ETB).
+        1. If the user lists multiple items with distinct prices (e.g., "Gas 200, Food 100"), return multiple objects.
+        2. If the user lists multiple items but only ONE total price (e.g., "Gas and food 500"), return ONE object.
+        3. For 'extractedNote', write a short, clean name for the item.
+        4. If currency is not specified, assume Ethiopian Birr (ETB).
+        5. You MUST classify each item into EXACTLY ONE of these categories: [$categoriesString]. 
+           Do not make up new categories outside of this list!
       '''),
-      
+
       generationConfig: GenerationConfig(
         responseMimeType: 'application/json',
         responseSchema: Schema.array(
@@ -40,7 +44,7 @@ class AiService {
               ),
               'amount': Schema.number(description: 'The total cost.'),
               'category': Schema.string(
-                description: 'A 1-2 word broad category.',
+                description: 'The category. Must be one of: $categoriesString',
               ),
               'quantity': Schema.integer(
                 description: 'Number of items. Default to 1.',
