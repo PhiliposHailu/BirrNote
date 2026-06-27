@@ -83,6 +83,23 @@ class AppDatabase extends _$AppDatabase {
       },
     );
   }
+
+  //Stream/Watch categories in real-time
+  Stream<List<CategoryOption>> watchCategories() {
+    return select(categoryOptions).watch();
+  }
+
+  //Insert a custom category
+  Future<int> addCategory(String name) {
+    return into(categoryOptions).insert(
+      CategoryOptionsCompanion.insert(name: name),
+    );
+  }
+
+  //Delete a category
+  Future<int> deleteCategory(int id) {
+    return (delete(categoryOptions)..where((tbl) => tbl.id.equals(id))).go();
+  }
 }
 
 LazyDatabase _openConnection() {
