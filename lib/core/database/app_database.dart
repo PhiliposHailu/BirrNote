@@ -37,7 +37,6 @@ class AppDatabase extends _$AppDatabase {
   @override
   int get schemaVersion => 1;
 
-  // Watch category totals (unchanged, but now defaults to 'Others' if missing)
   Stream<List<CategorySum>> watchTotalSpentByCategory() {
     final query = customSelect(
       'SELECT category, SUM(amount) as total FROM expenses WHERE is_pending_ai = 0 GROUP BY category',
