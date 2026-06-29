@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/api_key_provider.dart';
 import '../data/cloud_sync_service.dart';
+import 'category_settings_screen.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -79,7 +80,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
             ),
 
-            // If they have a key, give them the option to delete it ???
+            // If they have a key, give them the option to delete it
             if (hasKey) ...[
               const SizedBox(height: 8),
               Center(
@@ -94,6 +95,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               ),
             ],
+            
+            // ADD THIS MENU ITEM (Navigate to Manage Categories Screen)
+            ListTile(
+              leading: const Icon(Icons.category_outlined),
+              title: const Text(
+                'Manage Categories',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: const Text('Add, delete, or reset expense categories'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const CategorySettingsScreen(),
+                  ),
+                );
+              },
+            ),
 
             // --------------------------------------------------
             // GOOGLE SYNC SECTION (Now with both Backup and Restore!)
@@ -123,22 +142,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Starting cloud backup...')),
                   );
-                  
+
                   final authService = ref.read(cloudSyncProvider);
                   // CALLS THE BACKUP METHOD!
                   final success = await authService.backupDatabase();
-                  
+
                   if (success) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Backup Successful! 🚀'), 
+                        content: Text('Backup Successful! 🚀'),
                         backgroundColor: Colors.green,
                       ),
                     );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Backup failed. Check connection.'), 
+                        content: Text('Backup failed. Check connection.'),
                         backgroundColor: Colors.red,
                       ),
                     );
@@ -162,7 +181,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     builder: (context) => AlertDialog(
                       title: const Text('Restore Database?'),
                       content: const Text(
-                        'This will overwrite all current expenses on this device with the data from your cloud backup. Are you sure?'
+                        'This will overwrite all current expenses on this device with the data from your cloud backup. Are you sure?',
                       ),
                       actions: [
                         TextButton(
@@ -182,22 +201,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Downloading backup...')),
                   );
-                  
+
                   final authService = ref.read(cloudSyncProvider);
                   // CALLS THE RESTORE METHOD!
                   final success = await authService.restoreDatabase();
-                  
+
                   if (success) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Restore Successful! Please restart the app. 🎉'), 
+                        content: Text(
+                          'Restore Successful! Please restart the app. 🎉',
+                        ),
                         backgroundColor: Colors.green,
                       ),
                     );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Restore failed. No backup found or offline.'), 
+                        content: Text(
+                          'Restore failed. No backup found or offline.',
+                        ),
                         backgroundColor: Colors.red,
                       ),
                     );

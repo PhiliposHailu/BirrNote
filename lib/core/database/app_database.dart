@@ -99,6 +99,46 @@ class AppDatabase extends _$AppDatabase {
   Future<int> deleteCategory(int id) {
     return (delete(categoryOptions)..where((tbl) => tbl.id.equals(id))).go();
   }
+
+  // 1. Live Stream of category names (for real-time UI updates)
+  Stream<List<String>> watchCategoryNames() {
+    return select(categoryOptions)
+        .watch()
+        .map((rows) => rows.map((row) => row.name).toList());
+  }
+
+  // 2. Add a category
+  Future<int> addCategoryOption(String name) {
+    return into(categoryOptions).insert(
+      CategoryOptionsCompanion.insert(name: name),
+    );
+  }
+
+  // 3. Delete a category
+  Future<int> deleteCategoryOption(String name) {
+    return (delete(categoryOptions)..where((tbl) => tbl.name.equals(name))).go();
+  }
+
+  // 4. Reset to default 5 categories
+  Future<void> resetCategoriesToDefault() async {
+    // Delete all current categories
+    await delete(categoryOptions).go();
+
+    // Re-seed the default 5
+    final defaultCategories = [
+      'Food & Drinks',
+      'Transport',
+      'Shopping',
+      'Bills',
+      'Others',
+    ];
+
+    for (final name in defaultCategories) {
+      await into(categoryOptions).insert(
+        CategoryOptionsCompanion.insert(name: name),
+      );
+    }
+  }
 }
 
 LazyDatabase _openConnection() {
