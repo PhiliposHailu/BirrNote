@@ -17,10 +17,17 @@ class Expenses extends Table {
   BoolColumn get isPendingAi => boolean().withDefault(const Constant(false))();
 }
 
-// --- NEW TABLE 2: DYNAMIC CATEGORY OPTIONS ---
+// --- TABLE 2: DYNAMIC CATEGORY OPTIONS ---
 class CategoryOptions extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text().unique()(); // Category names must be unique!
+}
+
+// --- TABLE 3: BUDGETS ---
+class Budgets extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  RealColumn get weeklyLimit => real()(); // User sets their weekly budget limit
+  DateTimeColumn get startDate => dateTime()(); // The exact day they set/updated the budget
 }
 
 class CategorySum {
@@ -30,12 +37,12 @@ class CategorySum {
 }
 
 // --- DATABASE CONNECTION & SEEDING ---
-@DriftDatabase(tables: [Expenses, CategoryOptions]) // Added CategoryOptions here
+@DriftDatabase(tables: [Expenses, CategoryOptions, Budgets]) // Added CategoryOptions here
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   Stream<List<CategorySum>> watchTotalSpentByCategory() {
     final query = customSelect(
@@ -80,7 +87,15 @@ class AppDatabase extends _$AppDatabase {
           );
         }
       },
+      onUpgrade: (m, from, to) async {
+        // THE MIGRATION: If the user is upgrading from version 1 to 2, 
+        // safely create the Budgets table without touching their old data!
+        if (from < 2) {
+          await m.createTable(budgets);
+        }
+      },
     );
+
   }
 
   //Stream/Watch categories in real-time
