@@ -58,6 +58,8 @@ class AppDatabase extends _$AppDatabase {
     });
   }
 
+
+
   // Fetch all active categories from the database
   Future<List<String>> getActiveCategories() async {
     final rows = await select(categoryOptions).get();
