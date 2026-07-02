@@ -1,40 +1,39 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/database/app_database.dart';
 import '../../../core/database/database_provider.dart';
+import '../../../core/database/daos/category_dao.dart';
 
-// 1. Watches the live list of categories from SQLite
+// 1. WATCH CATEGORY NAMES (Queries the DAO directly!)
 final categoryNamesStreamProvider = StreamProvider<List<String>>((ref) {
-  final db = ref.watch(databaseProvider);
-  return db.watchCategoryNames();
+  final categoryDao = ref.watch(categoryDaoProvider);
+  return categoryDao.watchCategoryNames();
 });
 
-// 2. Holds the logic for Category Management
+// 2. CATEGORY MANAGER
 class CategoryManager {
-  final AppDatabase db;
-  CategoryManager(this.db);
+  final CategoryDao categoryDao; // Changed from AppDatabase to CategoryDao
+  CategoryManager(this.categoryDao);
 
   Future<void> add(String name) async {
     final cleanedName = name.trim();
     if (cleanedName.isEmpty) return;
     
     try {
-      await db.addCategoryOption(cleanedName);
+      await categoryDao.addCategoryOption(cleanedName);
     } catch (e) {
-      print("Error adding category: $e"); // Handles duplicate name errors silently
+      print("Error adding category: $e");
     }
   }
 
   Future<void> delete(String name) async {
-    // HCI GUARD: Never let them delete 'Others'
     if (name == 'Others') return; 
-    await db.deleteCategoryOption(name);
+    await categoryDao.deleteCategoryOption(name);
   }
 
   Future<void> reset() async {
-    await db.resetCategoriesToDefault();
+    await categoryDao.resetCategoriesToDefault();
   }
 }
 
 final categoryManagerProvider = Provider<CategoryManager>((ref) {
-  return CategoryManager(ref.watch(databaseProvider));
+  return CategoryManager(ref.watch(categoryDaoProvider));
 });
