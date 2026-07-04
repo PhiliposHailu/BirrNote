@@ -6,7 +6,7 @@ import 'widgets/expense_list.dart';
 import 'widgets/chat_input_bar.dart';
 import '../../settings/presentation/settings_screen.dart';
 import '../data/expense_providers.dart';
-
+import 'widgets/budget_header_widget.dart';
 
 // ----------------------------------------------------------------------
 // CLASS 1: The Widget itself. Notice it extends ConsumerStatefulWidget!
@@ -56,6 +56,7 @@ class _ExpenseEntryScreenState extends ConsumerState<ExpenseEntryScreen> {
   Widget build(BuildContext context) {
     return const Column(
       children: [
+        BudgetHeaderWidget(),
         Expanded(child: ExpenseList()),
         ChatInputBar(),
       ],

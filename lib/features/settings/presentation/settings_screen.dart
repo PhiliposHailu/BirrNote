@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/api_key_provider.dart';
 import '../data/cloud_sync_service.dart';
 import 'category_settings_screen.dart';
+import 'widgets/weekly_budget_card.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -98,8 +99,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                 ),
               ],
+              const SizedBox(height: 24),
+              const WeeklyBudgetCard(), // THE NEW BUDGET CARD!
+              const SizedBox(height: 24),
 
-              // ADD THIS MENU ITEM (Navigate to Manage Categories Screen)
+              // Navigate to Manage Categories Screen
               ListTile(
                 leading: const Icon(Icons.category_outlined),
                 title: const Text(
