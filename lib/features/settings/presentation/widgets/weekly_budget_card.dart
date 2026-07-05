@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/database/database_provider.dart';
+import '../../../../core/database/app_database.dart';
+
+// 1. FIXED: StreamProvider is now safely outside the widget (Global)
+final activeBudgetStreamProvider = StreamProvider<Budget?>((ref) {
+  final budgetDao = ref.watch(budgetDaoProvider);
+  return budgetDao.watchActiveBudget();
+});
 
 class WeeklyBudgetCard extends ConsumerStatefulWidget {
   const WeeklyBudgetCard({super.key});
@@ -17,7 +24,6 @@ class _WeeklyBudgetCardState extends ConsumerState<WeeklyBudgetCard> {
     final limit = double.tryParse(text);
     
     if (limit != null && limit > 0) {
-      // Calls our BudgetDao to save/update the budget
       ref.read(budgetDaoProvider).setWeeklyBudget(limit);
       _budgetController.clear();
       FocusScope.of(context).unfocus(); // Close keyboard
@@ -36,14 +42,26 @@ class _WeeklyBudgetCardState extends ConsumerState<WeeklyBudgetCard> {
 
   @override
   Widget build(BuildContext context) {
-    // Watch the active budget stream to show current settings
-    final activeBudgetAsync = ref.watch(StreamProvider((ref) {
-      return ref.watch(budgetDaoProvider).watchActiveBudget();
-    }));
+    // 2. FIXED: Watch the global provider instead of creating a new one
+    final activeBudgetAsync = ref.watch(activeBudgetStreamProvider);
 
     return activeBudgetAsync.when(
-      loading: () => const SizedBox(),
-      error: (e, s) => const SizedBox(),
+      // 3. FIXED: No more invisible boxes! We show a loader and error text
+      loading: () => const Center(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: CircularProgressIndicator(),
+        ),
+      ),
+      error: (error, stack) => Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text(
+            'Database Error: $error', 
+            style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+          ),
+        ),
+      ),
       data: (budget) {
         final hasBudget = budget != null;
 
