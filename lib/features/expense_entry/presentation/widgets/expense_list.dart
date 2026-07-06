@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/database/database_provider.dart';
 import '../../data/expense_providers.dart';
 
 class ExpenseList extends ConsumerWidget {
@@ -16,52 +17,78 @@ class ExpenseList extends ConsumerWidget {
         if (expenses.isEmpty) {
           return const Center(child: Text('No expenses yet. Start typing!'));
         }
-
+        
         return ListView.builder(
+          reverse: true, // Newest at the bottom
           itemCount: expenses.length,
           itemBuilder: (context, index) {
-            // We reverse the list so the newest items show up at the bottom
-            final expense = expenses[index];
+            final expense = expenses.reversed.toList()[index];
 
-            return ListTile(
-              // If processed, show "Category - ETB Amount" in bold.
-              title: expense.isPendingAi
-                  ? Text(
-                      expense.rawNote,
-                      style: const TextStyle(fontStyle: FontStyle.italic),
-                    )
-                  : Text(
-                      '${expense.category} - ETB ${expense.amount.toStringAsFixed(2)}',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+            // THE HCI MAGIC: Wrap the ListTile in a Dismissible widget
+            return Dismissible(
+              // Each item MUST have a completely unique key for the animation to work
+              key: ValueKey(expense.id),
+              
+              // Only allow swiping from right to left (HCI Standard for deletion)
+              direction: DismissDirection.endToStart,
+              
+              // The red background with a trash can icon that shows during the swipe
+              background: Container(
+                color: Colors.red.shade100,
+                alignment: Alignment.centerRight,
+                padding: const EdgeInsets.only(right: 20),
+                child: Icon(Icons.delete_outline, color: Colors.red.shade900),
+              ),
+
+              // What happens when they finish swiping
+              onDismissed: (direction) async {
+                final expenseDao = ref.read(expenseDaoProvider);
+
+                // 1. SILENT DELETE: Delete it from SQLite immediately
+                await expenseDao.deleteExpense(expense.id);
+
+                // 2. THE SAFETY NET: Show the SnackBar with an Undo button
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).clearSnackBars(); // Dismiss old SnackBars
+                  
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Deleted "${expense.rawNote}"'),
+                      action: SnackBarAction(
+                        label: 'Undo',
+                        onPressed: () async {
+                          // THE UNDO: Re-insert the exact copy back into SQLite!
+                          // .toCompanion(true) tells Drift to keep its original ID
+                          await expenseDao.insertExpense(expense.toCompanion(true));
+                        },
+                      ),
                     ),
+                  );
+                }
+              },
 
-              // 2. SUBTITLE:
-              // If pending, tell the user it's waiting for AI.
-              // If processed, keep a record of their original raw note + quantity.
-              subtitle: expense.isPendingAi
-                  ? Text(
-                      'Waiting for AI... • ${expense.date.toString().split('.')[0]}',
-                    )
-                  : Text(
-                      'Note: "${expense.rawNote}" • Qty: ${expense.quantity}',
-                    ),
-
-              // 3. TRAILING ICON:
-              // Orange spinning/sync icon when pending, Green checkmark when done!
-              trailing: expense.isPendingAi
-                  // Wrap the icon in an IconButton!
-                  ? IconButton(
-                      icon: const Icon(Icons.sync, color: Colors.orange),
-                      onPressed: () {
-                        // Provide instant user feedback
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Retrying AI Sync...')),
-                        );
-                        // Manually trigger the queue!
-                        ref.read(expenseLogicProvider).syncPendingNotes();
-                      },
-                    )
-                  : const Icon(Icons.check_circle, color: Colors.green),
+              child: ListTile(
+                title: expense.isPendingAi 
+                    ? Text(expense.rawNote, style: const TextStyle(fontStyle: FontStyle.italic))
+                    : Text('${expense.category} - ${expense.amount.toStringAsFixed(2)} ETB', 
+                           style: const TextStyle(fontWeight: FontWeight.bold)),
+                
+                subtitle: expense.isPendingAi
+                    ? Text('Waiting for AI... • ${expense.date.toString().split('.')[0]}')
+                    : Text('Note: "${expense.rawNote}" • Qty: ${expense.quantity}'),
+                
+                trailing: expense.isPendingAi 
+                    ? IconButton(
+                        icon: const Icon(Icons.sync, color: Colors.orange),
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Retrying AI Sync...')),
+                          );
+                          ref.read(expenseLogicProvider).syncPendingNotes();
+                        },
+                      )
+                    : const Icon(Icons.check_circle, color: Colors.green),
+              ),
             );
           },
         );

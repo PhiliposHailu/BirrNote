@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/expense_providers.dart';
+// 1. IMPORT our live category provider
+import '../../../settings/data/category_providers.dart'; 
 
 class ManualEntrySheet extends ConsumerStatefulWidget {
   const ManualEntrySheet({super.key});
@@ -8,32 +10,28 @@ class ManualEntrySheet extends ConsumerStatefulWidget {
   @override
   ConsumerState<ManualEntrySheet> createState() => _ManualEntrySheetState();
 }
+
 class _ManualEntrySheetState extends ConsumerState<ManualEntrySheet> {
   final _amountController = TextEditingController();
   final _noteController = TextEditingController();
   
-  String _selectedCategory = 'Food'; // Default category
+  // 2. We initialize this to null instead of a hardcoded string!
+  String? _selectedCategory; 
   int _quantity = 1;
-
-  final List<String> _categories = [
-    'Food', 'Transport', 'Utilities', 'Entertainment', 'Shopping', 'Health', 'General'
-  ];
 
   void _submit() {
     final amountText = _amountController.text;
-    if (amountText.isEmpty) return;
+    if (amountText.isEmpty || _selectedCategory == null) return;
 
     final amount = double.tryParse(amountText) ?? 0.0;
     
-    // Save directly to the database
     ref.read(expenseLogicProvider).addManualExpense(
       amount: amount,
-      category: _selectedCategory,
+      category: _selectedCategory!,
       quantity: _quantity,
       note: _noteController.text,
     );
 
-    // Close the bottom sheet
     Navigator.of(context).pop();
   }
 
@@ -46,14 +44,16 @@ class _ManualEntrySheetState extends ConsumerState<ManualEntrySheet> {
 
   @override
   Widget build(BuildContext context) {
-    // This padding ensures the bottom sheet gets pushed up when the keyboard opens!
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    
+    // 3. Watch the live category stream from the database!
+    final categoriesStream = ref.watch(categoryNamesStreamProvider);
 
     return Padding(
       padding: EdgeInsets.only(bottom: bottomInset, left: 16, right: 16, top: 16),
       child: SafeArea(
         child: Column(
-          mainAxisSize: MainAxisSize.min, // Wrap content tightly
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Text(
@@ -75,18 +75,34 @@ class _ManualEntrySheetState extends ConsumerState<ManualEntrySheet> {
             ),
             const SizedBox(height: 16),
 
-            // CATEGORY DROPDOWN
-            DropdownButtonFormField<String>(
-              value: _selectedCategory,
-              decoration: const InputDecoration(
-                labelText: 'Category',
-                border: OutlineInputBorder(),
-              ),
-              items: _categories.map((category) {
-                return DropdownMenuItem(value: category, child: Text(category));
-              }).toList(),
-              onChanged: (value) {
-                if (value != null) setState(() => _selectedCategory = value);
+            // 4. DYNAMIC CATEGORY DROPDOWN
+            categoriesStream.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, stack) => Text('Error loading categories: $error'),
+              data: (categories) {
+                // HCI Safety Check: If our selected category is null, or if the user 
+                // just deleted the category we had selected, automatically fallback 
+                // to the first active category in the database (usually "Food & Drinks" or "Others")
+                if (_selectedCategory == null || !categories.contains(_selectedCategory)) {
+                  _selectedCategory = categories.isNotEmpty ? categories.first : 'Others';
+                }
+
+                return DropdownButtonFormField<String>(
+                  value: _selectedCategory,
+                  decoration: const InputDecoration(
+                    labelText: 'Category',
+                    border: OutlineInputBorder(),
+                  ),
+                  // Render items dynamically from SQLite!
+                  items: categories.map((category) {
+                    return DropdownMenuItem(value: category, child: Text(category));
+                  }).toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() => _selectedCategory = value);
+                    }
+                  },
+                );
               },
             ),
             const SizedBox(height: 16),
@@ -109,7 +125,7 @@ class _ManualEntrySheetState extends ConsumerState<ManualEntrySheet> {
             ),
             const SizedBox(height: 16),
 
-            // OPTIONAL MESSAGE
+            // OPTIONAL NOTE
             TextField(
               controller: _noteController,
               decoration: const InputDecoration(
