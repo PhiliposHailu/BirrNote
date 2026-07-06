@@ -1,4 +1,3 @@
-import 'features/expense_entry/presentation/expense_entry_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'features/navigation/presentation/main_nav_screen.dart';

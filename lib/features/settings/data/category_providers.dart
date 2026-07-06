@@ -32,6 +32,11 @@ class CategoryManager {
   Future<void> reset() async {
     await categoryDao.resetCategoriesToDefault();
   }
+
+  // Triggers the database reorder transaction
+  Future<void> reorder(List<String> orderedNames) async {
+    await categoryDao.updateCategoryOrder(orderedNames);
+  }
 }
 
 final categoryManagerProvider = Provider<CategoryManager>((ref) {

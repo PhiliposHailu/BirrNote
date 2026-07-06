@@ -2,8 +2,8 @@ import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/database/database_provider.dart';
-import '../../../core/database/daos/expense_dao.dart'; // NEW
-import '../../../core/database/daos/category_dao.dart'; // NEW
+import '../../../core/database/daos/expense_dao.dart'; 
+import '../../../core/database/daos/category_dao.dart'; 
 import '../../../core/network/ai_service.dart';
 
 // 1. WATCH EXPENSES (Now queries the DAO directly!)

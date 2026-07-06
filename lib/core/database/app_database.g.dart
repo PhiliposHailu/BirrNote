@@ -478,8 +478,20 @@ class $CategoryOptionsTable extends CategoryOptions
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
   );
+  static const VerificationMeta _orderIndexMeta = const VerificationMeta(
+    'orderIndex',
+  );
   @override
-  List<GeneratedColumn> get $columns => [id, name];
+  late final GeneratedColumn<int> orderIndex = GeneratedColumn<int>(
+    'order_index',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, name, orderIndex];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -503,6 +515,12 @@ class $CategoryOptionsTable extends CategoryOptions
     } else if (isInserting) {
       context.missing(_nameMeta);
     }
+    if (data.containsKey('order_index')) {
+      context.handle(
+        _orderIndexMeta,
+        orderIndex.isAcceptableOrUnknown(data['order_index']!, _orderIndexMeta),
+      );
+    }
     return context;
   }
 
@@ -520,6 +538,10 @@ class $CategoryOptionsTable extends CategoryOptions
         DriftSqlType.string,
         data['${effectivePrefix}name'],
       )!,
+      orderIndex: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}order_index'],
+      )!,
     );
   }
 
@@ -532,17 +554,27 @@ class $CategoryOptionsTable extends CategoryOptions
 class CategoryOption extends DataClass implements Insertable<CategoryOption> {
   final int id;
   final String name;
-  const CategoryOption({required this.id, required this.name});
+  final int orderIndex;
+  const CategoryOption({
+    required this.id,
+    required this.name,
+    required this.orderIndex,
+  });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['name'] = Variable<String>(name);
+    map['order_index'] = Variable<int>(orderIndex);
     return map;
   }
 
   CategoryOptionsCompanion toCompanion(bool nullToAbsent) {
-    return CategoryOptionsCompanion(id: Value(id), name: Value(name));
+    return CategoryOptionsCompanion(
+      id: Value(id),
+      name: Value(name),
+      orderIndex: Value(orderIndex),
+    );
   }
 
   factory CategoryOption.fromJson(
@@ -553,6 +585,7 @@ class CategoryOption extends DataClass implements Insertable<CategoryOption> {
     return CategoryOption(
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
+      orderIndex: serializer.fromJson<int>(json['orderIndex']),
     );
   }
   @override
@@ -561,15 +594,23 @@ class CategoryOption extends DataClass implements Insertable<CategoryOption> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
+      'orderIndex': serializer.toJson<int>(orderIndex),
     };
   }
 
-  CategoryOption copyWith({int? id, String? name}) =>
-      CategoryOption(id: id ?? this.id, name: name ?? this.name);
+  CategoryOption copyWith({int? id, String? name, int? orderIndex}) =>
+      CategoryOption(
+        id: id ?? this.id,
+        name: name ?? this.name,
+        orderIndex: orderIndex ?? this.orderIndex,
+      );
   CategoryOption copyWithCompanion(CategoryOptionsCompanion data) {
     return CategoryOption(
       id: data.id.present ? data.id.value : this.id,
       name: data.name.present ? data.name.value : this.name,
+      orderIndex: data.orderIndex.present
+          ? data.orderIndex.value
+          : this.orderIndex,
     );
   }
 
@@ -577,44 +618,59 @@ class CategoryOption extends DataClass implements Insertable<CategoryOption> {
   String toString() {
     return (StringBuffer('CategoryOption(')
           ..write('id: $id, ')
-          ..write('name: $name')
+          ..write('name: $name, ')
+          ..write('orderIndex: $orderIndex')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name);
+  int get hashCode => Object.hash(id, name, orderIndex);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is CategoryOption &&
           other.id == this.id &&
-          other.name == this.name);
+          other.name == this.name &&
+          other.orderIndex == this.orderIndex);
 }
 
 class CategoryOptionsCompanion extends UpdateCompanion<CategoryOption> {
   final Value<int> id;
   final Value<String> name;
+  final Value<int> orderIndex;
   const CategoryOptionsCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
+    this.orderIndex = const Value.absent(),
   });
   CategoryOptionsCompanion.insert({
     this.id = const Value.absent(),
     required String name,
+    this.orderIndex = const Value.absent(),
   }) : name = Value(name);
   static Insertable<CategoryOption> custom({
     Expression<int>? id,
     Expression<String>? name,
+    Expression<int>? orderIndex,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (name != null) 'name': name,
+      if (orderIndex != null) 'order_index': orderIndex,
     });
   }
 
-  CategoryOptionsCompanion copyWith({Value<int>? id, Value<String>? name}) {
-    return CategoryOptionsCompanion(id: id ?? this.id, name: name ?? this.name);
+  CategoryOptionsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? name,
+    Value<int>? orderIndex,
+  }) {
+    return CategoryOptionsCompanion(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      orderIndex: orderIndex ?? this.orderIndex,
+    );
   }
 
   @override
@@ -626,6 +682,9 @@ class CategoryOptionsCompanion extends UpdateCompanion<CategoryOption> {
     if (name.present) {
       map['name'] = Variable<String>(name.value);
     }
+    if (orderIndex.present) {
+      map['order_index'] = Variable<int>(orderIndex.value);
+    }
     return map;
   }
 
@@ -633,7 +692,8 @@ class CategoryOptionsCompanion extends UpdateCompanion<CategoryOption> {
   String toString() {
     return (StringBuffer('CategoryOptionsCompanion(')
           ..write('id: $id, ')
-          ..write('name: $name')
+          ..write('name: $name, ')
+          ..write('orderIndex: $orderIndex')
           ..write(')'))
         .toString();
   }
@@ -657,16 +717,26 @@ class $BudgetsTable extends Budgets with TableInfo<$BudgetsTable, Budget> {
       'PRIMARY KEY AUTOINCREMENT',
     ),
   );
-  static const VerificationMeta _weeklyLimitMeta = const VerificationMeta(
-    'weeklyLimit',
+  static const VerificationMeta _limitAmountMeta = const VerificationMeta(
+    'limitAmount',
   );
   @override
-  late final GeneratedColumn<double> weeklyLimit = GeneratedColumn<double>(
-    'weekly_limit',
+  late final GeneratedColumn<double> limitAmount = GeneratedColumn<double>(
+    'limit_amount',
     aliasedName,
     false,
     type: DriftSqlType.double,
     requiredDuringInsert: true,
+  );
+  static const VerificationMeta _periodMeta = const VerificationMeta('period');
+  @override
+  late final GeneratedColumn<String> period = GeneratedColumn<String>(
+    'period',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('Weekly'),
   );
   static const VerificationMeta _startDateMeta = const VerificationMeta(
     'startDate',
@@ -680,7 +750,7 @@ class $BudgetsTable extends Budgets with TableInfo<$BudgetsTable, Budget> {
     requiredDuringInsert: true,
   );
   @override
-  List<GeneratedColumn> get $columns => [id, weeklyLimit, startDate];
+  List<GeneratedColumn> get $columns => [id, limitAmount, period, startDate];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -696,16 +766,22 @@ class $BudgetsTable extends Budgets with TableInfo<$BudgetsTable, Budget> {
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     }
-    if (data.containsKey('weekly_limit')) {
+    if (data.containsKey('limit_amount')) {
       context.handle(
-        _weeklyLimitMeta,
-        weeklyLimit.isAcceptableOrUnknown(
-          data['weekly_limit']!,
-          _weeklyLimitMeta,
+        _limitAmountMeta,
+        limitAmount.isAcceptableOrUnknown(
+          data['limit_amount']!,
+          _limitAmountMeta,
         ),
       );
     } else if (isInserting) {
-      context.missing(_weeklyLimitMeta);
+      context.missing(_limitAmountMeta);
+    }
+    if (data.containsKey('period')) {
+      context.handle(
+        _periodMeta,
+        period.isAcceptableOrUnknown(data['period']!, _periodMeta),
+      );
     }
     if (data.containsKey('start_date')) {
       context.handle(
@@ -728,9 +804,13 @@ class $BudgetsTable extends Budgets with TableInfo<$BudgetsTable, Budget> {
         DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
-      weeklyLimit: attachedDatabase.typeMapping.read(
+      limitAmount: attachedDatabase.typeMapping.read(
         DriftSqlType.double,
-        data['${effectivePrefix}weekly_limit'],
+        data['${effectivePrefix}limit_amount'],
+      )!,
+      period: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}period'],
       )!,
       startDate: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
@@ -747,18 +827,21 @@ class $BudgetsTable extends Budgets with TableInfo<$BudgetsTable, Budget> {
 
 class Budget extends DataClass implements Insertable<Budget> {
   final int id;
-  final double weeklyLimit;
+  final double limitAmount;
+  final String period;
   final DateTime startDate;
   const Budget({
     required this.id,
-    required this.weeklyLimit,
+    required this.limitAmount,
+    required this.period,
     required this.startDate,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
-    map['weekly_limit'] = Variable<double>(weeklyLimit);
+    map['limit_amount'] = Variable<double>(limitAmount);
+    map['period'] = Variable<String>(period);
     map['start_date'] = Variable<DateTime>(startDate);
     return map;
   }
@@ -766,7 +849,8 @@ class Budget extends DataClass implements Insertable<Budget> {
   BudgetsCompanion toCompanion(bool nullToAbsent) {
     return BudgetsCompanion(
       id: Value(id),
-      weeklyLimit: Value(weeklyLimit),
+      limitAmount: Value(limitAmount),
+      period: Value(period),
       startDate: Value(startDate),
     );
   }
@@ -778,7 +862,8 @@ class Budget extends DataClass implements Insertable<Budget> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Budget(
       id: serializer.fromJson<int>(json['id']),
-      weeklyLimit: serializer.fromJson<double>(json['weeklyLimit']),
+      limitAmount: serializer.fromJson<double>(json['limitAmount']),
+      period: serializer.fromJson<String>(json['period']),
       startDate: serializer.fromJson<DateTime>(json['startDate']),
     );
   }
@@ -787,23 +872,30 @@ class Budget extends DataClass implements Insertable<Budget> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
-      'weeklyLimit': serializer.toJson<double>(weeklyLimit),
+      'limitAmount': serializer.toJson<double>(limitAmount),
+      'period': serializer.toJson<String>(period),
       'startDate': serializer.toJson<DateTime>(startDate),
     };
   }
 
-  Budget copyWith({int? id, double? weeklyLimit, DateTime? startDate}) =>
-      Budget(
-        id: id ?? this.id,
-        weeklyLimit: weeklyLimit ?? this.weeklyLimit,
-        startDate: startDate ?? this.startDate,
-      );
+  Budget copyWith({
+    int? id,
+    double? limitAmount,
+    String? period,
+    DateTime? startDate,
+  }) => Budget(
+    id: id ?? this.id,
+    limitAmount: limitAmount ?? this.limitAmount,
+    period: period ?? this.period,
+    startDate: startDate ?? this.startDate,
+  );
   Budget copyWithCompanion(BudgetsCompanion data) {
     return Budget(
       id: data.id.present ? data.id.value : this.id,
-      weeklyLimit: data.weeklyLimit.present
-          ? data.weeklyLimit.value
-          : this.weeklyLimit,
+      limitAmount: data.limitAmount.present
+          ? data.limitAmount.value
+          : this.limitAmount,
+      period: data.period.present ? data.period.value : this.period,
       startDate: data.startDate.present ? data.startDate.value : this.startDate,
     );
   }
@@ -812,58 +904,67 @@ class Budget extends DataClass implements Insertable<Budget> {
   String toString() {
     return (StringBuffer('Budget(')
           ..write('id: $id, ')
-          ..write('weeklyLimit: $weeklyLimit, ')
+          ..write('limitAmount: $limitAmount, ')
+          ..write('period: $period, ')
           ..write('startDate: $startDate')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, weeklyLimit, startDate);
+  int get hashCode => Object.hash(id, limitAmount, period, startDate);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Budget &&
           other.id == this.id &&
-          other.weeklyLimit == this.weeklyLimit &&
+          other.limitAmount == this.limitAmount &&
+          other.period == this.period &&
           other.startDate == this.startDate);
 }
 
 class BudgetsCompanion extends UpdateCompanion<Budget> {
   final Value<int> id;
-  final Value<double> weeklyLimit;
+  final Value<double> limitAmount;
+  final Value<String> period;
   final Value<DateTime> startDate;
   const BudgetsCompanion({
     this.id = const Value.absent(),
-    this.weeklyLimit = const Value.absent(),
+    this.limitAmount = const Value.absent(),
+    this.period = const Value.absent(),
     this.startDate = const Value.absent(),
   });
   BudgetsCompanion.insert({
     this.id = const Value.absent(),
-    required double weeklyLimit,
+    required double limitAmount,
+    this.period = const Value.absent(),
     required DateTime startDate,
-  }) : weeklyLimit = Value(weeklyLimit),
+  }) : limitAmount = Value(limitAmount),
        startDate = Value(startDate);
   static Insertable<Budget> custom({
     Expression<int>? id,
-    Expression<double>? weeklyLimit,
+    Expression<double>? limitAmount,
+    Expression<String>? period,
     Expression<DateTime>? startDate,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
-      if (weeklyLimit != null) 'weekly_limit': weeklyLimit,
+      if (limitAmount != null) 'limit_amount': limitAmount,
+      if (period != null) 'period': period,
       if (startDate != null) 'start_date': startDate,
     });
   }
 
   BudgetsCompanion copyWith({
     Value<int>? id,
-    Value<double>? weeklyLimit,
+    Value<double>? limitAmount,
+    Value<String>? period,
     Value<DateTime>? startDate,
   }) {
     return BudgetsCompanion(
       id: id ?? this.id,
-      weeklyLimit: weeklyLimit ?? this.weeklyLimit,
+      limitAmount: limitAmount ?? this.limitAmount,
+      period: period ?? this.period,
       startDate: startDate ?? this.startDate,
     );
   }
@@ -874,8 +975,11 @@ class BudgetsCompanion extends UpdateCompanion<Budget> {
     if (id.present) {
       map['id'] = Variable<int>(id.value);
     }
-    if (weeklyLimit.present) {
-      map['weekly_limit'] = Variable<double>(weeklyLimit.value);
+    if (limitAmount.present) {
+      map['limit_amount'] = Variable<double>(limitAmount.value);
+    }
+    if (period.present) {
+      map['period'] = Variable<String>(period.value);
     }
     if (startDate.present) {
       map['start_date'] = Variable<DateTime>(startDate.value);
@@ -887,7 +991,8 @@ class BudgetsCompanion extends UpdateCompanion<Budget> {
   String toString() {
     return (StringBuffer('BudgetsCompanion(')
           ..write('id: $id, ')
-          ..write('weeklyLimit: $weeklyLimit, ')
+          ..write('limitAmount: $limitAmount, ')
+          ..write('period: $period, ')
           ..write('startDate: $startDate')
           ..write(')'))
         .toString();
@@ -1145,9 +1250,17 @@ typedef $$ExpensesTableProcessedTableManager =
       PrefetchHooks Function()
     >;
 typedef $$CategoryOptionsTableCreateCompanionBuilder =
-    CategoryOptionsCompanion Function({Value<int> id, required String name});
+    CategoryOptionsCompanion Function({
+      Value<int> id,
+      required String name,
+      Value<int> orderIndex,
+    });
 typedef $$CategoryOptionsTableUpdateCompanionBuilder =
-    CategoryOptionsCompanion Function({Value<int> id, Value<String> name});
+    CategoryOptionsCompanion Function({
+      Value<int> id,
+      Value<String> name,
+      Value<int> orderIndex,
+    });
 
 class $$CategoryOptionsTableFilterComposer
     extends Composer<_$AppDatabase, $CategoryOptionsTable> {
@@ -1165,6 +1278,11 @@ class $$CategoryOptionsTableFilterComposer
 
   ColumnFilters<String> get name => $composableBuilder(
     column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get orderIndex => $composableBuilder(
+    column: $table.orderIndex,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -1187,6 +1305,11 @@ class $$CategoryOptionsTableOrderingComposer
     column: $table.name,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get orderIndex => $composableBuilder(
+    column: $table.orderIndex,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$CategoryOptionsTableAnnotationComposer
@@ -1203,6 +1326,11 @@ class $$CategoryOptionsTableAnnotationComposer
 
   GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<int> get orderIndex => $composableBuilder(
+    column: $table.orderIndex,
+    builder: (column) => column,
+  );
 }
 
 class $$CategoryOptionsTableTableManager
@@ -1244,10 +1372,22 @@ class $$CategoryOptionsTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<String> name = const Value.absent(),
-              }) => CategoryOptionsCompanion(id: id, name: name),
+                Value<int> orderIndex = const Value.absent(),
+              }) => CategoryOptionsCompanion(
+                id: id,
+                name: name,
+                orderIndex: orderIndex,
+              ),
           createCompanionCallback:
-              ({Value<int> id = const Value.absent(), required String name}) =>
-                  CategoryOptionsCompanion.insert(id: id, name: name),
+              ({
+                Value<int> id = const Value.absent(),
+                required String name,
+                Value<int> orderIndex = const Value.absent(),
+              }) => CategoryOptionsCompanion.insert(
+                id: id,
+                name: name,
+                orderIndex: orderIndex,
+              ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
               .toList(),
@@ -1276,13 +1416,15 @@ typedef $$CategoryOptionsTableProcessedTableManager =
 typedef $$BudgetsTableCreateCompanionBuilder =
     BudgetsCompanion Function({
       Value<int> id,
-      required double weeklyLimit,
+      required double limitAmount,
+      Value<String> period,
       required DateTime startDate,
     });
 typedef $$BudgetsTableUpdateCompanionBuilder =
     BudgetsCompanion Function({
       Value<int> id,
-      Value<double> weeklyLimit,
+      Value<double> limitAmount,
+      Value<String> period,
       Value<DateTime> startDate,
     });
 
@@ -1300,8 +1442,13 @@ class $$BudgetsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<double> get weeklyLimit => $composableBuilder(
-    column: $table.weeklyLimit,
+  ColumnFilters<double> get limitAmount => $composableBuilder(
+    column: $table.limitAmount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get period => $composableBuilder(
+    column: $table.period,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1325,8 +1472,13 @@ class $$BudgetsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<double> get weeklyLimit => $composableBuilder(
-    column: $table.weeklyLimit,
+  ColumnOrderings<double> get limitAmount => $composableBuilder(
+    column: $table.limitAmount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get period => $composableBuilder(
+    column: $table.period,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -1348,10 +1500,13 @@ class $$BudgetsTableAnnotationComposer
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
-  GeneratedColumn<double> get weeklyLimit => $composableBuilder(
-    column: $table.weeklyLimit,
+  GeneratedColumn<double> get limitAmount => $composableBuilder(
+    column: $table.limitAmount,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get period =>
+      $composableBuilder(column: $table.period, builder: (column) => column);
 
   GeneratedColumn<DateTime> get startDate =>
       $composableBuilder(column: $table.startDate, builder: (column) => column);
@@ -1386,21 +1541,25 @@ class $$BudgetsTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                Value<double> weeklyLimit = const Value.absent(),
+                Value<double> limitAmount = const Value.absent(),
+                Value<String> period = const Value.absent(),
                 Value<DateTime> startDate = const Value.absent(),
               }) => BudgetsCompanion(
                 id: id,
-                weeklyLimit: weeklyLimit,
+                limitAmount: limitAmount,
+                period: period,
                 startDate: startDate,
               ),
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
-                required double weeklyLimit,
+                required double limitAmount,
+                Value<String> period = const Value.absent(),
                 required DateTime startDate,
               }) => BudgetsCompanion.insert(
                 id: id,
-                weeklyLimit: weeklyLimit,
+                limitAmount: limitAmount,
+                period: period,
                 startDate: startDate,
               ),
           withReferenceMapper: (p0) => p0

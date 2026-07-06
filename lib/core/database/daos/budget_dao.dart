@@ -8,20 +8,20 @@ part 'budget_dao.g.dart';
 class BudgetDao extends DatabaseAccessor<AppDatabase> with _$BudgetDaoMixin {
   BudgetDao(AppDatabase db) : super(db);
 
-  // 1. Live stream of the active budget (returns null if they haven't set one yet)
+  // 1. Get the single active budget
   Stream<Budget?> watchActiveBudget() {
     return (select(budgets)..limit(1)).watchSingleOrNull();
   }
 
-  // 2. Set or Update the budget
-  Future<void> setWeeklyBudget(double limit) async {
-    // HCI Safety: We delete any old budget settings first 
-    // to ensure there is only ever ONE active budget row in our database.
+  // 2. Set or Update the budget with a dynamic period
+  Future<void> setBudget(double limit, String period) async {
+    // We delete any old budget rows first to ensure there is only ever ONE active budget row
     await delete(budgets).go();
     
     await into(budgets).insert(
       BudgetsCompanion.insert(
-        weeklyLimit: limit,
+        limitAmount: limit,
+        period: Value(period),
         startDate: DateTime.now(), // Sets the start date to exactly NOW!
       ),
     );

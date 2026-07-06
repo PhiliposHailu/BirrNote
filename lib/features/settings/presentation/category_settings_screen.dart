@@ -68,16 +68,30 @@ class _CategorySettingsScreenState extends ConsumerState<CategorySettingsScreen>
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (error, stack) => Center(child: Text('Error: $error')),
                 data: (categories) {
-                  return ListView.builder(
+                  return ReorderableListView.builder(
                     itemCount: categories.length,
+                    onReorder: (oldIndex, newIndex) {
+                      // THE WHY: Flutter index correction for dragging down!
+                      if (oldIndex < newIndex) {
+                        newIndex -= 1;
+                      }
+                      
+                      // Create a copy of the list, move the item, and save to DB
+                      final list = List<String>.from(categories);
+                      final item = list.removeAt(oldIndex);
+                      list.insert(newIndex, item);
+                      
+                      ref.read(categoryManagerProvider).reorder(list);
+                    },
                     itemBuilder: (context, index) {
                       final category = categories[index];
                       final isOthers = category == 'Others';
 
                       return ListTile(
-                        leading: const Icon(Icons.label_outline),
+                        // REQUIRED: Each item in ReorderableListView must have a unique key!
+                        key: ValueKey(category), 
+                        leading: const Icon(Icons.drag_indicator), // Visual handle!
                         title: Text(category),
-                        // HCI Guard: Hide the trash can if it's the "Others" fallback!
                         trailing: isOthers
                             ? const Tooltip(
                                 message: 'Default fallback category',
