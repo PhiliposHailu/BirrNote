@@ -1,3 +1,4 @@
 {
-    "cmake.sourceDirectory": "/home/philipos/Desktop/Dev/birr_note/linux"
+    "cmake.sourceDirectory": "/home/philipos/Desktop/Dev/birr_note/linux",
+    "java.configuration.updateBuildConfiguration": "interactive"
 }

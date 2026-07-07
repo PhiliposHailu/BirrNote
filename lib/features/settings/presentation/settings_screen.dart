@@ -1,9 +1,11 @@
+import 'package:birr_note/core/notifications/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/api_key_provider.dart';
 import '../data/cloud_sync_service.dart';
 import 'category_settings_screen.dart';
 import 'widgets/weekly_budget_card.dart';
+import 'widgets/daily_reminder_card.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -100,8 +102,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               ],
               const SizedBox(height: 24),
-              const WeeklyBudgetCard(), // THE NEW BUDGET CARD!
+              const WeeklyBudgetCard(), // THE BUDGET CARD
               const SizedBox(height: 24),
+              const DailyReminderCard(), // THE DAILY REMINDER CARD
+              Center(
+              child: TextButton.icon(
+                icon: const Icon(Icons.notification_important_outlined),
+                label: const Text('Send Test Notification'),
+                onPressed: () async {
+                  await NotificationService().showInstantNotification();
+                },
+              ),
+            ),
+            const SizedBox(height: 24),
 
               // Navigate to Manage Categories Screen
               ListTile(

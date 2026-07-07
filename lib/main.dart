@@ -1,9 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'features/navigation/presentation/main_nav_screen.dart';
+import 'core/notifications/notification_service.dart';
 
-void main() {
-  runApp(const ProviderScope(child: BirrNoteApp()));
+
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize our local notifications!
+  // It will run the first-time prompt once, then stay completely silent!
+  await NotificationService().initialize();
+
+  // 3. Launch the app
+  runApp(
+    const ProviderScope(
+      child: BirrNoteApp(),
+    ),
+  );
 }
 
 class BirrNoteApp extends StatelessWidget {

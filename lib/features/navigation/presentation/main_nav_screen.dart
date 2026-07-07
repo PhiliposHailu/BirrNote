@@ -3,6 +3,7 @@ import '../../expense_entry/presentation/expense_entry_screen.dart';
 import '../../settings/presentation/settings_screen.dart';
 import '../../dashboard/presentation/dashboard_screen.dart';
 import '../../ai_advisor/presentation/advisor_screen.dart';
+import '../../../core/notifications/notification_service.dart';
 
 class MainNavScreen extends StatefulWidget {
   const MainNavScreen({super.key});
@@ -13,6 +14,15 @@ class MainNavScreen extends StatefulWidget {
 
 class _MainNavScreenState extends State<MainNavScreen> {
   int _currentIndex = 0;
+
+   @override
+  void initState() {
+    super.initState();
+    _currentIndex = 0;
+    
+    // THE MAGIC: Wait until the screen is fully drawn, then trigger the first-time prompt!
+    Future.microtask(() => NotificationService().checkFirstTimePrompt());
+  }
 
   @override
   Widget build(BuildContext context) {
