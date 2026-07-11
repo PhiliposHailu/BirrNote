@@ -110,13 +110,15 @@ flutter:
   # see https://flutter.dev/to/font-from-package
 
 # ----------------------------------------------------------------------
-# AUTOMATED APP ICON CONFIGURATION
+# AUTOMATED APP ICON CONFIGURATION (Upgraded to Adaptive!)
 # ----------------------------------------------------------------------
 flutter_launcher_icons:
   android: "launcher_icon"
-  image_path: "assets/icon/app_icon.png"
-  min_sdk_android: 21 # Matches our Flutter setup
-
+  image_path: "assets/icon/app_icon.png" # Fallback legacy icon
+  
+  # THE NATIVE ADAPTIVE CONFIGURATION
+  adaptive_icon_background: "#162E44" # Deep leather-blue background color!
+  adaptive_icon_foreground: "assets/icon/app_icon.png" # our cropped transparent notebook!
 # ----------------------------------------------------------------------
 # AUTOMATED NATIVE SPLASH SCREEN CONFIGURATION
 # ----------------------------------------------------------------------
