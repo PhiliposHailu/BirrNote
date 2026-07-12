@@ -141,6 +141,7 @@ class CloudSyncService {
     await GoogleSignIn.instance.disconnect();
     _currentAccount = null;
   }
+  GoogleSignInAccount? get currentUser => _currentAccount;
 }
 
 final cloudSyncProvider = Provider<CloudSyncService>((ref) {

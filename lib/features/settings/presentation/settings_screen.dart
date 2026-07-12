@@ -1,258 +1,100 @@
-import 'package:birr_note/core/notifications/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/api_key_provider.dart';
-import '../data/cloud_sync_service.dart';
 import 'category_settings_screen.dart';
 import 'widgets/weekly_budget_card.dart';
 import 'widgets/daily_reminder_card.dart';
+import 'widgets/gemini_key_sheet.dart';
+import 'widgets/cloud_sync_tile.dart';
 
-class SettingsScreen extends ConsumerStatefulWidget {
+class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   @override
-  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
-}
-
-class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  final _keyController = TextEditingController();
-
-  @override
-  void dispose() {
-    _keyController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // Keep watch the current API key state
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Watch our key provider so we can display a dynamic subtitle on our main row!
     final currentKey = ref.watch(apiKeyProvider);
     final hasKey = currentKey != null && currentKey.isNotEmpty;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Bring Your Own Key (BYOK)',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'BirrNote uses Google Gemini to magically organize your notes. Your data never leaves your device, and you use your own free API key.',
-                style: TextStyle(color: Colors.grey),
-              ),
-              const SizedBox(height: 24),
+      appBar: AppBar(
+        title: const Text('Settings'),
+        centerTitle: true,
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16.0),
+        children: [
+          // --- CARD 1: BUDGET LIMITS ---
+          const WeeklyBudgetCard(),
+          const SizedBox(height: 12),
 
-              TextField(
-                controller: _keyController,
-                decoration: InputDecoration(
-                  labelText: 'Gemini API Key',
-                  hintText: hasKey
-                      ? '••••••••••••••••••••'
-                      : 'Paste your key here...',
-                  border: const OutlineInputBorder(),
-                  suffixIcon: hasKey
-                      ? const Icon(Icons.check_circle, color: Colors.green)
-                      : null,
-                ),
-                obscureText: true, // Hides the text like a password field
-              ),
+          // --- CARD 2: DAILY HABIT REMINDER ---
+          const DailyReminderCard(),
+          const SizedBox(height: 12),
 
-              const SizedBox(height: 16),
-
-              // Save Button
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: () {
-                    if (_keyController.text.isNotEmpty) {
-                      ref
-                          .read(apiKeyProvider.notifier)
-                          .saveKey(_keyController.text);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('API Key securely saved!'),
-                        ),
-                      );
-                      _keyController.clear();
-                    }
-                  },
-                  child: const Text('Save Key'),
-                ),
-              ),
-
-              // If they have a key, give them the option to delete it
-              if (hasKey) ...[
-                const SizedBox(height: 8),
-                Center(
-                  child: TextButton(
-                    onPressed: () {
-                      ref.read(apiKeyProvider.notifier).deleteKey();
-                    },
-                    child: const Text(
-                      'Remove Key',
-                      style: TextStyle(color: Colors.red),
-                    ),
-                  ),
-                ),
-              ],
-              const SizedBox(height: 24),
-              const WeeklyBudgetCard(), // THE BUDGET CARD
-              const SizedBox(height: 24),
-              const DailyReminderCard(), // THE DAILY REMINDER CARD
-              Center(
-              child: TextButton.icon(
-                icon: const Icon(Icons.notification_important_outlined),
-                label: const Text('Send Test Notification'),
-                onPressed: () async {
-                  await NotificationService().showInstantNotification();
-                },
-              ),
+          // --- CARD 3: APP CUSTOMIZATION ---
+          Card(
+            elevation: 2,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: ListTile(
+              leading: const Icon(Icons.category_outlined, size: 28),
+              title: const Text('Manage Categories', style: TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: const Text('Add, delete, or reorder categories'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => const CategorySettingsScreen()),
+                );
+              },
             ),
-            const SizedBox(height: 24),
-
-              // Navigate to Manage Categories Screen
-              ListTile(
-                leading: const Icon(Icons.category_outlined),
-                title: const Text(
-                  'Manage Categories',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: const Text(
-                  'Add, delete, or reset expense categories',
-                ),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const CategorySettingsScreen(),
-                    ),
-                  );
-                },
-              ),
-
-              // --------------------------------------------------
-              // GOOGLE SYNC SECTION (Now with both Backup and Restore!)
-              // --------------------------------------------------
-              const SizedBox(height: 32),
-              const Divider(),
-              const SizedBox(height: 16),
-
-              const Text(
-                'Cloud Backup (Free)',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Securely sync your database to your hidden Google Drive App Data folder. You own your data.',
-                style: TextStyle(color: Colors.grey),
-              ),
-              const SizedBox(height: 16),
-
-              // BUTTON 1: BACKUP TO GOOGLE DRIVE (This replaces the "Test Login" button!)
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  icon: const Icon(Icons.cloud_upload),
-                  label: const Text('Backup to Google Drive'),
-                  onPressed: () async {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Starting cloud backup...')),
-                    );
-
-                    final authService = ref.read(cloudSyncProvider);
-                    // CALLS THE BACKUP METHOD!
-                    final success = await authService.backupDatabase();
-
-                    if (success) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Backup Successful! 🚀'),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Backup failed. Check connection.'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
-                  },
-                ),
-              ),
-
-              const SizedBox(height: 12),
-
-              // BUTTON 2: RESTORE FROM GOOGLE DRIVE
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  icon: const Icon(Icons.cloud_download),
-                  label: const Text('Restore from Google Drive'),
-                  onPressed: () async {
-                    // Standard Confirm Dialog
-                    final confirm = await showDialog<bool>(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Restore Database?'),
-                        content: const Text(
-                          'This will overwrite all current expenses on this device with the data from your cloud backup. Are you sure?',
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, false),
-                            child: const Text('Cancel'),
-                          ),
-                          FilledButton(
-                            onPressed: () => Navigator.pop(context, true),
-                            child: const Text('Restore'),
-                          ),
-                        ],
-                      ),
-                    );
-
-                    if (confirm != true) return;
-
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Downloading backup...')),
-                    );
-
-                    final authService = ref.read(cloudSyncProvider);
-                    // CALLS THE RESTORE METHOD!
-                    final success = await authService.restoreDatabase();
-
-                    if (success) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Restore Successful! Please restart the app. 🎉',
-                          ),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Restore failed. No backup found or offline.',
-                          ),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
-                  },
-                ),
-              ),
-            ],
           ),
-        ),
+          const SizedBox(height: 12),
+
+          // --- CARD 4: THE SECURITY VAULT (Gemini Key + Google Drive Sync) ---
+          Card(
+            elevation: 2,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Column(
+              children: [
+                // ROW A: GEMINI KEY
+                ListTile(
+                  leading: const Icon(Icons.vpn_key_outlined, size: 28),
+                  title: const Text('Gemini API Key', style: TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: Text(
+                    hasKey ? 'Key Active & Secured' : 'Add key for AI note parsing',
+                  ),
+                  trailing: hasKey 
+                      ? const Icon(Icons.check_circle, color: Colors.green) 
+                      : const Icon(Icons.chevron_right),
+                  onTap: () {
+                    // Slide up our beautiful new key sheet!
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      useSafeArea: true,
+                      builder: (context) => const GeminiKeySheet(),
+                    );
+                  },
+                ),
+                
+                // Subtle separator divider
+                const Divider(indent: 16, endIndent: 16, height: 1),
+
+                // ROW B: GOOGLE SYNC
+                const CloudSyncTile(),
+              ],
+            ),
+          ),
+
+          // --- APP FOOTER ---
+          const SizedBox(height: 24),
+          const Center(
+            child: Text(
+              'BirrNote v1.0.0 • Local First',
+              style: TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.w500),
+            ),
+          ),
+        ],
       ),
     );
   }
