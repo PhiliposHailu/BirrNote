@@ -11,7 +11,7 @@ final categoryTotalsProvider = StreamProvider<List<CategorySum>>((ref) {
 });
 
 // 2. Tracks the active Chart Type ('Pie' or 'Bar')
-final chartTypeProvider = StateProvider<String>((ref) => 'Pie');
+final chartTypeProvider = StateProvider<String>((ref) => 'Bar');
 
 // 3. Tracks the active Trend Time Filter ('This Week', 'This Month', 'Last 3 Months')
 final timeFilterProvider = StateProvider<String>((ref) => 'This Week');

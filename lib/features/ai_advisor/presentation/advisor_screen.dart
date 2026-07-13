@@ -10,24 +10,17 @@ class AdvisorScreen extends ConsumerStatefulWidget {
 }
 
 class _AdvisorScreenState extends ConsumerState<AdvisorScreen> {
-  final TextEditingController _chatController = TextEditingController();
-  bool _isLoading = false; // To show a loading spinner while AI thinks
+  final _chatController = TextEditingController();
 
-  Future<void> _handleSend() async {
+  void _handleSend() {
     final text = _chatController.text;
     if (text.trim().isEmpty) return;
 
     _chatController.clear();
-    FocusScope.of(context).unfocus(); // Close the keyboard like a pro
+    FocusScope.of(context).unfocus(); // Close keyboard
 
-    setState(() => _isLoading = true);
-    
-    // Call our provider logic we just wrote!
-    await ref.read(advisorLogicProvider).sendMessage(text);
-    
-    if (mounted) {
-      setState(() => _isLoading = false);
-    }
+    // Trigger our dynamic provider (it will handle adding typing bubbles automatically!)
+    ref.read(advisorLogicProvider).sendMessage(text);
   }
 
   @override
@@ -38,7 +31,6 @@ class _AdvisorScreenState extends ConsumerState<AdvisorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Watch the chat history array
     final chatHistory = ref.watch(advisorChatProvider);
 
     return Column(
@@ -50,34 +42,62 @@ class _AdvisorScreenState extends ConsumerState<AdvisorScreen> {
             itemCount: chatHistory.length,
             itemBuilder: (context, index) {
               final message = chatHistory[index];
-              final isUser = message['role'] == 'user';
+              final role = message['role'];
+              
+              final isUser = role == 'user';
+              final isTyping = role == 'ai_typing';
+              final isError = role == 'ai_error';
+
+              // Determine the Bubble Color
+              Color bubbleColor = Theme.of(context).colorScheme.surfaceVariant;
+              if (isUser) {
+                bubbleColor = Theme.of(context).colorScheme.primary;
+              } else if (isError) {
+                bubbleColor = Colors.red.shade50; // Light red for errors
+              }
+
+              // Determine the Text Style
+              TextStyle textStyle = TextStyle(
+                fontSize: 16,
+                color: isUser 
+                    ? Theme.of(context).colorScheme.onPrimary 
+                    : Theme.of(context).colorScheme.onSurfaceVariant,
+              );
+
+              if (isTyping) {
+                // If the AI is typing, make the text soft, grey, and italicized!
+                textStyle = textStyle.copyWith(
+                  fontStyle: FontStyle.italic,
+                  color: Colors.grey.shade600,
+                );
+              } else if (isError) {
+                // If it failed, make the text bold and dark red
+                textStyle = textStyle.copyWith(
+                  color: Colors.red.shade900,
+                  fontWeight: FontWeight.bold,
+                );
+              }
 
               return Align(
-                // React flexbox equivalent: align-self: flex-end vs flex-start
                 alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
                 child: Container(
                   margin: const EdgeInsets.only(bottom: 12),
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
-                    // Give user and AI different bubble colors
-                    color: isUser 
-                        ? Theme.of(context).colorScheme.primary 
-                        : Theme.of(context).colorScheme.surfaceVariant,
+                    color: bubbleColor,
                     borderRadius: BorderRadius.only(
                       topLeft: const Radius.circular(16),
                       topRight: const Radius.circular(16),
-                      bottomLeft: Radius.circular(isUser ? 16 : 0), // Sharp corner on speaker's side
+                      bottomLeft: Radius.circular(isUser ? 16 : 0),
                       bottomRight: Radius.circular(isUser ? 0 : 16),
                     ),
+                    border: isError 
+                        ? Border.all(color: Colors.red.shade200) 
+                        : null,
                   ),
                   child: Text(
                     message['text']!,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: isUser 
-                          ? Theme.of(context).colorScheme.onPrimary 
-                          : Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                    style: textStyle,
                   ),
                 ),
               );
@@ -85,14 +105,7 @@ class _AdvisorScreenState extends ConsumerState<AdvisorScreen> {
           ),
         ),
 
-        // Show a cute loading indicator while Gemini thinks
-        if (_isLoading)
-          const Padding(
-            padding: EdgeInsets.all(8.0),
-            child: CircularProgressIndicator(),
-          ),
-
-        // 2. THE INPUT BOX
+        // 2. THE CHAT INPUT BAR
         SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(8.0),
@@ -114,7 +127,7 @@ class _AdvisorScreenState extends ConsumerState<AdvisorScreen> {
                 IconButton(
                   icon: const Icon(Icons.send),
                   color: Theme.of(context).colorScheme.primary,
-                  onPressed: _isLoading ? null : _handleSend, // Disable button if loading
+                  onPressed: _handleSend,
                 ),
               ],
             ),

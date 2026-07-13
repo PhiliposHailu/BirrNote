@@ -33,7 +33,7 @@ class DashboardScreen extends ConsumerWidget {
               ButtonSegment(
                 value: 'Pie',
                 icon: Icon(Icons.pie_chart_outline),
-                label: Text('Share'),
+                label: Text('Breakdown'),
               ),
               ButtonSegment(
                 value: 'Bar',

@@ -3,14 +3,17 @@ import 'package:flutter_riverpod/legacy.dart';
 import '../../../core/network/ai_service.dart';
 import '../../dashboard/data/dashboard_providers.dart';
 
-// We use a StateProvider to hold the chat history so it stays on screen
+// Watches and holds our chat history list
 final advisorChatProvider = StateProvider<List<Map<String, String>>>((ref) {
   return [
-    {'role': 'BirrNoteAi', 'text': 'Hello! I am your BirrNote AI Advisor. Ask me anything about your spending ;)'}
+    {
+      'role': 'ai', 
+      'text': 'Hello! I am your BirrNote AI Advisor. Ask me anything about your spending!'
+    }
   ];
 });
 
-// handles the logic of sending the message
+// Holds the logic to orchestrate sending messages
 final advisorLogicProvider = Provider((ref) {
   return AdvisorLogic(ref);
 });
@@ -22,35 +25,48 @@ class AdvisorLogic {
   Future<void> sendMessage(String text) async {
     if (text.trim().isEmpty) return;
 
-    // 1. Add the user's message to the chat UI immediately
+    // 1. Add User's message and a temporary "AI is thinking..." bubble immediately
     final chatHistory = ref.read(advisorChatProvider);
     ref.read(advisorChatProvider.notifier).state = [
       ...chatHistory,
-      {'role': 'user', 'text': text}
+      {'role': 'user', 'text': text},
+      {'role': 'ai_typing', 'text': 'AI is typing...'} // THE ACTIVE TYPING BUBBLE!
     ];
 
-    // 2. Fetch the latest financial data from our SQLite Dashboard Provider
-    // This is the "Retrieval" in RAG!
+    // 2. Fetch the latest financial data context from SQLite
     final asyncTotals = ref.read(categoryTotalsProvider);
-    
     String financialContext = "No spending data available yet.";
-    
-    // If we have data, we format it into a clean string for the AI to read
     if (asyncTotals.value != null && asyncTotals.value!.isNotEmpty) {
       financialContext = asyncTotals.value!
           .map((item) => "${item.category}: ${item.total} ETB")
           .join(", ");
     }
 
-    // 3. Ask the AI (passing the data and the question)
-    final aiService = ref.read(aiServiceProvider);
-    final response = await aiService.askAdvisor(text, financialContext);
+    try {
+      // 3. Query the AI Service
+      final aiService = ref.read(aiServiceProvider);
+      final response = await aiService.askAdvisor(text, financialContext);
 
-    // 4. Add the AI's response to the chat UI
-    final updatedHistory = ref.read(advisorChatProvider);
-    ref.read(advisorChatProvider.notifier).state = [
-      ...updatedHistory,
-      {'role': 'ai', 'text': response}
-    ];
+      // 4. THE IN-PLACE SWAP: Find our typing bubble and replace it with Gemini's advice!
+      final currentHistory = List<Map<String, String>>.from(ref.read(advisorChatProvider));
+      final typingIndex = currentHistory.indexWhere((msg) => msg['role'] == 'ai_typing');
+      
+      if (typingIndex != -1) {
+        currentHistory[typingIndex] = {'role': 'ai', 'text': response};
+        ref.read(advisorChatProvider.notifier).state = currentHistory;
+      }
+    } catch (e) {
+      // 5. THE ERROR SWAP: If it fails, replace the typing bubble with a red error alert
+      final currentHistory = List<Map<String, String>>.from(ref.read(advisorChatProvider));
+      final typingIndex = currentHistory.indexWhere((msg) => msg['role'] == 'ai_typing');
+      
+      if (typingIndex != -1) {
+        currentHistory[typingIndex] = {
+          'role': 'ai_error', 
+          'text': 'Connection failed. Please check your internet and try again.'
+        };
+        ref.read(advisorChatProvider.notifier).state = currentHistory;
+      }
+    }
   }
 }
