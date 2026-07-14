@@ -138,4 +138,19 @@ class ExpenseDao extends DatabaseAccessor<AppDatabase> with _$ExpenseDaoMixin {
       return trendMap.entries.map((entry) => TrendBarData(entry.key, entry.value)).toList();
     });
   }
+  // A direct, one-shot Future query (Bypasses lazy-loaded streams!)
+  Future<List<CategorySum>> getCategoryTotals() async {
+    final query = customSelect(
+      'SELECT category, SUM(amount) as total FROM expenses WHERE is_pending_ai = 0 GROUP BY category',
+      readsFrom: {expenses},
+    );
+
+    // .get() is a one-shot Future request instead of a live .watch() stream!
+    final rows = await query.get(); 
+    
+    return rows.map((row) => CategorySum(
+      row.read<String>('category'),
+      row.read<double>('total'),
+    )).toList();
+  }
 }

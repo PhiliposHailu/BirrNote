@@ -1,9 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import '../../../core/network/ai_service.dart';
-import '../../dashboard/data/dashboard_providers.dart';
+import '../../../core/database/database_provider.dart';
 
-// Watches and holds our chat history list
 final advisorChatProvider = StateProvider<List<Map<String, String>>>((ref) {
   return [
     {
@@ -13,7 +12,6 @@ final advisorChatProvider = StateProvider<List<Map<String, String>>>((ref) {
   ];
 });
 
-// Holds the logic to orchestrate sending messages
 final advisorLogicProvider = Provider((ref) {
   return AdvisorLogic(ref);
 });
@@ -25,29 +23,37 @@ class AdvisorLogic {
   Future<void> sendMessage(String text) async {
     if (text.trim().isEmpty) return;
 
-    // 1. Add User's message and a temporary "AI is thinking..." bubble immediately
     final chatHistory = ref.read(advisorChatProvider);
-    ref.read(advisorChatProvider.notifier).state = [
+    
+    final updatedHistoryWithTyping = [
       ...chatHistory,
       {'role': 'user', 'text': text},
-      {'role': 'ai_typing', 'text': 'AI is typing...'} // THE ACTIVE TYPING BUBBLE!
+      {'role': 'ai_typing', 'text': 'AI is thinking...'}
     ];
-
-    // 2. Fetch the latest financial data context from SQLite
-    final asyncTotals = ref.read(categoryTotalsProvider);
-    String financialContext = "No spending data available yet.";
-    if (asyncTotals.value != null && asyncTotals.value!.isNotEmpty) {
-      financialContext = asyncTotals.value!
-          .map((item) => "${item.category}: ${item.total} ETB")
-          .join(", ");
-    }
+    ref.read(advisorChatProvider.notifier).state = updatedHistoryWithTyping;
 
     try {
-      // 3. Query the AI Service
-      final aiService = ref.read(aiServiceProvider);
-      final response = await aiService.askAdvisor(text, financialContext);
+      // FIXED: We fetch the raw, up-to-date totals directly from the database!
+      final expenseDao = ref.read(expenseDaoProvider);
+      final totals = await expenseDao.getCategoryTotals(); // Await the direct query!
+      
+      String financialContext = "No spending data available yet.";
+      
+      if (totals.isNotEmpty) {
+        financialContext = totals
+            .map((item) => "${item.category}: ${item.total} ETB")
+            .join(", ");
+      }
 
-      // 4. THE IN-PLACE SWAP: Find our typing bubble and replace it with Gemini's advice!
+      final aiService = ref.read(aiServiceProvider);
+      
+      final historyForAi = [
+        ...chatHistory,
+        {'role': 'user', 'text': text}
+      ];
+
+      final response = await aiService.askAdvisor(historyForAi, financialContext);
+
       final currentHistory = List<Map<String, String>>.from(ref.read(advisorChatProvider));
       final typingIndex = currentHistory.indexWhere((msg) => msg['role'] == 'ai_typing');
       
@@ -56,7 +62,6 @@ class AdvisorLogic {
         ref.read(advisorChatProvider.notifier).state = currentHistory;
       }
     } catch (e) {
-      // 5. THE ERROR SWAP: If it fails, replace the typing bubble with a red error alert
       final currentHistory = List<Map<String, String>>.from(ref.read(advisorChatProvider));
       final typingIndex = currentHistory.indexWhere((msg) => msg['role'] == 'ai_typing');
       

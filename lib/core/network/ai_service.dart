@@ -79,14 +79,13 @@ class AiService {
 
   // The Financial Advisor Chat Method
   Future<String> askAdvisor(
-    String userQuestion,
+    List<Map<String, String>> chatHistory,
     String financialContext,
   ) async {
     if (apiKey == null || apiKey!.isEmpty) {
-      return "Please add your Gemini API Key in Settings first ;)";
+      return "Please add your Gemini API Key in Settings first!";
     }
 
-    // 1. We initialize a conversational model
     final model = GenerativeModel(
       model: 'gemini-3.1-flash-lite',
       apiKey: apiKey!,
@@ -100,15 +99,40 @@ class AiService {
         RULES:
         1. Base your advice STRICTLY on the spending summary provided above.
         2. Keep your answers concise, practical, and conversational.
-        3. Do not use markdown formatting like **bold** or *italics* too heavily, keep it clean for a mobile screen.
+        3. Do not use markdown formatting heavily.
         4. If they ask something unrelated to finance, politely steer them back to their budget.
       '''),
     );
 
     try {
-      final response = await model.generateContent([
-        Content.text(userQuestion),
-      ]);
+      final List<Content> geminiHistory = [];
+      String newestMessage = "";
+
+      // We filter out any typing placeholders or errors from the history
+      final filteredList = chatHistory
+          .where((msg) => msg['role'] == 'user' || msg['role'] == 'ai')
+          .toList();
+
+      if (filteredList.isNotEmpty) {
+        // A. Isolate the very last user message (the active question)
+        newestMessage = filteredList.last['text'] ?? '';
+
+        // B. Map all previous messages before it into Gemini Content objects!
+        for (int i = 0; i < filteredList.length - 1; i++) {
+          final msg = filteredList[i];
+          if (msg['role'] == 'user') {
+            geminiHistory.add(Content.text(msg['text'] ?? ''));
+          } else if (msg['role'] == 'ai') {
+            geminiHistory.add(Content.model([TextPart(msg['text'] ?? '')]));
+          }
+        }
+      }
+
+      // C. Start the chat session with our loaded history backlog!
+      final chat = model.startChat(history: geminiHistory);
+
+      // D. Send the active question through the chat stream
+      final response = await chat.sendMessage(Content.text(newestMessage));
       return response.text ?? "I'm sorry, I couldn't process that right now.";
     } catch (e) {
       print('Advisor AI Error: $e');
