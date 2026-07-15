@@ -12,7 +12,7 @@ class WeeklyBudgetCard extends ConsumerStatefulWidget {
 
 class _WeeklyBudgetCardState extends ConsumerState<WeeklyBudgetCard> {
   final _budgetController = TextEditingController();
-  String _selectedPeriod = 'Weekly'; // Default choice
+  String _selectedPeriod = 'Weekly';
 
   final List<String> _periods = ['Daily', 'Weekly', 'Monthly', 'Quarterly', 'Yearly'];
 
@@ -21,7 +21,6 @@ class _WeeklyBudgetCardState extends ConsumerState<WeeklyBudgetCard> {
     final limit = double.tryParse(text);
     
     if (limit != null && limit > 0) {
-      // Calls our BudgetDao with both the amount AND the selected period!
       ref.read(budgetDaoProvider).setBudget(limit, _selectedPeriod);
       _budgetController.clear();
       FocusScope.of(context).unfocus(); // Close keyboard
@@ -82,7 +81,7 @@ class _WeeklyBudgetCardState extends ConsumerState<WeeklyBudgetCard> {
                 ),
                 const SizedBox(height: 16),
                 
-                // PERIOD DROPDOWN
+                // Period Dropdown
                 DropdownButtonFormField<String>(
                   value: hasBudget && _budgetController.text.isEmpty ? budget.period : _selectedPeriod,
                   decoration: const InputDecoration(
@@ -98,7 +97,7 @@ class _WeeklyBudgetCardState extends ConsumerState<WeeklyBudgetCard> {
                 ),
                 const SizedBox(height: 16),
 
-                // LIMIT INPUT
+                // Input Field
                 Row(
                   children: [
                     Expanded(
@@ -118,6 +117,46 @@ class _WeeklyBudgetCardState extends ConsumerState<WeeklyBudgetCard> {
                     ),
                   ],
                 ),
+
+                // NEW: THE "REMOVE BUDGET" BUTTON (Only shows if a budget is active!)
+                if (hasBudget) ...[
+                  const SizedBox(height: 12),
+                  const Divider(),
+                  Center(
+                    child: TextButton.icon(
+                      icon: const Icon(Icons.delete_forever_outlined, color: Colors.red),
+                      label: const Text('Remove Budget', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                      onPressed: () async {
+                        // Confirm Dialog (HCI Heuristic: Safety & Control)
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Remove Budget?'),
+                            content: const Text(
+                              'This will stop tracking your daily spending power. Past expenses will not be deleted.'
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: const Text('Cancel'),
+                              ),
+                              FilledButton(
+                                onPressed: () => Navigator.pop(context, true),
+                                style: FilledButton.styleFrom(backgroundColor: Colors.red),
+                                child: const Text('Remove'),
+                              ),
+                            ],
+                          ),
+                        );
+
+                        if (confirm == true) {
+                          // Call the delete function!
+                          await ref.read(budgetDaoProvider).deleteBudget();
+                        }
+                      },
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
