@@ -1,15 +1,26 @@
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/database/database_provider.dart';
 import '../../../core/database/daos/expense_dao.dart'; 
 import '../../../core/database/daos/category_dao.dart'; 
 import '../../../core/network/ai_service.dart';
 
-// 1. WATCH EXPENSES (Now queries the DAO directly!)
+// 1. WATCH TODAY'S expenses only (replaces old all-time stream)
 final expensesStreamProvider = StreamProvider<List<Expense>>((ref) {
   final expenseDao = ref.watch(expenseDaoProvider);
-  return expenseDao.watchExpenses(); 
+  return expenseDao.watchTodaysExpenses(); // Today only!
+});
+
+// 2. NEW: Tracks the selected history filter date (Defaults to today)
+final historyDateProvider = StateProvider<DateTime>((ref) => DateTime.now());
+
+// 3. NEW: WATCH EXPENSES FOR SELECTED HISTORY DATE
+final historyExpensesStreamProvider = StreamProvider<List<Expense>>((ref) {
+  final expenseDao = ref.watch(expenseDaoProvider);
+  final selectedDate = ref.watch(historyDateProvider);
+  return expenseDao.watchExpensesForDate(selectedDate);
 });
 
 class ExpenseLogic {

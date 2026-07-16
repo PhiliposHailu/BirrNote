@@ -15,7 +15,7 @@ class ExpenseList extends ConsumerWidget {
       error: (error, stack) => Center(child: Text('Error: $error')),
       data: (expenses) {
         if (expenses.isEmpty) {
-          return const Center(child: Text('No expenses yet. Start typing!'));
+          return const Center(child: Text('No spending logged today! Start typing below.'));
         }
         
         return ListView.builder(

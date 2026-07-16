@@ -4,6 +4,7 @@ import '../../settings/presentation/settings_screen.dart';
 import '../../dashboard/presentation/dashboard_screen.dart';
 import '../../ai_advisor/presentation/advisor_screen.dart';
 import '../../../core/notifications/notification_service.dart';
+import '../../expense_entry/presentation/history_screen.dart';
 
 class MainNavScreen extends StatefulWidget {
   const MainNavScreen({super.key});
@@ -31,13 +32,22 @@ class _MainNavScreenState extends State<MainNavScreen> {
         title: const Text('BirrNote'),
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => const SettingsScreen()),
-            ),
+        // History Archive Shortcut Button!
+        IconButton(
+          icon: const Icon(Icons.history),
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const HistoryScreen()),
+            );
+          },
+        ),
+        IconButton(
+          icon: const Icon(Icons.settings),
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => const SettingsScreen()),
           ),
-        ],
+        ),
+      ],
       ),
       
       // The IndexedStack keeps the hidden tabs "alive" in memory

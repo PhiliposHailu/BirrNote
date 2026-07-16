@@ -153,4 +153,25 @@ class ExpenseDao extends DatabaseAccessor<AppDatabase> with _$ExpenseDaoMixin {
       row.read<double>('total'),
     )).toList();
   }
+
+  // 5. NEW: Live stream of TODAY'S expenses only (00:00:00 to 23:59:59)
+  Stream<List<Expense>> watchTodaysExpenses() {
+    final now = DateTime.now();
+    final start = DateTime(now.year, now.month, now.day);
+    final end = DateTime(now.year, now.month, now.day, 23, 59, 59);
+    
+    return (select(expenses)
+          ..where((tbl) => tbl.date.isBetweenValues(start, end)))
+        .watch();
+  }
+
+  // 6. NEW: Live stream of expenses for any SPECIFIC date (for our History Page)
+  Stream<List<Expense>> watchExpensesForDate(DateTime selectedDate) {
+    final start = DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
+    final end = DateTime(selectedDate.year, selectedDate.month, selectedDate.day, 23, 59, 59);
+    
+    return (select(expenses)
+          ..where((tbl) => tbl.date.isBetweenValues(start, end)))
+        .watch();
+  }
 }
