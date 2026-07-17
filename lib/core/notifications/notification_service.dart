@@ -21,8 +21,6 @@ class NotificationService {
       final currentTimeZoneInfo = await FlutterTimezone.getLocalTimezone();
       tz.setLocalLocation(tz.getLocation(currentTimeZoneInfo.identifier));
       
-      // CONFIRMATION LOG
-      print("🔔 BirrNote Timezone Match: Success! Using local timezone: ${tz.local.name}");
     } catch (e) {
       // SECURE FALLBACK: If lookup fails, try to load Addis Ababa. 
       // If that somehow fails, fallback to UTC so it NEVER crashes your bootup!

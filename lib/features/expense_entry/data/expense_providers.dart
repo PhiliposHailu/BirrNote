@@ -13,10 +13,19 @@ final expensesStreamProvider = StreamProvider<List<Expense>>((ref) {
   return expenseDao.watchTodaysExpenses(); // Today only!
 });
 
-// 2. NEW: Tracks the selected history filter date (Defaults to today)
-final historyDateProvider = StateProvider<DateTime>((ref) => DateTime.now());
+// Watches the entire SQLite database history (Only used by the Budget Engine!)
+final allExpensesStreamProvider = StreamProvider<List<Expense>>((ref) {
+  final expenseDao = ref.watch(expenseDaoProvider);
+  return expenseDao.watchExpenses(); // Accesses all-time data
+});
 
-// 3. NEW: WATCH EXPENSES FOR SELECTED HISTORY DATE
+// 2. Tracks the selected history filter date (Defaults to today)
+final historyDateProvider = StateProvider<DateTime>((ref) {
+  final now = DateTime.now();
+  return DateTime(now.year, now.month, now.day); // 12:00:00 AM
+});
+
+// 3. WATCH EXPENSES FOR SELECTED HISTORY DATE
 final historyExpensesStreamProvider = StreamProvider<List<Expense>>((ref) {
   final expenseDao = ref.watch(expenseDaoProvider);
   final selectedDate = ref.watch(historyDateProvider);

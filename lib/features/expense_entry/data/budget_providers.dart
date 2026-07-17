@@ -24,7 +24,8 @@ class SpendingPower {
 // THE UPGRADED ENGINE
 final budgetEngineProvider = Provider<SpendingPower>((ref) {
   final activeBudgetAsync = ref.watch(activeBudgetStreamProvider);
-  final expensesAsync = ref.watch(expensesStreamProvider);
+  // Watching the all-time database stream instead of today-only!
+  final expensesAsync = ref.watch(allExpensesStreamProvider);
 
   if (activeBudgetAsync.isLoading || expensesAsync.isLoading) {
     return SpendingPower(todaySpendingPower: 0, dailyLimit: 0, hasBudget: false);
