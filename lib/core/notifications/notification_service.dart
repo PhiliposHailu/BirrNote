@@ -60,26 +60,27 @@ class NotificationService {
     return granted ?? false;
   }
 
-  // 4. SCHEDULE DAILY REMINDER WITH AUTO-FALLBACK & DETAILED LOGGER
+  // 4. SCHEDULE DAILY REMINDER (With Large Icon support!)
   Future<void> scheduleDailyReminder(int hour, int minute) async {
     await cancelReminder();
 
     const androidDetails = AndroidNotificationDetails(
-      'daily_reminder_channel',
-      'Daily Reminders',
+      'daily_reminder_channel', 
+      'Daily Reminders',        
       channelDescription: 'Reminds you to log your daily spending',
       importance: Importance.max,
       priority: Priority.high,
+      // FIXED: Displays your detailed, colored 3D logo inside the notification!
+      largeIcon: DrawableResourceAndroidBitmap('launcher_icon'), 
     );
 
     final now = tz.TZDateTime.now(tz.local);
     var scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
-
+    
     if (scheduledDate.isBefore(now)) {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
     }
 
-    // --- 📊 DETAILED DEBUGGING LOGS ---
     print("---------------------------------------------");
     print("⏰ BIRRNOTE NOTIFICATION LOGGER");
     print("Current System Time (Local): $now");
@@ -90,35 +91,33 @@ class NotificationService {
     print("---------------------------------------------");
 
     try {
-      // Attempt to schedule with EXACT, millisecond precision (Bypasses battery delays)
       await _plugin.zonedSchedule(
-        id: 100,
-        title: 'Time to log your spending! 📝',
-        body: 'Keep your daily budget on track. Tap to log today\'s expenses.',
-        scheduledDate: scheduledDate,
-        notificationDetails: const NotificationDetails(android: androidDetails),
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        matchDateTimeComponents: DateTimeComponents.time,
+        id: 100, 
+        title: 'Time to log your spending! 📝', 
+        body: 'Keep your daily budget on track. Tap to log today\'s expenses.', 
+        scheduledDate: scheduledDate, 
+        notificationDetails: const NotificationDetails(android: androidDetails), 
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle, 
+        matchDateTimeComponents: DateTimeComponents.time, 
       );
       print("✅ Daily Reminder scheduled successfully with EXACT precision.");
     } catch (e) {
-      // AUTO-FALLBACK: If Android blocks exact alarms (Android 14+), handle it gracefully!
-      print("⚠️ Android exact alarm permission was blocked by your device. Auto-falling back to inexact timing. Error: $e");
+      print("⚠️ Android exact alarm permission was blocked by your device. Auto-falling back to inexact. Error: $e");
       
       await _plugin.zonedSchedule(
-        id: 100,
-        title: 'Time to log your spending! 📝',
-        body: 'Keep your daily budget on track. Tap to log today\'s expenses.',
-        scheduledDate: scheduledDate,
-        notificationDetails: const NotificationDetails(android: androidDetails),
-        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle, // Battery-saver mode fallback
-        matchDateTimeComponents: DateTimeComponents.time,
+        id: 100, 
+        title: 'Time to log your spending! 📝', 
+        body: 'Keep your daily budget on track. Tap to log today\'s expenses.', 
+        scheduledDate: scheduledDate, 
+        notificationDetails: const NotificationDetails(android: androidDetails), 
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle, 
+        matchDateTimeComponents: DateTimeComponents.time, 
       );
       print("✅ Daily Reminder scheduled successfully in inexact battery-saver mode.");
     }
   }
 
-  // 5. INSTANT TEST NOTIFICATION
+  // 5. INSTANT TEST NOTIFICATION (With Large Icon support!)
   Future<void> showInstantNotification() async {
     const androidDetails = AndroidNotificationDetails(
       'instant_test_channel',
@@ -126,6 +125,8 @@ class NotificationService {
       channelDescription: 'Used to test if notifications are working',
       importance: Importance.max,
       priority: Priority.high,
+      // FIXED: Displays your detailed, colored 3D logo inside the notification!
+      largeIcon: DrawableResourceAndroidBitmap('launcher_icon'), 
     );
 
     await _plugin.show(
