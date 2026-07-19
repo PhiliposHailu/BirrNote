@@ -174,4 +174,14 @@ class ExpenseDao extends DatabaseAccessor<AppDatabase> with _$ExpenseDaoMixin {
           ..where((tbl) => tbl.date.isBetweenValues(start, end)))
         .watch();
   }
+
+  // 7. NEW: One-shot query to fetch the entire last 90 days of transactions
+  Future<List<Expense>> getExpensesForLast90Days() {
+    final limitDate = DateTime.now().subtract(const Duration(days: 90));
+    
+    return (select(expenses)
+          ..where((tbl) => tbl.isPendingAi.equals(false) & tbl.date.isBiggerThanValue(limitDate))
+          ..orderBy([(t) => OrderingTerm(expression: t.date, mode: OrderingMode.asc)]))
+        .get();
+  }
 }

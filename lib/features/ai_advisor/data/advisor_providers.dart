@@ -1,7 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
-import '../../../core/network/ai_service.dart';
 import '../../../core/database/database_provider.dart';
+import '../../../core/network/ai_service.dart';
+import '../../expense_entry/data/budget_providers.dart';
 
 final advisorChatProvider = StateProvider<List<Map<String, String>>>((ref) {
   return [
@@ -33,17 +34,32 @@ class AdvisorLogic {
     ref.read(advisorChatProvider.notifier).state = updatedHistoryWithTyping;
 
     try {
-      // FIXED: We fetch the raw, up-to-date totals directly from the database!
       final expenseDao = ref.read(expenseDaoProvider);
-      final totals = await expenseDao.getCategoryTotals(); // Await the direct query!
-      
-      String financialContext = "No spending data available yet.";
-      
-      if (totals.isNotEmpty) {
-        financialContext = totals
-            .map((item) => "${item.category}: ${item.total} ETB")
-            .join(", ");
+
+      // A. RETRIEVE BUDGET STATUS
+      final budgetState = ref.read(budgetEngineProvider);
+      String budgetStatus = "No active budget configured.";
+      if (budgetState.hasBudget) {
+        budgetStatus = "Daily allowance: ${budgetState.dailyLimit.toStringAsFixed(2)} ETB/day. TODAY'S REMAINING SPENDING POWER: ${budgetState.todaySpendingPower.toStringAsFixed(2)} ETB.";
       }
+
+      // B. RETRIEVE 3-MONTH DETAILED TRANSACTION HISTORY
+      final last90DaysExpenses = await expenseDao.getExpensesForLast90Days();
+      
+      // Pack them into an extremely space-saving, dense text block!
+      final formattedExpenses = last90DaysExpenses.map((e) {
+        final dateStr = "${e.date.year}-${e.date.month.toString().padLeft(2, '0')}-${e.date.day.toString().padLeft(2, '0')}";
+        return "$dateStr: ${e.category} - ${e.amount.toStringAsFixed(2)} ETB (${e.rawNote})";
+      }).join('\n');
+
+      // C. COMBINE THE ENTIRE FINANCIAL PORTFOLIO CONTEXT
+      final fullContext = '''
+        --- ACTIVE SYSTEM BUDGET STATUS ---
+        $budgetStatus
+        
+        --- 90-DAY COMPACT LEDGER DATA ---
+        ${formattedExpenses.isEmpty ? 'No transactions logged in the last 90 days.' : formattedExpenses}
+      ''';
 
       final aiService = ref.read(aiServiceProvider);
       
@@ -52,7 +68,8 @@ class AdvisorLogic {
         {'role': 'user', 'text': text}
       ];
 
-      final response = await aiService.askAdvisor(historyForAi, financialContext);
+      // D. Send the entire portfolio context and the active session history!
+      final response = await aiService.askAdvisor(historyForAi, fullContext);
 
       final currentHistory = List<Map<String, String>>.from(ref.read(advisorChatProvider));
       final typingIndex = currentHistory.indexWhere((msg) => msg['role'] == 'ai_typing');
@@ -62,6 +79,7 @@ class AdvisorLogic {
         ref.read(advisorChatProvider.notifier).state = currentHistory;
       }
     } catch (e) {
+      print("Advisor Sync Error: $e");
       final currentHistory = List<Map<String, String>>.from(ref.read(advisorChatProvider));
       final typingIndex = currentHistory.indexWhere((msg) => msg['role'] == 'ai_typing');
       
