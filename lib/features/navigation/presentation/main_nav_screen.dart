@@ -5,6 +5,8 @@ import '../../dashboard/presentation/dashboard_screen.dart';
 import '../../ai_advisor/presentation/advisor_screen.dart';
 import '../../../core/notifications/notification_service.dart';
 import '../../expense_entry/presentation/history_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../expense_entry/presentation/widgets/onboarding_tour.dart'; // Gives us the Tour launcher!
 
 class MainNavScreen extends StatefulWidget {
   const MainNavScreen({super.key});
@@ -16,13 +18,32 @@ class MainNavScreen extends StatefulWidget {
 class _MainNavScreenState extends State<MainNavScreen> {
   int _currentIndex = 0;
 
-   @override
+  @override
   void initState() {
     super.initState();
     _currentIndex = 0;
-    
-    // THE MAGIC: Wait until the screen is fully drawn, then trigger the first-time prompt!
+
+    // Silent startup setups
     Future.microtask(() => NotificationService().checkFirstTimePrompt());
+
+    // NEW: Trigger the onboarding tour on very first launch!
+    _checkFirstTimeTour();
+  }
+
+  // NEW: Checks if it's first-time launch and triggers the tour
+  Future<void> _checkFirstTimeTour() async {
+    final prefs = await SharedPreferences.getInstance();
+    final hasToured = prefs.getBool('has_toured_onboarding') ?? false;
+
+    if (!hasToured) {
+      // We wait 1.5 seconds to let the screen fully render on boot before showing
+      Future.delayed(const Duration(milliseconds: 1500), () {
+        if (mounted) {
+          OnboardingTour.show(context);
+        }
+      });
+      await prefs.setBool('has_toured_onboarding', true);
+    }
   }
 
   @override
@@ -32,25 +53,27 @@ class _MainNavScreenState extends State<MainNavScreen> {
         title: const Text('BirrNote'),
         centerTitle: true,
         actions: [
-        // History Archive Shortcut Button!
-        IconButton(
-          icon: const Icon(Icons.history),
-          onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => const HistoryScreen()),
-            );
-          },
-        ),
-        IconButton(
-          icon: const Icon(Icons.settings),
-          onPressed: () => Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) => const SettingsScreen()),
+          // NEW: THE "ON-DEMAND" HELP BUTTON!
+          IconButton(
+            icon: const Icon(Icons.help_outline),
+            onPressed: () => OnboardingTour.show(context), // Launches the tour!
           ),
-        ),
-      ],
+          IconButton(
+            icon: const Icon(Icons.history),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const HistoryScreen()),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const SettingsScreen()),
+            ),
+          ),
+        ],
       ),
-      
-      // The IndexedStack keeps the hidden tabs "alive" in memory
       body: IndexedStack(
         index: _currentIndex,
         children: const [
@@ -59,7 +82,7 @@ class _MainNavScreenState extends State<MainNavScreen> {
           AdvisorScreen(), // Tab 2: Placeholder
         ],
       ),
-      
+
       // Bottom Navigation Bar
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,

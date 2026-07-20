@@ -7,7 +7,7 @@ import 'widgets/chat_input_bar.dart';
 import '../../settings/presentation/settings_screen.dart';
 import '../data/expense_providers.dart';
 import 'widgets/budget_header_widget.dart';
-
+import 'widgets/onboarding_tour.dart'; // Gives us the shared GlobalKeys!
 // ----------------------------------------------------------------------
 // CLASS 1: The Widget itself. Notice it extends ConsumerStatefulWidget!
 // ----------------------------------------------------------------------
@@ -54,11 +54,11 @@ class _ExpenseEntryScreenState extends ConsumerState<ExpenseEntryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
+    return Column(
       children: [
-        BudgetHeaderWidget(),
-        Expanded(child: ExpenseList()),
-        ChatInputBar(),
+        BudgetHeaderWidget(key: budgetHeaderKey), 
+        Expanded(child: ExpenseList(key: expenseListKey)),
+        ChatInputBar(key: chatInputKey),
       ],
     );
   }
