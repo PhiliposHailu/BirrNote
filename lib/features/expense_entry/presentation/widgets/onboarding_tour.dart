@@ -1,95 +1,95 @@
 import 'package:flutter/material.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 
-// 1. THE SHARED GLOBAL KEYS (Accessible anywhere in the project)
 final GlobalKey budgetHeaderKey = GlobalKey();
 final GlobalKey expenseListKey = GlobalKey();
 final GlobalKey chatInputKey = GlobalKey();
 
 class OnboardingTour {
-  // 2. CONSTRUCT THE VISUAL HIGHLIGHT TARGETS
   static List<TargetFocus> _createTargets(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    
+    // A. THE SOLID CONTAINER HELPER: Ensures 100% crisp readability with high contrast!
+    Widget buildContentCard(String title, String description) {
+      return Card(
+        elevation: 8,
+        color: Colors.white, // Solid white background!
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black, fontSize: 18),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                description,
+                style: TextStyle(color: Colors.grey.shade800, fontSize: 13, height: 1.4),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     return [
-      // Target A: The Budget Header Card
+      // TARGET A: THE BUDGET HEADER
       TargetFocus(
         identify: "TargetBudgetHeader",
         keyTarget: budgetHeaderKey,
+        // FIXED: Changed Circle to RRect (Rounded Rectangle) to fit your card!
+        shape: ShapeLightFocus.RRect,
+        radius: 16,
         contents: [
           TargetContent(
             align: ContentAlign.bottom,
             builder: (context, controller) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Today's Spending Power 📊",
-                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 20),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "This card displays exactly how much you can spend today. It automatically rolls over your savings or overspends every week!",
-                    style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 14),
-                  ),
-                ],
+              return buildContentCard(
+                "Today's Spending Power 📊",
+                "This card displays exactly how much you can spend today. It automatically rolls over your savings or overspends every week!",
               );
             },
           ),
         ],
       ),
       
-      // Target B: The Expense List
+      // TARGET B: THE TRANSACTION LIST
       TargetFocus(
         identify: "TargetExpenseList",
         keyTarget: expenseListKey,
+        // FIXED: Changed to RRect
+        shape: ShapeLightFocus.RRect,
+        radius: 16,
         contents: [
           TargetContent(
             align: ContentAlign.bottom,
             builder: (context, controller) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Your Daily Log 📝",
-                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 20),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "This is your daily spending feed. If you make a mistake, tap the red trash can icon to delete any item safely with an Undo option.",
-                    style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 14),
-                  ),
-                ],
+              return buildContentCard(
+                "Your Daily Log 📝",
+                "This is your daily spending feed. If you make a mistake, tap the red trash can icon to delete any item safely with an Undo option.",
               );
             },
           ),
         ],
       ),
 
-      // Target C: The Chat Input Bar
+      // TARGET C: THE CHAT INPUT BAR
       TargetFocus(
         identify: "TargetChatInput",
         keyTarget: chatInputKey,
+        // FIXED: Changed to RRect
+        shape: ShapeLightFocus.RRect,
+        radius: 24, // Fits your rounded text bar!
         contents: [
           TargetContent(
             align: ContentAlign.top,
             builder: (context, controller) {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Effortless Tracking 💬",
-                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 20),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Type your transactions naturally here (e.g. 'taxi 50' or 'macchiato 40') and Gemini AI will instantly categorize it, or tap the '+' icon to log it manually!",
-                    style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 14),
-                  ),
-                ],
+              return buildContentCard(
+                "Effortless Tracking 💬",
+                "Type your transactions naturally here (e.g. 'taxi 50' or 'macchiato 40') and Gemini AI will instantly categorize it, or tap the '+' icon to log it manually!",
               );
             },
           ),
@@ -100,16 +100,19 @@ class OnboardingTour {
 
   // 3. LAUNCH THE TOUR
   static void show(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     TutorialCoachMark(
       targets: _createTargets(context),
-      colorShadow: colorScheme.primary, // Dims screen using primary blue-leather theme color!
-      opacityShadow: 0.85,
+      colorShadow: Colors.black, // Darken screen using solid black for maximum contrast!
+      opacityShadow: 0.8,
       textSkip: "SKIP",
-      textStyleSkip: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 14),
+      // FIXED: Styled the skip button to be bright amber so it never gets lost!
+      textStyleSkip: const TextStyle(
+        fontWeight: FontWeight.bold, 
+        color: Colors.amber, 
+        fontSize: 15,
+      ),
       alignSkip: Alignment.topRight,
-      paddingFocus: 10,
+      paddingFocus: 4, // FIXED: Shrunk padding from 10 to 4 so it tightly hugs your cards!
     ).show(context: context);
   }
 }
