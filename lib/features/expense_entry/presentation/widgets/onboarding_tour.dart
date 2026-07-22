@@ -7,7 +7,6 @@ final GlobalKey chatInputKey = GlobalKey();
 
 class OnboardingTour {
   static List<TargetFocus> _createTargets(BuildContext context) {
-    
     // A. THE SOLID CONTAINER HELPER: Ensures 100% crisp readability with high contrast!
     Widget buildContentCard(String title, String description) {
       return Card(
@@ -22,12 +21,20 @@ class OnboardingTour {
             children: [
               Text(
                 title,
-                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black, fontSize: 18),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                  fontSize: 18,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
                 description,
-                style: TextStyle(color: Colors.grey.shade800, fontSize: 13, height: 1.4),
+                style: TextStyle(
+                  color: Colors.grey.shade800,
+                  fontSize: 13,
+                  height: 1.4,
+                ),
               ),
             ],
           ),
@@ -55,17 +62,16 @@ class OnboardingTour {
           ),
         ],
       ),
-      
+
       // TARGET B: THE TRANSACTION LIST
       TargetFocus(
         identify: "TargetExpenseList",
         keyTarget: expenseListKey,
-        // FIXED: Changed to RRect
         shape: ShapeLightFocus.RRect,
         radius: 16,
         contents: [
           TargetContent(
-            align: ContentAlign.bottom,
+            align: ContentAlign.top,
             builder: (context, controller) {
               return buildContentCard(
                 "Your Daily Log 📝",
@@ -102,17 +108,19 @@ class OnboardingTour {
   static void show(BuildContext context) {
     TutorialCoachMark(
       targets: _createTargets(context),
-      colorShadow: Colors.black, // Darken screen using solid black for maximum contrast!
+      colorShadow:
+          Colors.black, // Darken screen using solid black for maximum contrast!
       opacityShadow: 0.8,
       textSkip: "SKIP",
       // FIXED: Styled the skip button to be bright amber so it never gets lost!
       textStyleSkip: const TextStyle(
-        fontWeight: FontWeight.bold, 
-        color: Colors.amber, 
+        fontWeight: FontWeight.bold,
+        color: Colors.amber,
         fontSize: 15,
       ),
       alignSkip: Alignment.topRight,
-      paddingFocus: 4, // FIXED: Shrunk padding from 10 to 4 so it tightly hugs your cards!
+      paddingFocus:
+          4, // FIXED: Shrunk padding from 10 to 4 so it tightly hugs your cards!
     ).show(context: context);
   }
 }
