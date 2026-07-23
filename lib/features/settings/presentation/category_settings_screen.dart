@@ -21,6 +21,30 @@ class _CategorySettingsScreenState extends ConsumerState<CategorySettingsScreen>
     }
   }
 
+  // NEW: Clean helper dialog (Keeps our file size short and modular!)
+  Future<bool?> _showConfirmDeleteDialog(BuildContext context, String category) {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Delete "$category"?'),
+        content: const Text(
+          'Past expenses under this category will not be deleted, but you won\'t be able to select it for future ones.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _categoryController.dispose();
@@ -32,9 +56,7 @@ class _CategorySettingsScreenState extends ConsumerState<CategorySettingsScreen>
     final categoriesStream = ref.watch(categoryNamesStreamProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Manage Categories'),
-      ),
+      appBar: AppBar(title: const Text('Manage Categories')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -54,15 +76,12 @@ class _CategorySettingsScreenState extends ConsumerState<CategorySettingsScreen>
                   ),
                 ),
                 const SizedBox(width: 8),
-                IconButton.filled(
-                  icon: const Icon(Icons.add),
-                  onPressed: _handleAdd,
-                ),
+                IconButton.filled(icon: const Icon(Icons.add), onPressed: _handleAdd),
               ],
             ),
             const SizedBox(height: 24),
 
-            // 2. THE LIVE LIST OF ACTIVE CATEGORIES
+            // 2. THE LIVE REORDERABLE LIST OF ACTIVE CATEGORIES
             Expanded(
               child: categoriesStream.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
@@ -71,16 +90,10 @@ class _CategorySettingsScreenState extends ConsumerState<CategorySettingsScreen>
                   return ReorderableListView.builder(
                     itemCount: categories.length,
                     onReorder: (oldIndex, newIndex) {
-                      // THE WHY: Flutter index correction for dragging down!
-                      if (oldIndex < newIndex) {
-                        newIndex -= 1;
-                      }
-                      
-                      // Create a copy of the list, move the item, and save to DB
+                      if (oldIndex < newIndex) newIndex -= 1;
                       final list = List<String>.from(categories);
                       final item = list.removeAt(oldIndex);
                       list.insert(newIndex, item);
-                      
                       ref.read(categoryManagerProvider).reorder(list);
                     },
                     itemBuilder: (context, index) {
@@ -88,9 +101,8 @@ class _CategorySettingsScreenState extends ConsumerState<CategorySettingsScreen>
                       final isOthers = category == 'Others';
 
                       return ListTile(
-                        // REQUIRED: Each item in ReorderableListView must have a unique key!
                         key: ValueKey(category), 
-                        leading: const Icon(Icons.drag_indicator), // Visual handle!
+                        leading: const Icon(Icons.drag_indicator), 
                         title: Text(category),
                         trailing: isOthers
                             ? const Tooltip(
@@ -99,8 +111,12 @@ class _CategorySettingsScreenState extends ConsumerState<CategorySettingsScreen>
                               )
                             : IconButton(
                                 icon: const Icon(Icons.delete_outline, color: Colors.red),
-                                onPressed: () {
-                                  ref.read(categoryManagerProvider).delete(category);
+                                onPressed: () async {
+                                  // FIXED: Show the confirm dialog before deleting!
+                                  final confirm = await _showConfirmDeleteDialog(context, category);
+                                  if (confirm == true) {
+                                    ref.read(categoryManagerProvider).delete(category);
+                                  }
                                 },
                               ),
                       );
@@ -121,7 +137,6 @@ class _CategorySettingsScreenState extends ConsumerState<CategorySettingsScreen>
                   side: const BorderSide(color: Colors.orange),
                 ),
                 onPressed: () async {
-                  // Confirm reset dialog
                   final confirm = await showDialog<bool>(
                     context: context,
                     builder: (context) => AlertDialog(
@@ -145,11 +160,6 @@ class _CategorySettingsScreenState extends ConsumerState<CategorySettingsScreen>
 
                   if (confirm == true) {
                     await ref.read(categoryManagerProvider).reset();
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Categories reset to defaults!')),
-                      );
-                    }
                   }
                 },
               ),
