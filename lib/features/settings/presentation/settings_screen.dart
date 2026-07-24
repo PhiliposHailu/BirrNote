@@ -17,10 +17,7 @@ class SettingsScreen extends ConsumerWidget {
     final hasKey = currentKey != null && currentKey.isNotEmpty;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Settings'), centerTitle: true),
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
@@ -35,15 +32,22 @@ class SettingsScreen extends ConsumerWidget {
           // --- CARD 3: APP CUSTOMIZATION ---
           Card(
             elevation: 2,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             child: ListTile(
               leading: const Icon(Icons.category_outlined, size: 28),
-              title: const Text('Manage Categories', style: TextStyle(fontWeight: FontWeight.bold)),
+              title: const Text(
+                'Manage Categories',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               subtitle: const Text('Add, delete, or reorder categories'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () {
                 Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => const CategorySettingsScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const CategorySettingsScreen(),
+                  ),
                 );
               },
             ),
@@ -53,21 +57,27 @@ class SettingsScreen extends ConsumerWidget {
           // --- CARD 4: THE SECURITY VAULT (Gemini Key + Google Drive Sync) ---
           Card(
             elevation: 2,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             child: Column(
               children: [
-                // ROW A: GEMINI KEY
+                // ROW A: GEMINI KEY (ListTile)
                 ListTile(
                   leading: const Icon(Icons.vpn_key_outlined, size: 28),
-                  title: const Text('Gemini API Key', style: TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text(
-                    hasKey ? 'Key Active & Secured' : 'Add key for AI note parsing',
+                  title: const Text(
+                    'Gemini API Key',
+                    style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  trailing: hasKey 
-                      ? const Icon(Icons.check_circle, color: Colors.green) 
+                  subtitle: Text(
+                    hasKey
+                        ? 'Key Active & Secured'
+                        : 'Add key for AI note parsing',
+                  ),
+                  trailing: hasKey
+                      ? const Icon(Icons.check_circle, color: Colors.green)
                       : const Icon(Icons.chevron_right),
                   onTap: () {
-                    // Slide up our beautiful new key sheet!
                     showModalBottomSheet(
                       context: context,
                       isScrollControlled: true,
@@ -76,11 +86,27 @@ class SettingsScreen extends ConsumerWidget {
                     );
                   },
                 ),
-                
-                // Subtle separator divider
+
                 const Divider(indent: 16, endIndent: 16, height: 1),
 
-                // ROW B: GOOGLE SYNC
+                // NEW ROW B: USE AI TOGGLE!
+                SwitchListTile(
+                  secondary: const Icon(Icons.psychology_outlined, size: 28),
+                  title: const Text(
+                    'Use AI Note Parsing',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: const Text(
+                    'When disabled, notes are logged directly as drafts',
+                  ),
+                  value: ref.watch(aiEnabledProvider),
+                  onChanged: (val) =>
+                      ref.read(aiEnabledProvider.notifier).toggle(val),
+                ),
+
+                const Divider(indent: 16, endIndent: 16, height: 1),
+
+                // ROW C: GOOGLE SYNC
                 const CloudSyncTile(),
               ],
             ),
@@ -91,7 +117,11 @@ class SettingsScreen extends ConsumerWidget {
           const Center(
             child: Text(
               'BirrNote v1.0.0 • Local First',
-              style: TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.w500),
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ],

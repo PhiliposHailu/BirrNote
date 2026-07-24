@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart'; // NEW: Browser launcher
 import '../../../../core/network/api_key_provider.dart';
 
 class GeminiKeySheet extends ConsumerStatefulWidget {
@@ -15,15 +16,53 @@ class _GeminiKeySheetState extends ConsumerState<GeminiKeySheet> {
   void _saveKey() {
     final text = _keyController.text.trim();
     if (text.isNotEmpty) {
-      // Save the key securely using our provider
       ref.read(apiKeyProvider.notifier).saveKey(text);
       _keyController.clear();
-      Navigator.of(context).pop(); // Slide the bottom sheet down!
+      Navigator.of(context).pop();
       
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Gemini API Key saved securely!')),
       );
     }
+  }
+
+  // NEW: The Step-by-Step Interactive Guide Dialog
+  void _showGetKeyGuide(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Get Free Gemini Key', style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('1. Tap the button below to go to Google AI Studio.'),
+            SizedBox(height: 8),
+            Text('2. Sign in with your personal Google account.'),
+            SizedBox(height: 8),
+            Text('3. Tap the blue "Create API key" button.'),
+            SizedBox(height: 8),
+            Text('4. Copy the generated key and paste it here!'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              final url = Uri.parse('https://aistudio.google.com/');
+              if (await canLaunchUrl(url)) {
+                await launchUrl(url, mode: LaunchMode.externalApplication);
+              }
+            },
+            child: const Text('Get Key'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -36,20 +75,13 @@ class _GeminiKeySheetState extends ConsumerState<GeminiKeySheet> {
   Widget build(BuildContext context) {
     final currentKey = ref.watch(apiKeyProvider);
     final hasKey = currentKey != null && currentKey.isNotEmpty;
-    
-    // THE UX MAGIC: Measures the keyboard height to push the sheet up safely!
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return Padding(
-      padding: EdgeInsets.only(
-        bottom: bottomInset, 
-        left: 16, 
-        right: 16, 
-        top: 16,
-      ),
+      padding: EdgeInsets.only(bottom: bottomInset, left: 16, right: 16, top: 16),
       child: SafeArea(
         child: Column(
-          mainAxisSize: MainAxisSize.min, // Wrap content tightly
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const Text(
@@ -59,16 +91,23 @@ class _GeminiKeySheetState extends ConsumerState<GeminiKeySheet> {
             ),
             const SizedBox(height: 8),
             const Text(
-              'Paste your free Gemini API Key from Google AI Studio. Your key is stored securely on this device.',
+              'Your key is stored securely on this device.',
               style: TextStyle(color: Colors.grey, fontSize: 13),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 8),
+
+            // NEW: The Guide Button!
+            TextButton.icon(
+              icon: const Icon(Icons.help_outline, size: 18),
+              label: const Text('How do I get a free key? 🔑'),
+              onPressed: () => _showGetKeyGuide(context),
+            ),
+            const SizedBox(height: 16),
             
-            // KEY INPUT FIELD
             TextField(
               controller: _keyController,
-              obscureText: true, // Hide the key like a password
+              obscureText: true,
               decoration: InputDecoration(
                 labelText: 'API Key',
                 hintText: hasKey ? '••••••••••••••••••••' : 'AIzaSy...',
@@ -77,7 +116,6 @@ class _GeminiKeySheetState extends ConsumerState<GeminiKeySheet> {
             ),
             const SizedBox(height: 16),
 
-            // SAVE BUTTON
             FilledButton(
               onPressed: _saveKey,
               child: const Padding(
@@ -86,13 +124,12 @@ class _GeminiKeySheetState extends ConsumerState<GeminiKeySheet> {
               ),
             ),
 
-            // DELETE BUTTON (Only shows if a key is currently active!)
             if (hasKey) ...[
               const SizedBox(height: 8),
               TextButton(
                 onPressed: () {
                   ref.read(apiKeyProvider.notifier).deleteKey();
-                  Navigator.of(context).pop(); // Slide down
+                  Navigator.of(context).pop();
                   
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('API Key removed.')),
