@@ -54,7 +54,6 @@ class SettingsScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
 
-
           // --- CARD 4: THE SECURITY VAULT (Gemini Key + Google Drive Sync) ---
           Card(
             elevation: 2,0
