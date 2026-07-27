@@ -56,7 +56,7 @@ class SettingsScreen extends ConsumerWidget {
 
           // --- CARD 4: THE SECURITY VAULT (Gemini Key + Google Drive Sync) ---
           Card(
-            elevation: 2,0
+            elevation: 2.0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),

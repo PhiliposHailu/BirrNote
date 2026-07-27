@@ -19,7 +19,7 @@ class NotificationService {
 
       // Fetch the Timezone identifier (e.g. Africa/Addis_Ababa)
       final currentTimeZoneInfo = await FlutterTimezone.getLocalTimezone();
-      tz.setLocalLocation(tz.getLocation(currentTimeZoneInfo));
+      tz.setLocalLocation(tz.getLocation(currentTimeZoneInfo.identifier));
       
     } catch (e) {
       // SECURE FALLBACK: If lookup fails, try to load Addis Ababa. 
