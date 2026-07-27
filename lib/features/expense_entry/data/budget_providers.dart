@@ -63,8 +63,9 @@ final budgetEngineProvider = Provider<SpendingPower>((ref) {
   // Calculate completed cycles (weeks, months, years etc.)
   final completedCycles = differenceInDays ~/ periodInDays;
   
-  // The exact start date of this current active cycle
-  final currentCycleStart = startDate.add(Duration(days: completedCycles * periodInDays));
+  // The exact start date of this current active cycle (normalized to midnight)
+  final rawCycleStart = startDate.add(Duration(days: completedCycles * periodInDays));
+  final currentCycleStart = DateTime(rawCycleStart.year, rawCycleStart.month, rawCycleStart.day);
   
   // The days elapsed in the current cycle
   final elapsedDaysInCurrentCycle = (differenceInDays % periodInDays) + 1;
@@ -75,8 +76,8 @@ final budgetEngineProvider = Provider<SpendingPower>((ref) {
   // Sum up all expenses spent in this active cycle
   double actualSpentInCurrentCycle = 0.0;
   for (final expense in expenses) {
-    // Only count expenses that are not pending AI, and happened after currentCycleStart
-    if (!expense.isPendingAi && expense.date.isAfter(currentCycleStart)) {
+    // Only count expenses that are not pending AI, and happened on or after currentCycleStart
+    if (!expense.isPendingAi && !expense.date.isBefore(currentCycleStart)) {
       actualSpentInCurrentCycle += expense.amount;
     }
   }

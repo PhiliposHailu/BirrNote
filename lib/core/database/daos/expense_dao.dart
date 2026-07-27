@@ -45,7 +45,7 @@ class ExpenseDao extends DatabaseAccessor<AppDatabase> with _$ExpenseDaoMixin {
     final query = customSelect(
       "SELECT strftime('%w', date, 'unixepoch', 'localtime') as day_index, SUM(amount) as total "
       "FROM expenses "
-      "WHERE is_pending_ai = 0 AND date >= strftime('%s', 'now', '-6 days') "
+      "WHERE is_pending_ai = 0 AND date >= CAST(strftime('%s', 'now', '-6 days') AS INTEGER) "
       "GROUP BY day_index",
       readsFrom: {expenses},
     );
@@ -77,7 +77,7 @@ class ExpenseDao extends DatabaseAccessor<AppDatabase> with _$ExpenseDaoMixin {
     final query = customSelect(
       "SELECT strftime('%W', date, 'unixepoch', 'localtime') as week_num, SUM(amount) as total "
       "FROM expenses "
-      "WHERE is_pending_ai = 0 AND date >= strftime('%s', 'now', '-29 days') "
+      "WHERE is_pending_ai = 0 AND date >= CAST(strftime('%s', 'now', '-29 days') AS INTEGER) "
       "GROUP BY week_num",
       readsFrom: {expenses},
     );
@@ -111,7 +111,7 @@ class ExpenseDao extends DatabaseAccessor<AppDatabase> with _$ExpenseDaoMixin {
     final query = customSelect(
       "SELECT strftime('%m', date, 'unixepoch', 'localtime') as month_num, SUM(amount) as total "
       "FROM expenses "
-      "WHERE is_pending_ai = 0 AND date >= strftime('%s', 'now', '-90 days') "
+      "WHERE is_pending_ai = 0 AND date >= CAST(strftime('%s', 'now', '-90 days') AS INTEGER) "
       "GROUP BY month_num",
       readsFrom: {expenses},
     );
