@@ -1,31 +1,31 @@
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter_riverpod/legacy.dart'; 
 import '../../../core/database/app_database.dart';
 import '../../../core/database/database_provider.dart';
-import '../../../core/database/daos/expense_dao.dart'; 
-import '../../../core/database/daos/category_dao.dart'; 
+import '../../../core/database/daos/expense_dao.dart';
+import '../../../core/database/daos/category_dao.dart';
 import '../../../core/network/ai_service.dart';
 
-// 1. WATCH TODAY'S expenses only (replaces old all-time stream)
+// 1. WATCH TODAY'S EXPENSES (For Home Screen)
 final expensesStreamProvider = StreamProvider<List<Expense>>((ref) {
   final expenseDao = ref.watch(expenseDaoProvider);
-  return expenseDao.watchTodaysExpenses(); // Today only!
+  return expenseDao.watchTodaysExpenses(); 
 });
 
-// Watches the entire SQLite database history (Only used by the Budget Engine!)
+// 2. WATCH ALL EXPENSES (For Budget Engine)
 final allExpensesStreamProvider = StreamProvider<List<Expense>>((ref) {
   final expenseDao = ref.watch(expenseDaoProvider);
-  return expenseDao.watchExpenses(); // Accesses all-time data
+  return expenseDao.watchExpenses(); 
 });
 
-// 2. Tracks the selected history filter date (Defaults to today)
+// 3. HISTORY FILTER DATE (Normalized to 12:00:00 AM Midnight!)
 final historyDateProvider = StateProvider<DateTime>((ref) {
   final now = DateTime.now();
-  return DateTime(now.year, now.month, now.day); // 12:00:00 AM
+  return DateTime(now.year, now.month, now.day);
 });
 
-// 3. WATCH EXPENSES FOR SELECTED HISTORY DATE
+// 4. WATCH EXPENSES FOR SELECTED HISTORY DATE (For History Screen)
 final historyExpensesStreamProvider = StreamProvider<List<Expense>>((ref) {
   final expenseDao = ref.watch(expenseDaoProvider);
   final selectedDate = ref.watch(historyDateProvider);
@@ -33,17 +33,17 @@ final historyExpensesStreamProvider = StreamProvider<List<Expense>>((ref) {
 });
 
 class ExpenseLogic {
-  final ExpenseDao expenseDao; // Changed from AppDatabase to ExpenseDao
-  final CategoryDao categoryDao; // Changed from AppDatabase to CategoryDao
-  final AiService aiService;
+  final Ref ref;
+  ExpenseLogic(this.ref);
 
-  ExpenseLogic(this.expenseDao, this.categoryDao, this.aiService);
+  ExpenseDao get expenseDao => ref.read(expenseDaoProvider);
+  CategoryDao get categoryDao => ref.read(categoryDaoProvider);
+  AiService get aiService => ref.read(aiServiceProvider);
 
-  // 1. ADD RAW NOTE
+  // 1. ADD RAW NOTE (AI Parsing)
   Future<void> addRawNote(String text) async {
     if (text.trim().isEmpty) return;
 
-    // Optimistic UI insert
     final pendingId = await expenseDao.insertExpense(
       ExpensesCompanion.insert(
         rawNote: text,
@@ -53,13 +53,10 @@ class ExpenseLogic {
     );
 
     try {
-      // Fetch active categories from Category DAO
       final activeCategories = await categoryDao.getActiveCategories();
-
       final parsedList = await aiService.parseNoteToExpenses(text, activeCategories);
 
       if (parsedList != null && parsedList.isNotEmpty) {
-        // Run database transactions safely through the DAO database connection
         await expenseDao.transaction(() async {
           await expenseDao.deleteExpense(pendingId);
 
@@ -84,7 +81,6 @@ class ExpenseLogic {
 
   // 2. OFFLINE QUEUE PROCESSOR
   Future<void> syncPendingNotes() async {
-    // Queries DAO directly
     final pendingNotes = await (expenseDao.select(expenseDao.expenses)
       ..where((tbl) => tbl.isPendingAi.equals(true))).get();
 
@@ -141,8 +137,5 @@ class ExpenseLogic {
 }
 
 final expenseLogicProvider = Provider<ExpenseLogic>((ref) {
-  final expenseDao = ref.watch(expenseDaoProvider);
-  final categoryDao = ref.watch(categoryDaoProvider);
-  final ai = ref.watch(aiServiceProvider);
-  return ExpenseLogic(expenseDao, categoryDao, ai);
+  return ExpenseLogic(ref);
 });
