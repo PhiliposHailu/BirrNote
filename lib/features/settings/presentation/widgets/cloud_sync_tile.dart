@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../data/cloud_sync_service.dart';
+import '../../../../core/utils/locale_provider.dart';
 
 class CloudSyncTile extends ConsumerWidget {
   const CloudSyncTile({super.key});
@@ -21,7 +22,7 @@ class CloudSyncTile extends ConsumerWidget {
 
     return ListTile(
       leading: const Icon(Icons.cloud_sync_outlined, size: 28),
-      title: const Text('Google Drive Sync', style: TextStyle(fontWeight: FontWeight.bold)),
+      title: Text(ref.watch(trProvider('google_sync')), style: const TextStyle(fontWeight: FontWeight.bold)),
       subtitle: Text(
         isLoggedIn 
             ? 'Logged in as ${authService.currentUser!.email}' 

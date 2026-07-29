@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/utils/locale_provider.dart';
 
 final GlobalKey budgetHeaderKey = GlobalKey();
 final GlobalKey expenseListKey = GlobalKey();
 final GlobalKey chatInputKey = GlobalKey();
 
 class OnboardingTour {
-  static List<TargetFocus> _createTargets(BuildContext context) {
+  static List<TargetFocus> _createTargets(BuildContext context, WidgetRef ref) {
     // A. THE SOLID CONTAINER HELPER: Ensures 100% crisp readability with high contrast!
     Widget buildContentCard(String title, String description) {
       return Card(
@@ -55,8 +57,8 @@ class OnboardingTour {
             align: ContentAlign.bottom,
             builder: (context, controller) {
               return buildContentCard(
-                "Today's Spending Power 📊",
-                "This card displays exactly how much you can spend today. It automatically rolls over your savings or overspends every week!",
+                ref.watch(trProvider('budget_tour_title')),
+                ref.watch(trProvider('budget_tour_desc')),
               );
             },
           ),
@@ -74,8 +76,8 @@ class OnboardingTour {
             align: ContentAlign.top,
             builder: (context, controller) {
               return buildContentCard(
-                "Your Daily Log 📝",
-                "This is your daily spending feed. If you make a mistake, tap the red trash can icon to delete any item safely with an Undo option.",
+                ref.watch(trProvider('log_tour_title')),
+                ref.watch(trProvider('log_tour_desc')),
               );
             },
           ),
@@ -94,8 +96,8 @@ class OnboardingTour {
             align: ContentAlign.top,
             builder: (context, controller) {
               return buildContentCard(
-                "Effortless Tracking 💬",
-                "Type your transactions naturally here (e.g. 'taxi 50' or 'macchiato 40') and Gemini AI will instantly categorize it, or tap the '+' icon to log it manually!",
+                ref.watch(trProvider('chat_tour_title')),
+                ref.watch(trProvider('chat_tour_desc')),
               );
             },
           ),
@@ -105,13 +107,13 @@ class OnboardingTour {
   }
 
   // 3. LAUNCH THE TOUR
-  static void show(BuildContext context) {
+  static void show(BuildContext context, WidgetRef ref) {
     TutorialCoachMark(
-      targets: _createTargets(context),
+      targets: _createTargets(context, ref),
       colorShadow:
           Colors.black, // Darken screen using solid black for maximum contrast!
       opacityShadow: 0.8,
-      textSkip: "SKIP",
+      textSkip: ref.watch(trProvider('skip')),
       // FIXED: Styled the skip button to be bright amber so it never gets lost!
       textStyleSkip: const TextStyle(
         fontWeight: FontWeight.bold,

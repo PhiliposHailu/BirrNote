@@ -7,6 +7,7 @@ import 'widgets/daily_reminder_card.dart';
 import 'widgets/gemini_key_sheet.dart';
 import 'widgets/cloud_sync_tile.dart';
 import 'widgets/language_tile.dart';
+import '../../../core/utils/locale_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -18,7 +19,7 @@ class SettingsScreen extends ConsumerWidget {
     final hasKey = currentKey != null && currentKey.isNotEmpty;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings'), centerTitle: true),
+      appBar: AppBar(title: Text(ref.watch(trProvider('settings'))), centerTitle: true),
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
@@ -40,11 +41,11 @@ class SettingsScreen extends ConsumerWidget {
               children: [
                 ListTile(
                   leading: const Icon(Icons.category_outlined, size: 28),
-                  title: const Text(
-                    'Manage Categories',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                  title: Text(
+                    ref.watch(trProvider('manage_categories')),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  subtitle: const Text('Add, delete, or reorder categories'),
+                  subtitle: Text(ref.watch(trProvider('manage_categories_desc'))),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () {
                     Navigator.of(context).push(
@@ -74,14 +75,14 @@ class SettingsScreen extends ConsumerWidget {
                 // ROW A: GEMINI KEY (ListTile)
                 ListTile(
                   leading: const Icon(Icons.vpn_key_outlined, size: 28),
-                  title: const Text(
-                    'Gemini API Key',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                  title: Text(
+                    ref.watch(trProvider('gemini_api_key')),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   subtitle: Text(
                     hasKey
-                        ? 'Key Active & Secured'
-                        : 'Add key for AI note parsing',
+                        ? ref.watch(trProvider('key_active_secured'))
+                        : ref.watch(trProvider('add_key_for_ai')),
                   ),
                   trailing: hasKey
                       ? const Icon(Icons.check_circle, color: Colors.green)
@@ -101,12 +102,12 @@ class SettingsScreen extends ConsumerWidget {
                 // NEW ROW B: USE AI TOGGLE!
                 SwitchListTile(
                   secondary: const Icon(Icons.psychology_outlined, size: 28),
-                  title: const Text(
-                    'Use AI Note Parsing',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                  title: Text(
+                    ref.watch(trProvider('use_ai_parsing')),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  subtitle: const Text(
-                    'When disabled, notes are logged directly as drafts',
+                  subtitle: Text(
+                    ref.watch(trProvider('when_disabled_notes')),
                   ),
                   value: ref.watch(aiEnabledProvider),
                   onChanged: (val) =>
@@ -123,10 +124,10 @@ class SettingsScreen extends ConsumerWidget {
 
           // --- APP FOOTER ---
           const SizedBox(height: 24),
-          const Center(
+          Center(
             child: Text(
-              'BirrNote v1.0.0 • Local First',
-              style: TextStyle(
+              ref.watch(trProvider('birr_note_footer')),
+              style: const TextStyle(
                 color: Colors.grey,
                 fontSize: 12,
                 fontWeight: FontWeight.w500,

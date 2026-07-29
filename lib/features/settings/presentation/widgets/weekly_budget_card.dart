@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/database/database_provider.dart';
 import '../../../expense_entry/data/budget_providers.dart';
+import '../../../../core/utils/locale_provider.dart';
 
 class WeeklyBudgetCard extends ConsumerStatefulWidget {
   const WeeklyBudgetCard({super.key});
@@ -26,7 +27,7 @@ class _WeeklyBudgetCardState extends ConsumerState<WeeklyBudgetCard> {
       FocusScope.of(context).unfocus(); // Close keyboard
       
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Budget limit updated successfully!')),
+        SnackBar(content: Text(ref.read(trProvider('budget_updated_success')))),
       );
     }
   }
@@ -52,7 +53,7 @@ class _WeeklyBudgetCardState extends ConsumerState<WeeklyBudgetCard> {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Text(
-            'Database Error: $error', 
+            '${ref.watch(trProvider('database_error'))}$error', 
             style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
           ),
         ),
@@ -68,15 +69,15 @@ class _WeeklyBudgetCardState extends ConsumerState<WeeklyBudgetCard> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Budget Limit Settings',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                Text(
+                  ref.watch(trProvider('budget_limit_settings')),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   hasBudget 
-                      ? 'Current: ${budget.limitAmount.toStringAsFixed(2)} ETB / ${budget.period.toLowerCase()}'
-                      : 'Set a budget limit to track your rollover spending power!',
+                      ? '${ref.watch(trProvider('current_budget'))}${budget.limitAmount.toStringAsFixed(2)} ETB / ${budget.period.toLowerCase()}'
+                      : ref.watch(trProvider('set_a_budget')),
                   style: const TextStyle(color: Colors.grey),
                 ),
                 const SizedBox(height: 16),
@@ -84,12 +85,18 @@ class _WeeklyBudgetCardState extends ConsumerState<WeeklyBudgetCard> {
                 // Period Dropdown
                 DropdownButtonFormField<String>(
                   value: hasBudget && _budgetController.text.isEmpty ? budget.period : _selectedPeriod,
-                  decoration: const InputDecoration(
-                    labelText: 'Budget Cycle',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: ref.watch(trProvider('budget_cycle')),
+                    border: const OutlineInputBorder(),
                   ),
                   items: _periods.map((period) {
-                    return DropdownMenuItem(value: period, child: Text(period));
+                    String displayPeriod = period;
+                    if (period == 'Daily') displayPeriod = ref.watch(trProvider('daily'));
+                    if (period == 'Weekly') displayPeriod = ref.watch(trProvider('weekly'));
+                    if (period == 'Monthly') displayPeriod = ref.watch(trProvider('monthly'));
+                    if (period == 'Quarterly') displayPeriod = ref.watch(trProvider('quarterly'));
+                    if (period == 'Yearly') displayPeriod = ref.watch(trProvider('yearly'));
+                    return DropdownMenuItem(value: period, child: Text(displayPeriod));
                   }).toList(),
                   onChanged: (value) {
                     if (value != null) setState(() => _selectedPeriod = value);
@@ -104,9 +111,9 @@ class _WeeklyBudgetCardState extends ConsumerState<WeeklyBudgetCard> {
                       child: TextField(
                         controller: _budgetController,
                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        decoration: const InputDecoration(
-                          labelText: 'Limit Amount (ETB)',
-                          border: OutlineInputBorder(),
+                        decoration: InputDecoration(
+                          labelText: ref.watch(trProvider('limit_amount')),
+                          border: const OutlineInputBorder(),
                         ),
                       ),
                     ),
@@ -125,25 +132,25 @@ class _WeeklyBudgetCardState extends ConsumerState<WeeklyBudgetCard> {
                   Center(
                     child: TextButton.icon(
                       icon: const Icon(Icons.delete_forever_outlined, color: Colors.red),
-                      label: const Text('Remove Budget', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                      label: Text(ref.watch(trProvider('remove_budget')), style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
                       onPressed: () async {
                         // Confirm Dialog (HCI Heuristic: Safety & Control)
                         final confirm = await showDialog<bool>(
                           context: context,
                           builder: (context) => AlertDialog(
-                            title: const Text('Remove Budget?'),
-                            content: const Text(
-                              'This will stop tracking your daily spending power. Past expenses will not be deleted.'
+                            title: Text(ref.watch(trProvider('remove_budget_q'))),
+                            content: Text(
+                              ref.watch(trProvider('remove_budget_warning'))
                             ),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(context, false),
-                                child: const Text('Cancel'),
+                                child: Text(ref.watch(trProvider('cancel'))),
                               ),
                               FilledButton(
                                 onPressed: () => Navigator.pop(context, true),
                                 style: FilledButton.styleFrom(backgroundColor: Colors.red),
-                                child: const Text('Remove'),
+                                child: Text(ref.watch(trProvider('remove'))),
                               ),
                             ],
                           ),

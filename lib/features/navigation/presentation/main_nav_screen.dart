@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../expense_entry/presentation/expense_entry_screen.dart';
 import '../../settings/presentation/settings_screen.dart';
 import '../../dashboard/presentation/dashboard_screen.dart';
@@ -7,15 +8,16 @@ import '../../../core/notifications/notification_service.dart';
 import '../../expense_entry/presentation/history_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../expense_entry/presentation/widgets/onboarding_tour.dart'; // Gives us the Tour launcher!
+import '../../../core/utils/locale_provider.dart';
 
-class MainNavScreen extends StatefulWidget {
+class MainNavScreen extends ConsumerStatefulWidget {
   const MainNavScreen({super.key});
 
   @override
-  State<MainNavScreen> createState() => _MainNavScreenState();
+  ConsumerState<MainNavScreen> createState() => _MainNavScreenState();
 }
 
-class _MainNavScreenState extends State<MainNavScreen> {
+class _MainNavScreenState extends ConsumerState<MainNavScreen> {
   int _currentIndex = 0;
 
   @override
@@ -39,7 +41,7 @@ class _MainNavScreenState extends State<MainNavScreen> {
       // We wait 1.5 seconds to let the screen fully render on boot before showing
       Future.delayed(const Duration(milliseconds: 1500), () {
         if (mounted) {
-          OnboardingTour.show(context);
+          OnboardingTour.show(context, ref);
         }
       });
       await prefs.setBool('has_toured_onboarding', true);
@@ -56,7 +58,7 @@ class _MainNavScreenState extends State<MainNavScreen> {
           // NEW: THE "ON-DEMAND" HELP BUTTON!
           IconButton(
             icon: const Icon(Icons.help_outline),
-            onPressed: () => OnboardingTour.show(context), // Launches the tour!
+            onPressed: () => OnboardingTour.show(context, ref), // Launches the tour!
           ),
           IconButton(
             icon: const Icon(Icons.history),
@@ -91,21 +93,21 @@ class _MainNavScreenState extends State<MainNavScreen> {
             _currentIndex = index; // Update the state when a tab is clicked
           });
         },
-        destinations: const [
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.edit_note_outlined),
-            selectedIcon: Icon(Icons.edit_note),
-            label: 'Notes',
+            icon: const Icon(Icons.edit_note_outlined),
+            selectedIcon: const Icon(Icons.edit_note),
+            label: ref.watch(trProvider('notes')),
           ),
           NavigationDestination(
-            icon: Icon(Icons.pie_chart_outline),
-            selectedIcon: Icon(Icons.pie_chart),
-            label: 'Dashboard',
+            icon: const Icon(Icons.pie_chart_outline),
+            selectedIcon: const Icon(Icons.pie_chart),
+            label: ref.watch(trProvider('dashboard')),
           ),
           NavigationDestination(
-            icon: Icon(Icons.smart_toy_outlined),
-            selectedIcon: Icon(Icons.smart_toy),
-            label: 'Advisor',
+            icon: const Icon(Icons.smart_toy_outlined),
+            selectedIcon: const Icon(Icons.smart_toy),
+            label: ref.watch(trProvider('advisor')),
           ),
         ],
       ),

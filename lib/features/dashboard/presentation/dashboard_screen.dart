@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../data/dashboard_providers.dart';
 import 'widgets/trend_bar_chart.dart'; 
+import '../../../core/utils/locale_provider.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -29,16 +30,16 @@ class DashboardScreen extends ConsumerWidget {
         children: [
           // 1. Apple-Style Pill Toggle (Pie Share vs Bar Trends)
           SegmentedButton<String>(
-            segments: const [
+            segments: [
               ButtonSegment(
                 value: 'Pie',
-                icon: Icon(Icons.pie_chart_outline),
-                label: Text('Breakdown'),
+                icon: const Icon(Icons.pie_chart_outline),
+                label: Text(ref.watch(trProvider('breakdown'))),
               ),
               ButtonSegment(
                 value: 'Bar',
-                icon: Icon(Icons.bar_chart_outlined),
-                label: Text('Trends'),
+                icon: const Icon(Icons.bar_chart_outlined),
+                label: Text(ref.watch(trProvider('trends'))),
               ),
             ],
             selected: {chartType},
@@ -56,10 +57,15 @@ class DashboardScreen extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: ['This Week', 'This Month', 'Last 3 Months'].map((filter) {
                   final isSelected = activeFilter == filter;
+                  String displayFilter = filter;
+                  if (filter == 'This Week') displayFilter = ref.watch(trProvider('this_week'));
+                  if (filter == 'This Month') displayFilter = ref.watch(trProvider('this_month'));
+                  if (filter == 'Last 3 Months') displayFilter = ref.watch(trProvider('last_3_months'));
+                  
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4.0),
                     child: ChoiceChip(
-                      label: Text(filter),
+                      label: Text(displayFilter),
                       selected: isSelected,
                       onSelected: (selected) {
                         if (selected) {
@@ -95,10 +101,10 @@ class DashboardScreen extends ConsumerWidget {
 
     return categoryTotals.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stack) => Center(child: Text('Error: $error')),
+      error: (error, stack) => Center(child: Text('${ref.watch(trProvider('error_prefix'))}$error')),
       data: (totals) {
         if (totals.isEmpty) {
-          return const Center(child: Text('No data yet. Start tracking!'));
+          return Center(child: Text(ref.watch(trProvider('no_data_yet'))));
         }
 
         final grandTotal = totals.fold(0.0, (sum, item) => sum + item.total);
@@ -110,7 +116,7 @@ class DashboardScreen extends ConsumerWidget {
               '${grandTotal.toStringAsFixed(2)} ETB',
               style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
             ),
-            const Text('Total Spent', style: TextStyle(color: Colors.grey)),
+            Text(ref.watch(trProvider('total_spent')), style: const TextStyle(color: Colors.grey)),
             const SizedBox(height: 16),
 
             // Pie Drawing

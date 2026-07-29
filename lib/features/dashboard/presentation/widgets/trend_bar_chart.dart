@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../data/dashboard_providers.dart';
+import '../../../../core/utils/locale_provider.dart';
 
 class TrendBarChart extends ConsumerWidget {
   const TrendBarChart({super.key});
@@ -12,10 +13,10 @@ class TrendBarChart extends ConsumerWidget {
 
     return trendsAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, s) => Center(child: Text('Error: $e')),
+      error: (e, s) => Center(child: Text('${ref.watch(trProvider('error_prefix'))}$e')),
       data: (trends) {
         if (trends.isEmpty) {
-          return const Center(child: Text('No trend data available yet.'));
+          return Center(child: Text(ref.watch(trProvider('no_trend_data'))));
         }
 
         final maxSpent = trends.map((t) => t.total).reduce((a, b) => a > b ? a : b);

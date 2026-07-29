@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/api_key_provider.dart'; // Watches the AI toggle state!
 import '../../data/expense_providers.dart';
 import 'manual_entry_sheet.dart';
+import '../../../../core/utils/locale_provider.dart';
 
 class ChatInputBar extends ConsumerStatefulWidget {
   const ChatInputBar({super.key});
@@ -77,7 +78,7 @@ class _ChatInputBarState extends ConsumerState<ChatInputBar> {
                 width: double.infinity,
                 child: FilledButton.icon(
                   icon: const Icon(Icons.add),
-                  label: const Text('Add Expense', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  label: Text(ref.watch(trProvider('add_expense')), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),

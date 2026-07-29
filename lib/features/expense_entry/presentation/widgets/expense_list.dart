@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/database/database_provider.dart';
 import '../../data/expense_providers.dart';
+import '../../../../core/utils/locale_provider.dart';
 
 class ExpenseList extends ConsumerWidget {
   const ExpenseList({super.key});
@@ -12,10 +13,10 @@ class ExpenseList extends ConsumerWidget {
 
     return expensesStream.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stack) => Center(child: Text('Error: $error')),
+      error: (error, stack) => Center(child: Text('${ref.watch(trProvider('error_prefix'))}$error')),
       data: (expenses) {
         if (expenses.isEmpty) {
-          return const Center(child: Text('No spending logged today! Start typing below.'));
+          return Center(child: Text(ref.watch(trProvider('no_spending_logged_today_start'))));
         }
         
         return ListView.builder(
@@ -53,7 +54,7 @@ class ExpenseList extends ConsumerWidget {
                   
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Deleted "${expense.rawNote}"'),
+                      content: Text('${ref.watch(trProvider('deleted'))}"${expense.rawNote}"'),
                       action: SnackBarAction(
                         label: 'Undo',
                         onPressed: () async {
@@ -74,15 +75,15 @@ class ExpenseList extends ConsumerWidget {
                            style: const TextStyle(fontWeight: FontWeight.bold)),
                 
                 subtitle: expense.isPendingAi
-                    ? Text('Waiting for AI... • ${expense.date.toString().split('.')[0]}')
-                    : Text('Note: "${expense.rawNote}" • Qty: ${expense.quantity}'),
+                    ? Text('${ref.watch(trProvider('waiting_for_ai'))}${expense.date.toString().split('.')[0]}')
+                    : Text('${ref.watch(trProvider('note_prefix'))}${expense.rawNote}${ref.watch(trProvider('qty_prefix'))}${expense.quantity}'),
                 
                 trailing: expense.isPendingAi 
                     ? IconButton(
                         icon: const Icon(Icons.sync, color: Colors.orange),
                         onPressed: () {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Retrying AI Sync...')),
+                            SnackBar(content: Text(ref.watch(trProvider('retrying_ai_sync')))),
                           );
                           ref.read(expenseLogicProvider).syncPendingNotes();
                         },

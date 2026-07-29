@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/advisor_providers.dart';
+import '../../../core/utils/locale_provider.dart';
 
 class AdvisorScreen extends ConsumerStatefulWidget {
   const AdvisorScreen({super.key});
@@ -115,7 +116,7 @@ class _AdvisorScreenState extends ConsumerState<AdvisorScreen> {
                   child: TextField(
                     controller: _chatController,
                     decoration: InputDecoration(
-                      hintText: 'Ask about your budget...',
+                      hintText: ref.watch(trProvider('ask_about_budget')),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
                       ),

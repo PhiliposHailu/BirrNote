@@ -4,6 +4,7 @@ import 'package:drift/drift.dart' as drift;
 import '../../../core/database/database_provider.dart';
 import '../../../core/database/app_database.dart';
 import '../data/expense_providers.dart';
+import '../../../core/utils/locale_provider.dart';
 
 class HistoryScreen extends ConsumerWidget {
   const HistoryScreen({super.key});
@@ -50,7 +51,7 @@ class HistoryScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Spending History'),
+        title: Text(ref.watch(trProvider('history'))),
         centerTitle: true,
         actions: [
           IconButton(
@@ -158,13 +159,13 @@ class HistoryScreen extends ConsumerWidget {
             Expanded(
               child: historyExpenses.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (error, stack) => Center(child: Text('Error: $error')),
+                error: (error, stack) => Center(child: Text('${ref.watch(trProvider('error_prefix'))}$error')),
                 data: (expenses) {
                   if (expenses.isEmpty) {
-                    return const Center(
+                    return Center(
                       child: Text(
-                        'No spending logged on this day!',
-                        style: TextStyle(
+                        ref.watch(trProvider('no_spending_on_day')),
+                        style: const TextStyle(
                           color: Colors.grey,
                           fontStyle: FontStyle.italic,
                         ),
@@ -185,7 +186,7 @@ class HistoryScreen extends ConsumerWidget {
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         subtitle: Text(
-                          'Note: "${expense.rawNote}" • Qty: ${expense.quantity}',
+                          '${ref.watch(trProvider('note_prefix'))}${expense.rawNote}${ref.watch(trProvider('qty_prefix'))}${expense.quantity}',
                         ),
                         // FIXED: Added a dedicated, safe, red Trash Can delete button!
                         trailing: IconButton(
@@ -204,7 +205,7 @@ class HistoryScreen extends ConsumerWidget {
                               ScaffoldMessenger.of(context).clearSnackBars();
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text('Deleted "${expense.rawNote}"'),
+                                  content: Text('${ref.watch(trProvider('deleted'))}"${expense.rawNote}"'),
                                   action: SnackBarAction(
                                     label: 'Undo',
                                     onPressed: () async {

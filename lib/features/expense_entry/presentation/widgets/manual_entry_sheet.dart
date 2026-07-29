@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/expense_providers.dart';
 // 1. IMPORT our live category provider
 import '../../../settings/data/category_providers.dart'; 
+import '../../../../core/utils/locale_provider.dart';
 
 class ManualEntrySheet extends ConsumerStatefulWidget {
   const ManualEntrySheet({super.key});
@@ -56,9 +57,9 @@ class _ManualEntrySheetState extends ConsumerState<ManualEntrySheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
-              'Manual Entry',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            Text(
+              ref.watch(trProvider('manual_entry')),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
@@ -67,10 +68,10 @@ class _ManualEntrySheetState extends ConsumerState<ManualEntrySheet> {
             TextField(
               controller: _amountController,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(
-                labelText: 'Amount (ETB)',
-                prefixIcon: Icon(Icons.attach_money),
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: ref.watch(trProvider('amount_etb')),
+                prefixIcon: const Icon(Icons.attach_money),
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 16),
@@ -78,7 +79,7 @@ class _ManualEntrySheetState extends ConsumerState<ManualEntrySheet> {
             // 4. DYNAMIC CATEGORY DROPDOWN
             categoriesStream.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, stack) => Text('Error loading categories: $error'),
+              error: (error, stack) => Text('${ref.watch(trProvider('error_loading_categories'))}$error'),
               data: (categories) {
                 // HCI Safety Check: If our selected category is null, or if the user 
                 // just deleted the category we had selected, automatically fallback 
@@ -89,9 +90,9 @@ class _ManualEntrySheetState extends ConsumerState<ManualEntrySheet> {
 
                 return DropdownButtonFormField<String>(
                   value: _selectedCategory,
-                  decoration: const InputDecoration(
-                    labelText: 'Category',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: ref.watch(trProvider('category_label')),
+                    border: const OutlineInputBorder(),
                   ),
                   // Render items dynamically from SQLite!
                   items: categories.map((category) {
@@ -110,7 +111,7 @@ class _ManualEntrySheetState extends ConsumerState<ManualEntrySheet> {
             // QUANTITY PICKER
             Row(
               children: [
-                const Text('Quantity:', style: TextStyle(fontSize: 16)),
+                Text(ref.watch(trProvider('quantity_label')), style: const TextStyle(fontSize: 16)),
                 const Spacer(),
                 IconButton(
                   icon: const Icon(Icons.remove_circle_outline),
@@ -128,10 +129,10 @@ class _ManualEntrySheetState extends ConsumerState<ManualEntrySheet> {
             // OPTIONAL NOTE
             TextField(
               controller: _noteController,
-              decoration: const InputDecoration(
-                labelText: 'Note (Optional)',
-                hintText: 'e.g. Lunch with friends',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: ref.watch(trProvider('note_optional')),
+                hintText: ref.watch(trProvider('eg_lunch')),
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 24),
@@ -139,9 +140,9 @@ class _ManualEntrySheetState extends ConsumerState<ManualEntrySheet> {
             // SAVE BUTTON
             FilledButton(
               onPressed: _submit,
-              child: const Padding(
-                padding: EdgeInsets.all(12.0),
-                child: Text('Save Expense', style: TextStyle(fontSize: 16)),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Text(ref.watch(trProvider('save_expense')), style: const TextStyle(fontSize: 16)),
               ),
             ),
             const SizedBox(height: 16),
