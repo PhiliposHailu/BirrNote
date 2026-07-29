@@ -1,0 +1,68 @@
+class AppTranslations {
+  static const Map<String, Map<String, String>> _localizedValues = {
+    'en': {
+      'today_spending_power': "Today's Spending Power",
+      'total_spent': "Total Spent",
+      'manage_categories': "Manage Categories",
+      'daily_reminder': "Daily Reminder",
+      'google_sync': "Google Drive Sync",
+      'add_expense': "Add Expense",
+      'history': "Spending History",
+      'settings': "Settings",
+      'language': "Language",
+      'no_spending_today': "No spending logged today!",
+      'ai_advisor': "AI Advisor",
+      'breakdown': "Breakdown",
+      'trends': "Trends",
+    },
+    'am': {
+      'today_spending_power': "የዛሬ የወጪ አቅም",
+      'total_spent': "ጠቅላላ ወጪ",
+      'manage_categories': "ምድቦችን ያስተዳድሩ",
+      'daily_reminder': "የዕለት ማስታወሻ",
+      'google_sync': "የጉግል ድራይቭ ማመሳሰያ",
+      'add_expense': "ወጪ ጨምር",
+      'history': "የወጪ ታሪክ",
+      'settings': "ቅንብሮች",
+      'language': "ቋንቋ",
+      'no_spending_today': "ዛሬ የተመዘገበ ወጪ የለም!",
+      'ai_advisor': "የኤአይ አማካሪ",
+      'breakdown': "ዝርዝር",
+      'trends': "አዝማሚያዎች",
+    },
+    'om': {
+      'today_spending_power': "Aangoo Baasii Har'aa",
+      'total_spent': "Baasii Waliigalaa",
+      'manage_categories': "Gosa Baasii Bulchi",
+      'daily_reminder': "Yaadachiisa Guyyaa",
+      'google_sync': "Waliin Madaaluu Google Drive",
+      'add_expense': "Baasii Dabali",
+      'history': "Seenaa Baasii",
+      'settings': "Sajjatoota",
+      'language': "Afaan",
+      'no_spending_today': "Har'a baasiin hin galmeeffamne!",
+      'ai_advisor': "Gorsa AI",
+      'breakdown': "Garseetti",
+      'trends': "Haala Baasii",
+    },
+    'ti': {
+      'today_spending_power': "ዓቅሚ ወጻኢ ሎሚ",
+      'total_spent': "ጠቕላላ ወጻኢ",
+      'manage_categories': "ምድባት ኣመሓድር",
+      'daily_reminder': "ናይ መዓልቲ መዘኻኸሪ",
+      'google_sync': "ናይ ጉግል ድራይቭ ምስንክሮናይዝ",
+      'add_expense': "ወጻኢ ወስኽ",
+      'history': "ናይ ወጻኢ ታሪኽ",
+      'settings': "ቅንብራት",
+      'language': "ቋንቋ",
+      'no_spending_today': "ሎሚ ዝተመዝገበ ወጻኢ የለን!",
+      'ai_advisor': "ናይ AI ኣማኻሪ",
+      'breakdown': "ዝርዝር",
+      'trends': "ኣዝማሚያታት",
+    },
+  };
+
+  static String getText(String languageCode, String key) {
+    return _localizedValues[languageCode]?[key] ?? _localizedValues['en']![key] ?? key;
+  }
+}

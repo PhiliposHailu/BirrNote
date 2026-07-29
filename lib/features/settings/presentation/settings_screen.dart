@@ -6,6 +6,7 @@ import 'widgets/weekly_budget_card.dart';
 import 'widgets/daily_reminder_card.dart';
 import 'widgets/gemini_key_sheet.dart';
 import 'widgets/cloud_sync_tile.dart';
+import 'widgets/language_tile.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -35,21 +36,29 @@ class SettingsScreen extends ConsumerWidget {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
-            child: ListTile(
-              leading: const Icon(Icons.category_outlined, size: 28),
-              title: const Text(
-                'Manage Categories',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              subtitle: const Text('Add, delete, or reorder categories'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const CategorySettingsScreen(),
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.category_outlined, size: 28),
+                  title: const Text(
+                    'Manage Categories',
+                    style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                );
-              },
+                  subtitle: const Text('Add, delete, or reorder categories'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const CategorySettingsScreen(),
+                      ),
+                    );
+                  },
+                ),
+                const Divider(indent: 16, endIndent: 16, height: 1),
+
+                // ETHIOPIAN MULTILINGUAL LANGUAGE SELECTOR!
+                const LanguageTile(),
+              ],
             ),
           ),
           const SizedBox(height: 12),
