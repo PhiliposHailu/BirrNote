@@ -10,6 +10,7 @@ class ExpenseList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final expensesStream = ref.watch(expensesStreamProvider);
+    final failedAiNotes = ref.watch(failedAiNotesProvider);
 
     return expensesStream.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -79,15 +80,27 @@ class ExpenseList extends ConsumerWidget {
                     : Text('${ref.watch(trProvider('note_prefix'))}${expense.rawNote}${ref.watch(trProvider('qty_prefix'))}${expense.quantity}'),
                 
                 trailing: expense.isPendingAi 
-                    ? IconButton(
-                        icon: const Icon(Icons.sync, color: Colors.orange),
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(ref.watch(trProvider('retrying_ai_sync')))),
-                          );
-                          ref.read(expenseLogicProvider).syncPendingNotes();
-                        },
-                      )
+                    ? (failedAiNotes.contains(expense.id)
+                        // If it actually failed, show the red retry button!
+                        ? IconButton(
+                            icon: const Icon(Icons.sync_problem, color: Colors.red),
+                            tooltip: 'Retry AI Parsing',
+                            onPressed: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(ref.watch(trProvider('retrying_ai_sync')))),
+                              );
+                              ref.read(expenseLogicProvider).syncPendingNotes();
+                            },
+                          )
+                        // Otherwise, show the spinning indicator!
+                        : const Padding(
+                            padding: EdgeInsets.all(12.0),
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.orange),
+                            ),
+                          ))
                     : const Icon(Icons.check_circle, color: Colors.green),
               ),
             );

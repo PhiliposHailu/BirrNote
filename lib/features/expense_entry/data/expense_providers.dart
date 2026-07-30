@@ -7,6 +7,9 @@ import '../../../core/database/daos/expense_dao.dart';
 import '../../../core/database/daos/category_dao.dart';
 import '../../../core/network/ai_service.dart';
 
+// StateProvider to track which pending notes have failed their network request
+final failedAiNotesProvider = StateProvider<Set<int>>((ref) => {});
+
 // 1. WATCH TODAY'S EXPENSES (For Home Screen)
 final expensesStreamProvider = StreamProvider<List<Expense>>((ref) {
   final expenseDao = ref.watch(expenseDaoProvider);
@@ -52,6 +55,13 @@ class ExpenseLogic {
       ),
     );
 
+    // Clear any previous failure for this ID (just in case)
+    ref.read(failedAiNotesProvider.notifier).update((state) {
+      final newState = Set<int>.from(state);
+      newState.remove(pendingId);
+      return newState;
+    });
+
     try {
       final activeCategories = await categoryDao.getActiveCategories();
       final parsedList = await aiService.parseNoteToExpenses(text, activeCategories);
@@ -73,9 +83,13 @@ class ExpenseLogic {
             );
           }
         });
+      } else {
+        // Parsing returned null (e.g. timeout or no API key)
+        ref.read(failedAiNotesProvider.notifier).update((state) => Set.from(state)..add(pendingId));
       }
     } catch (e) {
       print("Error in addRawNote: $e");
+      ref.read(failedAiNotesProvider.notifier).update((state) => Set.from(state)..add(pendingId));
     }
   }
 
@@ -90,6 +104,13 @@ class ExpenseLogic {
       final activeCategories = await categoryDao.getActiveCategories();
 
       for (final note in pendingNotes) {
+        // Clear failure state for this note before retrying
+        ref.read(failedAiNotesProvider.notifier).update((state) {
+          final newState = Set<int>.from(state);
+          newState.remove(note.id);
+          return newState;
+        });
+
         final parsedList = await aiService.parseNoteToExpenses(note.rawNote, activeCategories);
 
         if (parsedList != null && parsedList.isNotEmpty) {
@@ -109,10 +130,17 @@ class ExpenseLogic {
               );
             }
           });
+        } else {
+          // Parsing failed on retry
+          ref.read(failedAiNotesProvider.notifier).update((state) => Set.from(state)..add(note.id));
         }
       }
     } catch (e) {
       print("Error in syncPendingNotes: $e");
+      // Mark all attempted notes as failed if a fatal error occurs
+      for (final note in pendingNotes) {
+        ref.read(failedAiNotesProvider.notifier).update((state) => Set.from(state)..add(note.id));
+      }
     }
   }
 
