@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/database/database_provider.dart';
 import '../../data/expense_providers.dart';
 import '../../../../core/utils/locale_provider.dart';
+import 'manual_entry_sheet.dart';
 
 class ExpenseList extends ConsumerWidget {
   const ExpenseList({super.key});
@@ -70,6 +71,15 @@ class ExpenseList extends ConsumerWidget {
               },
 
               child: ListTile(
+                onTap: () {
+                  if (!expense.isPendingAi) {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (context) => ManualEntrySheet(existingExpense: expense),
+                    );
+                  }
+                },
                 title: expense.isPendingAi 
                     ? Text(expense.rawNote, style: const TextStyle(fontStyle: FontStyle.italic))
                     : Text('${expense.category} - ${expense.amount.toStringAsFixed(2)} ETB', 

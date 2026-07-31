@@ -6,6 +6,7 @@ import '../../../core/database/database_provider.dart';
 import '../../../core/database/daos/expense_dao.dart';
 import '../../../core/database/daos/category_dao.dart';
 import '../../../core/network/ai_service.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 // StateProvider to track which pending notes have failed their network request
 final failedAiNotesProvider = StateProvider<Set<int>>((ref) => {});
@@ -64,7 +65,19 @@ class ExpenseLogic {
 
     try {
       final activeCategories = await categoryDao.getActiveCategories();
-      final parsedList = await aiService.parseNoteToExpenses(text, activeCategories);
+      
+      // FALLBACK: If the user types instantly on launch before the Provider loads the key,
+      // we grab it directly from storage so it doesn't fail!
+      var key = aiService.apiKey;
+      if (key == null || key.isEmpty) {
+        key = await const FlutterSecureStorage().read(key: 'gemini_api_key');
+      }
+      
+      final serviceToUse = (aiService.apiKey == null || aiService.apiKey!.isEmpty) && key != null
+          ? AiService(key)
+          : aiService;
+
+      final parsedList = await serviceToUse.parseNoteToExpenses(text, activeCategories);
 
       if (parsedList != null && parsedList.isNotEmpty) {
         await expenseDao.transaction(() async {
@@ -150,6 +163,7 @@ class ExpenseLogic {
     required String category,
     required int quantity,
     required String note,
+    DateTime? date,
   }) async {
     await expenseDao.insertExpense(
       ExpensesCompanion.insert(
@@ -157,7 +171,29 @@ class ExpenseLogic {
         amount: Value(amount),
         category: Value(category),
         quantity: Value(quantity),
-        date: DateTime.now(),
+        date: date ?? DateTime.now(),
+        isPendingAi: const Value(false), 
+      ),
+    );
+  }
+
+  // 4. EDIT EXPENSE
+  Future<void> editExpense({
+    required int id,
+    required double amount,
+    required String category,
+    required int quantity,
+    required String note,
+    required DateTime date,
+  }) async {
+    await expenseDao.updateExpense(
+      ExpensesCompanion(
+        id: Value(id),
+        rawNote: Value(note.trim().isEmpty ? category : note),
+        amount: Value(amount),
+        category: Value(category),
+        quantity: Value(quantity),
+        date: Value(date),
         isPendingAi: const Value(false), 
       ),
     );

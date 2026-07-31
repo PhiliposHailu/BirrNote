@@ -38,6 +38,9 @@ class NotificationService {
     const initSettings = InitializationSettings(android: androidSettings);
 
     await _plugin.initialize(settings: initSettings);
+    
+    // Explicitly request permissions on first launch for Android 13+
+    await checkFirstTimePrompt();
   }
 
   // 2. FIRST LAUNCH PROMPT LOGIC

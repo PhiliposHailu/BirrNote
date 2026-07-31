@@ -5,6 +5,7 @@ import '../../../core/database/database_provider.dart';
 import '../../../core/database/app_database.dart';
 import '../data/expense_providers.dart';
 import '../../../core/utils/locale_provider.dart';
+import 'widgets/manual_entry_sheet.dart';
 
 class HistoryScreen extends ConsumerWidget {
   const HistoryScreen({super.key});
@@ -59,6 +60,17 @@ class HistoryScreen extends ConsumerWidget {
             onPressed: () => _selectCalendarDate(context, ref, selectedDate),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            builder: (context) => ManualEntrySheet(initialDate: selectedDate),
+          );
+        },
+        tooltip: 'Log Past Expense',
+        child: const Icon(Icons.add),
       ),
       // THE SWIPE: Swipe left/right safely without any accidental deletions!
       body: GestureDetector(
@@ -180,6 +192,15 @@ class HistoryScreen extends ConsumerWidget {
 
                       // FIXED: Removed Dismissible entirely to prevent gesture collision!
                       return ListTile(
+                        onTap: () {
+                          if (!expense.isPendingAi) {
+                            showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              builder: (context) => ManualEntrySheet(existingExpense: expense),
+                            );
+                          }
+                        },
                         leading: const Icon(Icons.receipt_long),
                         title: Text(
                           '${expense.category} - ${expense.amount.toStringAsFixed(2)} ETB',

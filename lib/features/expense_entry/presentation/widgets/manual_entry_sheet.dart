@@ -4,9 +4,12 @@ import '../../data/expense_providers.dart';
 // 1. IMPORT our live category provider
 import '../../../settings/data/category_providers.dart'; 
 import '../../../../core/utils/locale_provider.dart';
+import '../../../../core/database/app_database.dart';
 
 class ManualEntrySheet extends ConsumerStatefulWidget {
-  const ManualEntrySheet({super.key});
+  final DateTime? initialDate;
+  final Expense? existingExpense;
+  const ManualEntrySheet({super.key, this.initialDate, this.existingExpense});
 
   @override
   ConsumerState<ManualEntrySheet> createState() => _ManualEntrySheetState();
@@ -20,18 +23,45 @@ class _ManualEntrySheetState extends ConsumerState<ManualEntrySheet> {
   String? _selectedCategory; 
   int _quantity = 1;
 
+  @override
+  void initState() {
+    super.initState();
+    if (widget.existingExpense != null) {
+      final expense = widget.existingExpense!;
+      _amountController.text = expense.amount.toString();
+      
+      // Remove any quantity/category formatting from the rawNote if needed,
+      // but in BirrNote rawNote stores exactly what we need!
+      _noteController.text = expense.rawNote;
+      _selectedCategory = expense.category;
+      _quantity = expense.quantity;
+    }
+  }
+
   void _submit() {
     final amountText = _amountController.text;
     if (amountText.isEmpty || _selectedCategory == null) return;
 
     final amount = double.tryParse(amountText) ?? 0.0;
     
-    ref.read(expenseLogicProvider).addManualExpense(
-      amount: amount,
-      category: _selectedCategory!,
-      quantity: _quantity,
-      note: _noteController.text,
-    );
+    if (widget.existingExpense != null) {
+      ref.read(expenseLogicProvider).editExpense(
+        id: widget.existingExpense!.id,
+        amount: amount,
+        category: _selectedCategory!,
+        quantity: _quantity,
+        note: _noteController.text,
+        date: widget.existingExpense!.date,
+      );
+    } else {
+      ref.read(expenseLogicProvider).addManualExpense(
+        amount: amount,
+        category: _selectedCategory!,
+        quantity: _quantity,
+        note: _noteController.text,
+        date: widget.initialDate,
+      );
+    }
 
     Navigator.of(context).pop();
   }
@@ -58,7 +88,7 @@ class _ManualEntrySheetState extends ConsumerState<ManualEntrySheet> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              ref.watch(trProvider('manual_entry')),
+              widget.existingExpense != null ? "Edit Expense" : ref.watch(trProvider('manual_entry')),
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),

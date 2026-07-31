@@ -25,6 +25,11 @@ class ExpenseDao extends DatabaseAccessor<AppDatabase> with _$ExpenseDaoMixin {
     return (delete(expenses)..where((tbl) => tbl.id.equals(id))).go();
   }
 
+  // 3.5 Update expense
+  Future<bool> updateExpense(ExpensesCompanion companion) {
+    return update(expenses).replace(companion);
+  }
+
   // 4. Pie Chart Query (Group by Category)
   Stream<List<CategorySum>> watchTotalSpentByCategory() {
     final query = customSelect(
