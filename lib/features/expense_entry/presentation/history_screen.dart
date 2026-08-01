@@ -14,15 +14,23 @@ class HistoryScreen extends ConsumerWidget {
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
-  // FIXED: Generates exactly 7 days, starting with TODAY (index 0) on the left!
-  List<DateTime> _generateTimelineDates() {
-    final now = DateTime.now();
+  // FIXED: Generates 7 days dynamically centered around the selected date!
+  List<DateTime> _generateTimelineDates(DateTime selectedDate) {
+    final today = DateTime.now();
+    final todayMidnight = DateTime(today.year, today.month, today.day);
+    final selectedMidnight = DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
+    
+    final daysFromToday = todayMidnight.difference(selectedMidnight).inDays;
+    
+    // Shift ensures we never show future dates!
+    int shift = 3; 
+    if (daysFromToday < 3) {
+      shift = daysFromToday;
+    }
+    
     return List.generate(7, (index) {
-      return DateTime(
-        now.year,
-        now.month,
-        now.day,
-      ).subtract(Duration(days: index));
+      final diff = shift - index; 
+      return selectedMidnight.add(Duration(days: diff));
     });
   }
 
@@ -47,7 +55,7 @@ class HistoryScreen extends ConsumerWidget {
     final selectedDate = ref.watch(historyDateProvider);
     final historyExpenses = ref.watch(historyExpensesStreamProvider);
 
-    final timelineDates = _generateTimelineDates();
+    final timelineDates = _generateTimelineDates(selectedDate);
     final weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
     return Scaffold(
@@ -79,13 +87,8 @@ class HistoryScreen extends ConsumerWidget {
           final today = DateTime.now();
           final todayMidnight = DateTime(today.year, today.month, today.day);
 
-          // THE BOUNDARY: Find the exact midnight of the oldest visible day (6 days ago)
-          final oldestAllowedDate = todayMidnight.subtract(
-            const Duration(days: 6),
-          );
-
           if (details.primaryVelocity! > 0) {
-            // Swipe Right ──► Go to tomorrow (pull left)
+            // Swipe Right ──► Go to tomorrow
             final tomorrow = selectedDate.add(const Duration(days: 1));
 
             // RIGHT WALL: Cannot swipe into the future
@@ -93,13 +96,11 @@ class HistoryScreen extends ConsumerWidget {
               ref.read(historyDateProvider.notifier).state = tomorrow;
             }
           } else if (details.primaryVelocity! < 0) {
-            // Swipe Left ──► Go to yesterday (pull right)
+            // Swipe Left ──► Go to yesterday
             final yesterday = selectedDate.subtract(const Duration(days: 1));
 
-            // LEFT WALL: Cannot swipe further back than the oldest visible day!
-            if (!yesterday.isBefore(oldestAllowedDate)) {
-              ref.read(historyDateProvider.notifier).state = yesterday;
-            }
+            // NO LEFT WALL: Infinite scrolling into the past!
+            ref.read(historyDateProvider.notifier).state = yesterday;
           }
         },
         child: Column(

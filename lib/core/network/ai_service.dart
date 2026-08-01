@@ -113,13 +113,18 @@ class AiService {
           .where((msg) => msg['role'] == 'user' || msg['role'] == 'ai')
           .toList();
 
-      if (filteredList.isNotEmpty) {
+      // FIXED: Cap the history strictly to the last 10 messages to prevent token bloat
+      final truncatedList = filteredList.length > 10
+          ? filteredList.sublist(filteredList.length - 10)
+          : filteredList;
+
+      if (truncatedList.isNotEmpty) {
         // A. Isolate the very last user message (the active question)
-        newestMessage = filteredList.last['text'] ?? '';
+        newestMessage = truncatedList.last['text'] ?? '';
 
         // B. Map all previous messages before it into Gemini Content objects!
-        for (int i = 0; i < filteredList.length - 1; i++) {
-          final msg = filteredList[i];
+        for (int i = 0; i < truncatedList.length - 1; i++) {
+          final msg = truncatedList[i];
           if (msg['role'] == 'user') {
             geminiHistory.add(Content.text(msg['text'] ?? ''));
           } else if (msg['role'] == 'ai') {

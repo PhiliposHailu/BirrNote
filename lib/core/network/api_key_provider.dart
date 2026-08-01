@@ -38,8 +38,10 @@ final apiKeyProvider = StateNotifierProvider<ApiKeyNotifier, String?>((ref) {
 
 //  Persistent AI Toggle Notifier (Defaults to true)
 class AiEnabledNotifier extends StateNotifier<bool> {
-  AiEnabledNotifier() : super(true) {
-    _load();
+  AiEnabledNotifier({bool? initial}) : super(initial ?? true) {
+    if (initial == null) {
+      _load();
+    }
   }
 
   Future<void> _load() async {

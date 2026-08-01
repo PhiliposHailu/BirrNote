@@ -111,11 +111,16 @@ class _ManualEntrySheetState extends ConsumerState<ManualEntrySheet> {
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (error, stack) => Text('${ref.watch(trProvider('error_loading_categories'))}$error'),
               data: (categories) {
-                // HCI Safety Check: If our selected category is null, or if the user 
-                // just deleted the category we had selected, automatically fallback 
-                // to the first active category in the database (usually "Food & Drinks" or "Others")
-                if (_selectedCategory == null || !categories.contains(_selectedCategory)) {
-                  _selectedCategory = categories.isNotEmpty ? categories.first : 'Others';
+                // HCI Safety Check: If the user deleted the category this expense used,
+                // we inject it temporarily so the dropdown doesn't break!
+                final List<String> availableCategories = List.from(categories);
+                if (widget.existingExpense != null && !availableCategories.contains(widget.existingExpense!.category)) {
+                  availableCategories.add(widget.existingExpense!.category);
+                }
+
+                // If _selectedCategory is STILL null (e.g. brand new entry) fallback to first available
+                if (_selectedCategory == null || !availableCategories.contains(_selectedCategory)) {
+                  _selectedCategory = availableCategories.isNotEmpty ? availableCategories.first : 'Others';
                 }
 
                 return DropdownButtonFormField<String>(
@@ -125,7 +130,7 @@ class _ManualEntrySheetState extends ConsumerState<ManualEntrySheet> {
                     border: const OutlineInputBorder(),
                   ),
                   // Render items dynamically from SQLite!
-                  items: categories.map((category) {
+                  items: availableCategories.map((category) {
                     return DropdownMenuItem(value: category, child: Text(category));
                   }).toList(),
                   onChanged: (value) {

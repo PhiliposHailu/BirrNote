@@ -45,20 +45,18 @@ class ExpenseDao extends DatabaseAccessor<AppDatabase> with _$ExpenseDaoMixin {
     });
   }
 
-  // 5. Weekly Daily Trends (Using Unix Epoch & Localtime modifiers)
+  // 5. Weekly Daily Trends (Dart Native Grouping - Timezone Safe!)
   Stream<List<TrendBarData>> watchWeeklyTrends() {
-    final query = customSelect(
-      "SELECT strftime('%w', date, 'unixepoch', 'localtime') as day_index, SUM(amount) as total "
-      "FROM expenses "
-      "WHERE is_pending_ai = 0 AND date >= CAST(strftime('%s', 'now', '-6 days') AS INTEGER) "
-      "GROUP BY day_index",
-      readsFrom: {expenses},
-    );
+    final limitDate = DateTime.now().subtract(const Duration(days: 6));
+    final startOfLimit = DateTime(limitDate.year, limitDate.month, limitDate.day);
 
-    return query.watch().map((rows) {
+    return (select(expenses)
+          ..where((tbl) => tbl.isPendingAi.equals(false) & tbl.date.isBiggerOrEqualValue(startOfLimit)))
+        .watch()
+        .map((rows) {
       final weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      
       final now = DateTime.now();
+      
       final Map<String, double> trendMap = {};
       for (int i = 6; i >= 0; i--) {
         final date = now.subtract(Duration(days: i));
@@ -66,10 +64,9 @@ class ExpenseDao extends DatabaseAccessor<AppDatabase> with _$ExpenseDaoMixin {
       }
 
       for (final row in rows) {
-        final int index = int.parse(row.read<String>('day_index'));
-        final label = weekdays[index];
+        final label = weekdays[row.date.weekday % 7];
         if (trendMap.containsKey(label)) {
-          trendMap[label] = row.read<double>('total');
+          trendMap[label] = trendMap[label]! + row.amount;
         }
       }
 
@@ -77,17 +74,15 @@ class ExpenseDao extends DatabaseAccessor<AppDatabase> with _$ExpenseDaoMixin {
     });
   }
 
-  // 6. Monthly Weekly Trends (Using Unix Epoch & Localtime modifiers)
+  // 6. Monthly Weekly Trends (Dart Native Grouping - Timezone Safe!)
   Stream<List<TrendBarData>> watchMonthlyTrends() {
-    final query = customSelect(
-      "SELECT strftime('%W', date, 'unixepoch', 'localtime') as week_num, SUM(amount) as total "
-      "FROM expenses "
-      "WHERE is_pending_ai = 0 AND date >= CAST(strftime('%s', 'now', '-29 days') AS INTEGER) "
-      "GROUP BY week_num",
-      readsFrom: {expenses},
-    );
-
-    return query.watch().map((rows) {
+    final limitDate = DateTime.now().subtract(const Duration(days: 28)); // ~4 weeks
+    final startOfLimit = DateTime(limitDate.year, limitDate.month, limitDate.day);
+    
+    return (select(expenses)
+          ..where((tbl) => tbl.isPendingAi.equals(false) & tbl.date.isBiggerOrEqualValue(startOfLimit)))
+        .watch()
+        .map((rows) {
       final Map<String, double> trendMap = {
         'Week 1': 0.0,
         'Week 2': 0.0,
@@ -95,15 +90,19 @@ class ExpenseDao extends DatabaseAccessor<AppDatabase> with _$ExpenseDaoMixin {
         'Week 4': 0.0,
       };
 
-      final sortedWeeks = rows.map((r) => r.read<String>('week_num')).toList()..sort();
+      final now = DateTime.now();
+      final nowMidnight = DateTime(now.year, now.month, now.day, 23, 59, 59);
 
       for (final row in rows) {
-        final weekNum = row.read<String>('week_num');
-        final relativeIndex = sortedWeeks.indexOf(weekNum);
+        final daysAgo = nowMidnight.difference(row.date).inDays;
         
-        if (relativeIndex >= 0 && relativeIndex < 4) {
-          final label = 'Week ${relativeIndex + 1}';
-          trendMap[label] = row.read<double>('total');
+        // 0-6 days ago = Week 4 (most recent)
+        // 7-13 days ago = Week 3
+        int weekIndex = 4 - (daysAgo ~/ 7);
+        
+        if (weekIndex >= 1 && weekIndex <= 4) {
+          final label = 'Week $weekIndex';
+          trendMap[label] = trendMap[label]! + row.amount;
         }
       }
 
@@ -111,17 +110,15 @@ class ExpenseDao extends DatabaseAccessor<AppDatabase> with _$ExpenseDaoMixin {
     });
   }
 
-  // 7. Quarterly Monthly Trends (Using Unix Epoch & Localtime modifiers)
+  // 7. Quarterly Monthly Trends (Dart Native Grouping - Timezone Safe!)
   Stream<List<TrendBarData>> watchQuarterlyTrends() {
-    final query = customSelect(
-      "SELECT strftime('%m', date, 'unixepoch', 'localtime') as month_num, SUM(amount) as total "
-      "FROM expenses "
-      "WHERE is_pending_ai = 0 AND date >= CAST(strftime('%s', 'now', '-90 days') AS INTEGER) "
-      "GROUP BY month_num",
-      readsFrom: {expenses},
-    );
+    final limitDate = DateTime.now().subtract(const Duration(days: 90));
+    final startOfLimit = DateTime(limitDate.year, limitDate.month, limitDate.day);
 
-    return query.watch().map((rows) {
+    return (select(expenses)
+          ..where((tbl) => tbl.isPendingAi.equals(false) & tbl.date.isBiggerOrEqualValue(startOfLimit)))
+        .watch()
+        .map((rows) {
       final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       
       final Map<String, double> trendMap = {};
@@ -133,10 +130,9 @@ class ExpenseDao extends DatabaseAccessor<AppDatabase> with _$ExpenseDaoMixin {
       }
 
       for (final row in rows) {
-        final int index = int.parse(row.read<String>('month_num'));
-        final label = months[index - 1];
+        final label = months[row.date.month - 1];
         if (trendMap.containsKey(label)) {
-          trendMap[label] = row.read<double>('total');
+          trendMap[label] = trendMap[label]! + row.amount;
         }
       }
 

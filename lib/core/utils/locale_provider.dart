@@ -4,8 +4,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'app_translations.dart';
 
 class LocaleNotifier extends StateNotifier<String> {
-  LocaleNotifier() : super('en') {
-    _loadLocale();
+  LocaleNotifier({String? initial}) : super(initial ?? 'en') {
+    if (initial == null) {
+      _loadLocale();
+    }
   }
 
   Future<void> _loadLocale() async {
