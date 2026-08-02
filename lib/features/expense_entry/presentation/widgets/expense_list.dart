@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/database/database_provider.dart';
 import '../../data/expense_providers.dart';
 import '../../../../core/utils/locale_provider.dart';
+import 'package:abushakir/abushakir.dart';
+import '../../../../core/utils/calendar_type_provider.dart';
 import 'manual_entry_sheet.dart';
 
 class ExpenseList extends ConsumerWidget {
@@ -12,6 +14,7 @@ class ExpenseList extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final expensesStream = ref.watch(expensesStreamProvider);
     final failedAiNotes = ref.watch(failedAiNotesProvider);
+    final calendarType = ref.watch(calendarTypeProvider);
 
     return expensesStream.when(
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -86,7 +89,9 @@ class ExpenseList extends ConsumerWidget {
                            style: const TextStyle(fontWeight: FontWeight.bold)),
                 
                 subtitle: expense.isPendingAi
-                    ? Text('${ref.watch(trProvider('waiting_for_ai'))}${expense.date.toString().split('.')[0]}')
+                    ? Text(
+                        '${ref.watch(trProvider('waiting_for_ai'))}${calendarType == CalendarType.ethiopian ? EtDatetime.fromMillisecondsSinceEpoch(expense.date.millisecondsSinceEpoch).toString().split('.')[0] : expense.date.toString().split('.')[0]}',
+                      )
                     : Text('${ref.watch(trProvider('note_prefix'))}${expense.rawNote}${ref.watch(trProvider('qty_prefix'))}${expense.quantity}'),
                 
                 trailing: expense.isPendingAi 

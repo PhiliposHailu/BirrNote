@@ -42,42 +42,53 @@ final budgetEngineProvider = Provider<SpendingPower>((ref) {
   final startDate = budget.startDate;
   final String period = budget.period;
 
-  // 1. DYNAMIC PERIOD MAPPING
-  int periodInDays = 7; // Default fallback to Weekly
-  if (period == 'Daily') periodInDays = 1;
-  if (period == 'Weekly') periodInDays = 7;
-  if (period == 'Monthly') periodInDays = 30;
-  if (period == 'Quarterly') periodInDays = 90;
-  if (period == 'Yearly') periodInDays = 365;
-
-  final dailyLimit = limitAmount / periodInDays;
-
-  // --- THE CALENDAR MATH ENGINE ---
+  // 1. DYNAMIC PERIOD MAPPING (THE CALENDAR ENGINE REWRITE)
   final now = DateTime.now();
-  
-  // Calculate exact days elapsed since they set this budget
-  final differenceInDays = DateTime(now.year, now.month, now.day)
-      .difference(DateTime(startDate.year, startDate.month, startDate.day))
-      .inDays;
+  final nowMidnight = DateTime(now.year, now.month, now.day);
+  final startMidnight = DateTime(startDate.year, startDate.month, startDate.day);
 
-  // Calculate completed cycles (weeks, months, years etc.)
-  final completedCycles = differenceInDays ~/ periodInDays;
+  DateTime currentCycleStart;
+  DateTime nextCycleStart;
+
+  if (period == 'Daily') {
+    currentCycleStart = nowMidnight;
+    nextCycleStart = nowMidnight.add(const Duration(days: 1));
+  } else if (period == 'Weekly') {
+    final diffDays = nowMidnight.difference(startMidnight).inDays;
+    final completedWeeks = (diffDays >= 0 ? diffDays : 0) ~/ 7;
+    currentCycleStart = startMidnight.add(Duration(days: completedWeeks * 7));
+    nextCycleStart = currentCycleStart.add(const Duration(days: 7));
+  } else if (period == 'Monthly') {
+    currentCycleStart = DateTime(nowMidnight.year, nowMidnight.month, 1);
+    nextCycleStart = DateTime(nowMidnight.year, nowMidnight.month + 1, 1);
+  } else if (period == 'Quarterly') {
+    final quarterMonth = ((nowMidnight.month - 1) ~/ 3) * 3 + 1;
+    currentCycleStart = DateTime(nowMidnight.year, quarterMonth, 1);
+    nextCycleStart = DateTime(nowMidnight.year, quarterMonth + 3, 1);
+  } else if (period == 'Yearly') {
+    currentCycleStart = DateTime(nowMidnight.year, 1, 1);
+    nextCycleStart = DateTime(nowMidnight.year + 1, 1, 1);
+  } else {
+    currentCycleStart = startMidnight;
+    nextCycleStart = currentCycleStart.add(const Duration(days: 7));
+  }
+
+  // The total days in THIS specific cycle (e.g., handles 28, 29, 30, 31 for months!)
+  final daysInCurrentCycle = nextCycleStart.difference(currentCycleStart).inDays;
   
-  // The exact start date of this current active cycle (normalized to midnight)
-  final rawCycleStart = startDate.add(Duration(days: completedCycles * periodInDays));
-  final currentCycleStart = DateTime(rawCycleStart.year, rawCycleStart.month, rawCycleStart.day);
-  
-  // The days elapsed in the current cycle
-  final elapsedDaysInCurrentCycle = (differenceInDays % periodInDays) + 1;
+  // The exact daily limit tailored to THIS specific calendar cycle
+  final exactDailyLimit = limitAmount / daysInCurrentCycle;
+
+  // The days elapsed in the current cycle (including today)
+  final elapsedDaysInCurrentCycle = nowMidnight.difference(currentCycleStart).inDays + 1;
 
   // How much they were allowed to spend up to today
-  final allowedBudgetUpToToday = elapsedDaysInCurrentCycle * dailyLimit;
+  final allowedBudgetUpToToday = elapsedDaysInCurrentCycle * exactDailyLimit;
 
   // Sum up all expenses spent in this active cycle
   double actualSpentInCurrentCycle = 0.0;
   for (final expense in expenses) {
-    // Only count expenses that are not pending AI, and happened on or after currentCycleStart
-    if (!expense.isPendingAi && !expense.date.isBefore(currentCycleStart)) {
+    if (!expense.isPendingAi && !expense.date.isBefore(currentCycleStart) && expense.date.isBefore(nextCycleStart)) {
       actualSpentInCurrentCycle += expense.amount;
     }
   }
@@ -87,7 +98,7 @@ final budgetEngineProvider = Provider<SpendingPower>((ref) {
 
   return SpendingPower(
     todaySpendingPower: todaySpendingPower,
-    dailyLimit: dailyLimit,
+    dailyLimit: exactDailyLimit,
     hasBudget: true,
   );
 });

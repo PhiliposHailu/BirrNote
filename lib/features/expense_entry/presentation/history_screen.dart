@@ -6,6 +6,8 @@ import '../../../core/database/app_database.dart';
 import '../data/expense_providers.dart';
 import '../../../core/utils/locale_provider.dart';
 import 'widgets/manual_entry_sheet.dart';
+import 'package:abushakir/abushakir.dart';
+import '../../../core/utils/calendar_type_provider.dart';
 
 class HistoryScreen extends ConsumerWidget {
   const HistoryScreen({super.key});
@@ -54,9 +56,12 @@ class HistoryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedDate = ref.watch(historyDateProvider);
     final historyExpenses = ref.watch(historyExpensesStreamProvider);
+    final calendarType = ref.watch(calendarTypeProvider);
 
     final timelineDates = _generateTimelineDates(selectedDate);
     final weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    final etMonths = ['Mesk', 'Tik', 'Hidar', 'Tahsas', 'Tir', 'Yakatit', 'Magabit', 'Miyazya', 'Ginbot', 'Sene', 'Hamle', 'Nehase', 'Pagume'];
 
     return Scaffold(
       appBar: AppBar(
@@ -118,20 +123,29 @@ class HistoryScreen extends ConsumerWidget {
                   final isSelected = _isSameDay(date, selectedDate);
                   final dayLabel = weekdays[date.weekday - 1];
 
+                  String monthText;
+                  String dayText;
+
+                  if (calendarType == CalendarType.ethiopian) {
+                    final etDate = EtDatetime.fromMillisecondsSinceEpoch(date.millisecondsSinceEpoch);
+                    monthText = etMonths[etDate.month - 1];
+                    dayText = etDate.day.toString();
+                  } else {
+                    monthText = months[date.month - 1];
+                    dayText = date.day.toString();
+                  }
+
                   return GestureDetector(
                     onTap: () {
                       ref.read(historyDateProvider.notifier).state = date;
                     },
                     child: Container(
-                      width:
-                          53, // Slightly narrower so all 7 fit perfectly on one screen!
+                      width: 53, 
                       margin: const EdgeInsets.symmetric(horizontal: 4),
                       decoration: BoxDecoration(
                         color: isSelected
                             ? Theme.of(context).colorScheme.primary
-                            : Theme.of(
-                                context,
-                              ).colorScheme.surfaceVariant.withOpacity(0.5),
+                            : Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Column(
@@ -140,22 +154,25 @@ class HistoryScreen extends ConsumerWidget {
                           Text(
                             dayLabel,
                             style: TextStyle(
-                              fontSize: 11,
+                              fontSize: 10,
                               fontWeight: FontWeight.bold,
-                              color: isSelected
-                                  ? Colors.white
-                                  : Colors.grey.shade600,
+                              color: isSelected ? Colors.white : Colors.grey.shade600,
                             ),
                           ),
-                          const SizedBox(height: 4),
                           Text(
-                            '${date.day}',
+                            dayText,
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: isSelected
-                                  ? Colors.white
-                                  : Theme.of(context).colorScheme.onSurface,
+                              color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface,
+                            ),
+                          ),
+                          Text(
+                            monthText,
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: isSelected ? Colors.white70 : Colors.grey.shade500,
                             ),
                           ),
                         ],

@@ -8,13 +8,44 @@ import '../../../core/database/daos/category_dao.dart';
 import '../../../core/network/ai_service.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+import 'dart:async'; // Add this at the top for Timer
+
+// ... (leave imports above intact, we'll insert below)
 // StateProvider to track which pending notes have failed their network request
 final failedAiNotesProvider = StateProvider<Set<int>>((ref) => {});
+
+// NEW: A smart provider that automatically rolls over exactly at midnight!
+class TodayNotifier extends StateNotifier<DateTime> {
+  Timer? _timer;
+  TodayNotifier() : super(DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day)) {
+    // Check every 60 seconds if we've crossed midnight
+    _timer = Timer.periodic(const Duration(seconds: 60), (_) {
+      final now = DateTime.now();
+      final todayMidnight = DateTime(now.year, now.month, now.day);
+      if (todayMidnight.isAfter(state)) {
+        state = todayMidnight; // Trigger a rebuild across the app!
+      }
+    });
+  }
+  
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+}
+
+final todayProvider = StateNotifierProvider<TodayNotifier, DateTime>((ref) {
+  return TodayNotifier();
+});
 
 // 1. WATCH TODAY'S EXPENSES (For Home Screen)
 final expensesStreamProvider = StreamProvider<List<Expense>>((ref) {
   final expenseDao = ref.watch(expenseDaoProvider);
-  return expenseDao.watchTodaysExpenses(); 
+  final today = ref.watch(todayProvider); // Now correctly recalculates at midnight!
+  
+  // Use our new dynamic date fetcher
+  return expenseDao.watchExpensesForDate(today); 
 });
 
 // 2. WATCH ALL EXPENSES (For Budget Engine)

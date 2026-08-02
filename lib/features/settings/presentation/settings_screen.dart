@@ -8,6 +8,7 @@ import 'widgets/gemini_key_sheet.dart';
 import 'widgets/cloud_sync_tile.dart';
 import 'widgets/language_tile.dart';
 import '../../../core/utils/locale_provider.dart';
+import '../../../core/utils/calendar_type_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -59,6 +60,21 @@ class SettingsScreen extends ConsumerWidget {
 
                 // ETHIOPIAN MULTILINGUAL LANGUAGE SELECTOR!
                 const LanguageTile(),
+                
+                const Divider(indent: 16, endIndent: 16, height: 1),
+
+                // CALENDAR SELECTOR
+                SwitchListTile(
+                  secondary: const Icon(Icons.calendar_month_outlined, size: 28),
+                  title: const Text(
+                    "Ethiopian Calendar",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: const Text("Use Ethiopian dates across the app"),
+                  value: ref.watch(calendarTypeProvider) == CalendarType.ethiopian,
+                  onChanged: (val) =>
+                      ref.read(calendarTypeProvider.notifier).toggle(),
+                ),
               ],
             ),
           ),

@@ -4,6 +4,7 @@ import 'features/navigation/presentation/main_nav_screen.dart';
 import 'core/notifications/notification_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'core/utils/locale_provider.dart';
+import 'core/utils/calendar_type_provider.dart';
 import 'core/network/api_key_provider.dart';
 
 
@@ -19,6 +20,8 @@ void main() async {
   final prefs = await SharedPreferences.getInstance();
   final savedLocale = prefs.getString('language_code') ?? 'en';
   final savedAiEnabled = prefs.getBool('use_ai_parsing') ?? true;
+  final savedCalendar = prefs.getString('calendar_type');
+  final initialCalendar = savedCalendar == 'ethiopian' ? CalendarType.ethiopian : CalendarType.gregorian;
 
   // 3. Launch the app
   runApp(
@@ -26,6 +29,7 @@ void main() async {
       overrides: [
         localeProvider.overrideWith((ref) => LocaleNotifier(initial: savedLocale)),
         aiEnabledProvider.overrideWith((ref) => AiEnabledNotifier(initial: savedAiEnabled)),
+        calendarTypeProvider.overrideWith((ref) => CalendarTypeNotifier(initial: initialCalendar)),
       ],
       child: const BirrNoteApp(),
     ),
