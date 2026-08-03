@@ -65,6 +65,18 @@ class _DailyReminderCardState extends State<DailyReminderCard> {
         return;
       }
 
+      // NEW: Explicitly request Exact Alarms permission for Android 14+
+      // This will open the settings page if they haven't granted it yet.
+      final exactGranted = await _notificationService.requestExactAlarmsPermission();
+      if (!exactGranted && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Warning: Exact alarms are disabled in your settings! Your reminder may be delayed by up to 30 minutes to save battery.'),
+            duration: Duration(seconds: 5),
+          ),
+        );
+      }
+
       if (mounted) {
         // POP OPEN OUR NEW CLEAN, DRY DIALOG!
         showDialog(

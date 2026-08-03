@@ -63,6 +63,16 @@ class NotificationService {
     return granted ?? false;
   }
 
+  // NEW: Request EXACT ALARM Permission (Android 14+ requirement)
+  Future<bool> requestExactAlarmsPermission() async {
+    final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    
+    // Returns true if permission was granted, false if denied, null if older Android
+    final granted = await androidPlugin?.requestExactAlarmsPermission();
+    return granted ?? true; 
+  }
+
   // 4. SCHEDULE DAILY REMINDER (With Large Icon support!)
   Future<void> scheduleDailyReminder(int hour, int minute) async {
     await cancelReminder();
