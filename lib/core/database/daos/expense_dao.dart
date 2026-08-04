@@ -76,8 +76,17 @@ class ExpenseDao extends DatabaseAccessor<AppDatabase> with _$ExpenseDaoMixin {
 
   // 6. Monthly Weekly Trends (Dart Native Grouping - Timezone Safe!)
   Stream<List<TrendBarData>> watchMonthlyTrends() {
-    final limitDate = DateTime.now().subtract(const Duration(days: 28)); // ~4 weeks
-    final startOfLimit = DateTime(limitDate.year, limitDate.month, limitDate.day);
+    final now = DateTime.now();
+    final nowMidnight = DateTime(now.year, now.month, now.day);
+    
+    // Calculate Monday of the current calendar week (DateTime.weekday: 1 = Mon, 7 = Sun)
+    final week4Start = nowMidnight.subtract(Duration(days: now.weekday - 1));
+    final week3Start = week4Start.subtract(const Duration(days: 7));
+    final week2Start = week3Start.subtract(const Duration(days: 7));
+    final week1Start = week2Start.subtract(const Duration(days: 7));
+    
+    // We only need to fetch data from the very beginning of Week 1
+    final startOfLimit = week1Start;
     
     return (select(expenses)
           ..where((tbl) => tbl.isPendingAi.equals(false) & tbl.date.isBiggerOrEqualValue(startOfLimit)))
@@ -90,19 +99,16 @@ class ExpenseDao extends DatabaseAccessor<AppDatabase> with _$ExpenseDaoMixin {
         'Week 4': 0.0,
       };
 
-      final now = DateTime.now();
-      final nowMidnight = DateTime(now.year, now.month, now.day, 23, 59, 59);
-
       for (final row in rows) {
-        final daysAgo = nowMidnight.difference(row.date).inDays;
-        
-        // 0-6 days ago = Week 4 (most recent)
-        // 7-13 days ago = Week 3
-        int weekIndex = 4 - (daysAgo ~/ 7);
-        
-        if (weekIndex >= 1 && weekIndex <= 4) {
-          final label = 'Week $weekIndex';
-          trendMap[label] = trendMap[label]! + row.amount;
+        // Bucket expenses into their strict calendar week boundaries
+        if (!row.date.isBefore(week4Start)) {
+          trendMap['Week 4'] = trendMap['Week 4']! + row.amount;
+        } else if (!row.date.isBefore(week3Start)) {
+          trendMap['Week 3'] = trendMap['Week 3']! + row.amount;
+        } else if (!row.date.isBefore(week2Start)) {
+          trendMap['Week 2'] = trendMap['Week 2']! + row.amount;
+        } else if (!row.date.isBefore(week1Start)) {
+          trendMap['Week 1'] = trendMap['Week 1']! + row.amount;
         }
       }
 
