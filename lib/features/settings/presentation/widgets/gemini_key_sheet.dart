@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart'; // NEW: Browser launcher
+import 'package:url_launcher/url_launcher.dart'; 
 import '../../../../core/network/api_key_provider.dart';
 
 class GeminiKeySheet extends ConsumerStatefulWidget {
@@ -26,43 +26,11 @@ class _GeminiKeySheetState extends ConsumerState<GeminiKeySheet> {
     }
   }
 
-  // NEW: The Step-by-Step Interactive Guide Dialog
-  void _showGetKeyGuide(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Get Free Gemini Key', style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('1. Tap the button below to go to Google AI Studio.'),
-            SizedBox(height: 8),
-            Text('2. Sign in with your personal Google account.'),
-            SizedBox(height: 8),
-            Text('3. Tap the blue "Create API key" button.'),
-            SizedBox(height: 8),
-            Text('4. Copy the generated key and paste it here!'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () async {
-              final url = Uri.parse('https://aistudio.google.com/');
-              if (await canLaunchUrl(url)) {
-                await launchUrl(url, mode: LaunchMode.externalApplication);
-              }
-            },
-            child: const Text('Get Key'),
-          ),
-        ],
-      ),
-    );
+  Future<void> _launchStudio() async {
+    final url = Uri.parse('https://aistudio.google.com/');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    }
   }
 
   @override
@@ -78,70 +46,127 @@ class _GeminiKeySheetState extends ConsumerState<GeminiKeySheet> {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return Padding(
-      padding: EdgeInsets.only(bottom: bottomInset, left: 16, right: 16, top: 16),
+      padding: EdgeInsets.only(bottom: bottomInset, left: 24, right: 24, top: 24),
       child: SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              'Gemini API Key',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Your key is stored securely on this device.',
-              style: TextStyle(color: Colors.grey, fontSize: 13),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-
-            // NEW: The Guide Button!
-            TextButton.icon(
-              icon: const Icon(Icons.help_outline, size: 18),
-              label: const Text('How do I get a free key? 🔑'),
-              onPressed: () => _showGetKeyGuide(context),
-            ),
-            const SizedBox(height: 16),
-            
-            TextField(
-              controller: _keyController,
-              obscureText: true,
-              decoration: InputDecoration(
-                labelText: 'API Key',
-                hintText: hasKey ? '••••••••••••••••••••' : 'AIzaSy...',
-                border: const OutlineInputBorder(),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // HEADER AREA
+              Icon(
+                hasKey ? Icons.check_circle : Icons.auto_awesome,
+                size: 56,
+                color: hasKey ? Colors.green : Theme.of(context).colorScheme.primary,
               ),
-            ),
-            const SizedBox(height: 16),
-
-            FilledButton(
-              onPressed: _saveKey,
-              child: const Padding(
-                padding: EdgeInsets.all(12.0),
-                child: Text('Save Key', style: TextStyle(fontSize: 16)),
+              const SizedBox(height: 16),
+              Text(
+                hasKey ? 'AI Advisor Active' : 'Activate AI Advisor',
+                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
               ),
-            ),
-
-            if (hasKey) ...[
               const SizedBox(height: 8),
-              TextButton(
-                onPressed: () {
-                  ref.read(apiKeyProvider.notifier).deleteKey();
-                  Navigator.of(context).pop();
-                  
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('API Key removed.')),
-                  );
-                },
-                child: const Text('Remove Key', style: TextStyle(color: Colors.red)),
+              Text(
+                hasKey 
+                    ? 'Your free Gemini API Key is securely stored on this device. BirrNote can automatically categorize your expenses!'
+                    : 'Get a free Gemini API Key to automatically categorize your spending just by typing naturally.',
+                style: const TextStyle(color: Colors.grey, fontSize: 14, height: 1.4),
+                textAlign: TextAlign.center,
               ),
+              const SizedBox(height: 24),
+
+              // THE GUIDE (Only show if no key)
+              if (!hasKey) ...[
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildStep(Icons.login, '1. Sign in to Google AI Studio'),
+                      const SizedBox(height: 12),
+                      _buildStep(Icons.key, '2. Tap "Create API key"'),
+                      const SizedBox(height: 12),
+                      _buildStep(Icons.content_copy, '3. Copy the key and paste it below'),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.tonalIcon(
+                          onPressed: _launchStudio,
+                          icon: const Icon(Icons.open_in_new, size: 18),
+                          label: const Text('Open Google AI Studio'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ],
+
+              // INPUT AREA
+              TextField(
+                controller: _keyController,
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: 'Your API Key',
+                  hintText: hasKey ? '••••••••••••••••••••••••••••' : 'AIzaSy...',
+                  prefixIcon: const Icon(Icons.vpn_key_outlined),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  filled: true,
+                  fillColor: Theme.of(context).colorScheme.surface,
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              if (!hasKey) ...[
+                FilledButton(
+                  onPressed: _saveKey,
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('Save API Key', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ),
+              ],
+
+              if (hasKey) ...[
+                OutlinedButton(
+                  onPressed: () {
+                    ref.read(apiKeyProvider.notifier).deleteKey();
+                    Navigator.of(context).pop();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('API Key removed.')),
+                    );
+                  },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.red,
+                    side: const BorderSide(color: Colors.red),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: const Text('Remove Key', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ),
+              ],
+              
+              const SizedBox(height: 24),
             ],
-            const SizedBox(height: 16),
-          ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildStep(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(icon, size: 20, color: Theme.of(context).colorScheme.primary),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(text, style: const TextStyle(fontWeight: FontWeight.w500)),
+        ),
+      ],
     );
   }
 }

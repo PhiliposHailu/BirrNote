@@ -4,6 +4,7 @@ import '../../../../core/network/api_key_provider.dart'; // Watches the AI toggl
 import '../../data/expense_providers.dart';
 import 'manual_entry_sheet.dart';
 import '../../../../core/utils/locale_provider.dart';
+import '../../../settings/presentation/widgets/gemini_key_sheet.dart';
 
 class ChatInputBar extends ConsumerStatefulWidget {
   const ChatInputBar({super.key});
@@ -16,7 +17,21 @@ class _ChatInputBarState extends ConsumerState<ChatInputBar> {
   final TextEditingController _noteController = TextEditingController();
 
   void _submitNote() {
-    final text = _noteController.text;
+    final text = _noteController.text.trim();
+    if (text.isEmpty) return;
+
+    final currentKey = ref.read(apiKeyProvider);
+    if (currentKey == null || currentKey.isEmpty) {
+      // Intercept and launch our beautiful new AI Setup Guide!
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        builder: (context) => const GeminiKeySheet(),
+      );
+      return;
+    }
+
     ref.read(expenseLogicProvider).addRawNote(text);
     _noteController.clear();
   }
