@@ -31,23 +31,8 @@
             android:name="flutterEmbedding"
             android:value="2" />
         
-        <!-- This catches the active daily alarm signal -->
-        <receiver 
-            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" 
-            android:exported="false" />
-
-        <!-- This catches the phone restarting so our alarm is never lost -->
-        <receiver 
-            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver" 
-            android:exported="false">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED"/>
-                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
-                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
-                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON"/>
-            </intent-filter>
-        </receiver>
-
+        <!-- The flutter_local_notifications plugin automatically injects its own optimized
+             receivers here during the build. Manually declaring them can cause conflicts. -->
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
@@ -72,6 +57,11 @@
     <!-- Allows the app to reschedule your daily 9 PM alarm if the phone is restarted -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     
+    <!-- CRITICAL FIX: Allows the notification to wake the CPU from deep sleep just long enough to ring -->
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    
     <!-- Allows high-precision exact timing for reminders -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+    <!-- Automatic exact alarms (bypasses Android 14 user-prompt requirement) -->
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
 </manifest>
