@@ -43,8 +43,8 @@ class AdvisorLogic {
         budgetStatus = "Daily allowance: ${budgetState.dailyLimit.toStringAsFixed(2)} ETB/day. TODAY'S REMAINING SPENDING POWER: ${budgetState.todaySpendingPower.toStringAsFixed(2)} ETB.";
       }
 
-      // B. RETRIEVE 3-MONTH DETAILED TRANSACTION HISTORY
-      final last90DaysExpenses = await expenseDao.getExpensesForLast90Days();
+      // 2. We use our one-shot query to fetch the entire active Quarter of transactions
+      final last90DaysExpenses = await expenseDao.getExpensesForLastQuarter();
       
       // Pack them into an extremely space-saving, dense text block!
       final formattedExpenses = last90DaysExpenses.map((e) {

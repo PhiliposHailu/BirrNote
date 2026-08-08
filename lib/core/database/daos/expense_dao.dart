@@ -118,8 +118,9 @@ class ExpenseDao extends DatabaseAccessor<AppDatabase> with _$ExpenseDaoMixin {
 
   // 7. Quarterly Monthly Trends (Dart Native Grouping - Timezone Safe!)
   Stream<List<TrendBarData>> watchQuarterlyTrends() {
-    final limitDate = DateTime.now().subtract(const Duration(days: 90));
-    final startOfLimit = DateTime(limitDate.year, limitDate.month, limitDate.day);
+    final now = DateTime.now();
+    // True calendar shifting: 1st day of the month, 2 months ago (captures exactly 3 full months)
+    final startOfLimit = DateTime(now.year, now.month - 2, 1);
 
     return (select(expenses)
           ..where((tbl) => tbl.isPendingAi.equals(false) & tbl.date.isBiggerOrEqualValue(startOfLimit)))
@@ -182,12 +183,14 @@ class ExpenseDao extends DatabaseAccessor<AppDatabase> with _$ExpenseDaoMixin {
         .watch();
   }
 
-  // 7. NEW: One-shot query to fetch the entire last 90 days of transactions
-  Future<List<Expense>> getExpensesForLast90Days() {
-    final limitDate = DateTime.now().subtract(const Duration(days: 90));
+  // 8. NEW: One-shot query to fetch the entire active Quarter of transactions
+  Future<List<Expense>> getExpensesForLastQuarter() {
+    final now = DateTime.now();
+    // Align with the true calendar shifting used by the charts
+    final limitDate = DateTime(now.year, now.month - 2, 1);
     
     return (select(expenses)
-          ..where((tbl) => tbl.isPendingAi.equals(false) & tbl.date.isBiggerThanValue(limitDate))
+          ..where((tbl) => tbl.isPendingAi.equals(false) & tbl.date.isBiggerOrEqualValue(limitDate))
           ..orderBy([(t) => OrderingTerm(expression: t.date, mode: OrderingMode.asc)]))
         .get();
   }

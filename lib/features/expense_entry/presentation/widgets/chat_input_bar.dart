@@ -55,6 +55,11 @@ class _ChatInputBarState extends ConsumerState<ChatInputBar> {
   Widget build(BuildContext context) {
     // 1. Watch whether AI Note Parsing is enabled in Settings
     final isAiEnabled = ref.watch(aiEnabledProvider);
+    
+    // 2. Eagerly watch the API key provider. 
+    // This forces Riverpod to start reading the key from Secure Storage the moment 
+    // the app opens, rather than waiting until the exact millisecond the user hits send!
+    ref.watch(apiKeyProvider);
 
     return SafeArea(
       child: Padding(

@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:abushakir/abushakir.dart';
 import '../../../core/database/database_provider.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/database/daos/budget_dao.dart';
+import '../../../core/utils/calendar_type_provider.dart';
 import 'expense_providers.dart';
 
 final activeBudgetStreamProvider = StreamProvider<Budget?>((ref) {
@@ -26,6 +28,7 @@ final budgetEngineProvider = Provider<SpendingPower>((ref) {
   final activeBudgetAsync = ref.watch(activeBudgetStreamProvider);
   // Watching the all-time database stream instead of today-only!
   final expensesAsync = ref.watch(allExpensesStreamProvider);
+  final calendarType = ref.watch(calendarTypeProvider);
 
   if (activeBudgetAsync.isLoading || expensesAsync.isLoading) {
     return SpendingPower(todaySpendingPower: 0, dailyLimit: 0, hasBudget: false);
@@ -59,15 +62,38 @@ final budgetEngineProvider = Provider<SpendingPower>((ref) {
     currentCycleStart = startMidnight.add(Duration(days: completedWeeks * 7));
     nextCycleStart = currentCycleStart.add(const Duration(days: 7));
   } else if (period == 'Monthly') {
-    currentCycleStart = DateTime(nowMidnight.year, nowMidnight.month, 1);
-    nextCycleStart = DateTime(nowMidnight.year, nowMidnight.month + 1, 1);
+    if (calendarType == CalendarType.ethiopian) {
+      final etNow = EtDatetime.fromMillisecondsSinceEpoch(nowMidnight.millisecondsSinceEpoch);
+      currentCycleStart = DateTime.fromMillisecondsSinceEpoch(EtDatetime(etNow.year, etNow.month, 1).moment);
+      nextCycleStart = etNow.month == 13 
+          ? DateTime.fromMillisecondsSinceEpoch(EtDatetime(etNow.year + 1, 1, 1).moment)
+          : DateTime.fromMillisecondsSinceEpoch(EtDatetime(etNow.year, etNow.month + 1, 1).moment);
+    } else {
+      currentCycleStart = DateTime(nowMidnight.year, nowMidnight.month, 1);
+      nextCycleStart = DateTime(nowMidnight.year, nowMidnight.month + 1, 1);
+    }
   } else if (period == 'Quarterly') {
-    final quarterMonth = ((nowMidnight.month - 1) ~/ 3) * 3 + 1;
-    currentCycleStart = DateTime(nowMidnight.year, quarterMonth, 1);
-    nextCycleStart = DateTime(nowMidnight.year, quarterMonth + 3, 1);
+    if (calendarType == CalendarType.ethiopian) {
+      final etNow = EtDatetime.fromMillisecondsSinceEpoch(nowMidnight.millisecondsSinceEpoch);
+      final quarterMonth = ((etNow.month - 1) ~/ 3) * 3 + 1; // 1, 4, 7, 10
+      currentCycleStart = DateTime.fromMillisecondsSinceEpoch(EtDatetime(etNow.year, quarterMonth, 1).moment);
+      nextCycleStart = (quarterMonth + 3 > 13)
+          ? DateTime.fromMillisecondsSinceEpoch(EtDatetime(etNow.year + 1, 1, 1).moment)
+          : DateTime.fromMillisecondsSinceEpoch(EtDatetime(etNow.year, quarterMonth + 3, 1).moment);
+    } else {
+      final quarterMonth = ((nowMidnight.month - 1) ~/ 3) * 3 + 1;
+      currentCycleStart = DateTime(nowMidnight.year, quarterMonth, 1);
+      nextCycleStart = DateTime(nowMidnight.year, quarterMonth + 3, 1);
+    }
   } else if (period == 'Yearly') {
-    currentCycleStart = DateTime(nowMidnight.year, 1, 1);
-    nextCycleStart = DateTime(nowMidnight.year + 1, 1, 1);
+    if (calendarType == CalendarType.ethiopian) {
+      final etNow = EtDatetime.fromMillisecondsSinceEpoch(nowMidnight.millisecondsSinceEpoch);
+      currentCycleStart = DateTime.fromMillisecondsSinceEpoch(EtDatetime(etNow.year, 1, 1).moment);
+      nextCycleStart = DateTime.fromMillisecondsSinceEpoch(EtDatetime(etNow.year + 1, 1, 1).moment);
+    } else {
+      currentCycleStart = DateTime(nowMidnight.year, 1, 1);
+      nextCycleStart = DateTime(nowMidnight.year + 1, 1, 1);
+    }
   } else {
     currentCycleStart = startMidnight;
     nextCycleStart = currentCycleStart.add(const Duration(days: 7));
