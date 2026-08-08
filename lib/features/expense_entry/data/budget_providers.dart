@@ -64,10 +64,10 @@ final budgetEngineProvider = Provider<SpendingPower>((ref) {
   } else if (period == 'Monthly') {
     if (calendarType == CalendarType.ethiopian) {
       final etNow = EtDatetime.fromMillisecondsSinceEpoch(nowMidnight.millisecondsSinceEpoch);
-      currentCycleStart = DateTime.fromMillisecondsSinceEpoch(EtDatetime(etNow.year, etNow.month, 1).moment);
+      currentCycleStart = DateTime.fromMillisecondsSinceEpoch(EtDatetime(year: etNow.year, month: etNow.month, day: 1).moment);
       nextCycleStart = etNow.month == 13 
-          ? DateTime.fromMillisecondsSinceEpoch(EtDatetime(etNow.year + 1, 1, 1).moment)
-          : DateTime.fromMillisecondsSinceEpoch(EtDatetime(etNow.year, etNow.month + 1, 1).moment);
+          ? DateTime.fromMillisecondsSinceEpoch(EtDatetime(year: etNow.year + 1, month: 1, day: 1).moment)
+          : DateTime.fromMillisecondsSinceEpoch(EtDatetime(year: etNow.year, month: etNow.month + 1, day: 1).moment);
     } else {
       currentCycleStart = DateTime(nowMidnight.year, nowMidnight.month, 1);
       nextCycleStart = DateTime(nowMidnight.year, nowMidnight.month + 1, 1);
@@ -76,10 +76,10 @@ final budgetEngineProvider = Provider<SpendingPower>((ref) {
     if (calendarType == CalendarType.ethiopian) {
       final etNow = EtDatetime.fromMillisecondsSinceEpoch(nowMidnight.millisecondsSinceEpoch);
       final quarterMonth = ((etNow.month - 1) ~/ 3) * 3 + 1; // 1, 4, 7, 10
-      currentCycleStart = DateTime.fromMillisecondsSinceEpoch(EtDatetime(etNow.year, quarterMonth, 1).moment);
+      currentCycleStart = DateTime.fromMillisecondsSinceEpoch(EtDatetime(year: etNow.year, month: quarterMonth, day: 1).moment);
       nextCycleStart = (quarterMonth + 3 > 13)
-          ? DateTime.fromMillisecondsSinceEpoch(EtDatetime(etNow.year + 1, 1, 1).moment)
-          : DateTime.fromMillisecondsSinceEpoch(EtDatetime(etNow.year, quarterMonth + 3, 1).moment);
+          ? DateTime.fromMillisecondsSinceEpoch(EtDatetime(year: etNow.year + 1, month: 1, day: 1).moment)
+          : DateTime.fromMillisecondsSinceEpoch(EtDatetime(year: etNow.year, month: quarterMonth + 3, day: 1).moment);
     } else {
       final quarterMonth = ((nowMidnight.month - 1) ~/ 3) * 3 + 1;
       currentCycleStart = DateTime(nowMidnight.year, quarterMonth, 1);
@@ -88,8 +88,8 @@ final budgetEngineProvider = Provider<SpendingPower>((ref) {
   } else if (period == 'Yearly') {
     if (calendarType == CalendarType.ethiopian) {
       final etNow = EtDatetime.fromMillisecondsSinceEpoch(nowMidnight.millisecondsSinceEpoch);
-      currentCycleStart = DateTime.fromMillisecondsSinceEpoch(EtDatetime(etNow.year, 1, 1).moment);
-      nextCycleStart = DateTime.fromMillisecondsSinceEpoch(EtDatetime(etNow.year + 1, 1, 1).moment);
+      currentCycleStart = DateTime.fromMillisecondsSinceEpoch(EtDatetime(year: etNow.year, month: 1, day: 1).moment);
+      nextCycleStart = DateTime.fromMillisecondsSinceEpoch(EtDatetime(year: etNow.year + 1, month: 1, day: 1).moment);
     } else {
       currentCycleStart = DateTime(nowMidnight.year, 1, 1);
       nextCycleStart = DateTime(nowMidnight.year + 1, 1, 1);
