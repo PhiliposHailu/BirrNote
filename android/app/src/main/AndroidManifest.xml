@@ -78,4 +78,7 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
     <!-- Automatic exact alarms (bypasses Android 14 user-prompt requirement) -->
     <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
+    
+    <!-- Allows the app to prompt the user to disable battery optimizations (Doze mode bypass) -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
 </manifest>

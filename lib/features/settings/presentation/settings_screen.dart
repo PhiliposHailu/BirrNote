@@ -7,6 +7,7 @@ import 'widgets/daily_reminder_card.dart';
 import 'widgets/gemini_key_sheet.dart';
 import 'widgets/cloud_sync_tile.dart';
 import 'widgets/language_tile.dart';
+import 'widgets/battery_optimization_tile.dart';
 import '../../../core/utils/locale_provider.dart';
 import '../../../core/utils/calendar_type_provider.dart';
 
@@ -30,6 +31,10 @@ class SettingsScreen extends ConsumerWidget {
 
           // --- CARD 2: DAILY HABIT REMINDER ---
           const DailyReminderCard(),
+          const SizedBox(height: 12),
+
+          // --- CARD 2.5: BATTERY OPTIMIZATION ---
+          const BatteryOptimizationTile(),
           const SizedBox(height: 12),
 
           // --- CARD 3: APP CUSTOMIZATION ---
