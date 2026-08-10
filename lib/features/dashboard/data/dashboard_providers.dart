@@ -7,7 +7,26 @@ import '../../../core/database/dtos/trend_bar_data.dart';
 // 1. WATCH CATEGORY SHARE (Queries the Expense DAO directly)
 final categoryTotalsProvider = StreamProvider<List<CategorySum>>((ref) {
   final expenseDao = ref.watch(expenseDaoProvider);
-  return expenseDao.watchTotalSpentByCategory();
+  final activeFilter = ref.watch(timeFilterProvider);
+
+  DateTime? startDate;
+  final now = DateTime.now();
+  final nowMidnight = DateTime(now.year, now.month, now.day);
+
+  if (activeFilter == 'This Week') {
+    startDate = nowMidnight.subtract(const Duration(days: 6));
+  } else if (activeFilter == 'This Month') {
+    // Aligns perfectly with the bar chart's 4-week window logic!
+    startDate = nowMidnight.subtract(Duration(days: now.weekday - 1)).subtract(const Duration(days: 21));
+  } else if (activeFilter == 'Last 3 Months') {
+    startDate = DateTime(now.year, now.month - 2, 1);
+  } else if (activeFilter == 'All Time') {
+    startDate = null;
+  } else {
+    startDate = nowMidnight.subtract(const Duration(days: 6)); // Default
+  }
+
+  return expenseDao.watchTotalSpentByCategory(startDate: startDate);
 });
 
 // 2. Tracks the active Chart Type ('Pie' or 'Bar')
@@ -28,6 +47,8 @@ final trendTotalsProvider = StreamProvider<List<TrendBarData>>((ref) {
     return expenseDao.watchMonthlyTrends();
   } else if (activeFilter == 'Last 3 Months') {
     return expenseDao.watchQuarterlyTrends();
+  } else if (activeFilter == 'All Time') {
+    return expenseDao.watchYearlyTrends();
   } else {
     return expenseDao.watchWeeklyTrends(); // Default fallback for 'This Week'
   }

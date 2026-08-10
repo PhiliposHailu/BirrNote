@@ -31,9 +31,20 @@ class ExpenseDao extends DatabaseAccessor<AppDatabase> with _$ExpenseDaoMixin {
   }
 
   // 4. Pie Chart Query (Group by Category)
-  Stream<List<CategorySum>> watchTotalSpentByCategory() {
+  Stream<List<CategorySum>> watchTotalSpentByCategory({DateTime? startDate}) {
+    String sql = 'SELECT category, SUM(amount) as total FROM expenses WHERE is_pending_ai = 0';
+    List<Variable> variables = [];
+
+    if (startDate != null) {
+      sql += ' AND date >= ?';
+      variables.add(Variable.withDateTime(startDate));
+    }
+
+    sql += ' GROUP BY category';
+
     final query = customSelect(
-      'SELECT category, SUM(amount) as total FROM expenses WHERE is_pending_ai = 0 GROUP BY category',
+      sql,
+      variables: variables,
       readsFrom: {expenses},
     );
 
@@ -43,6 +54,18 @@ class ExpenseDao extends DatabaseAccessor<AppDatabase> with _$ExpenseDaoMixin {
         row.read<double>('total'),
       )).toList();
     });
+  }
+
+  // 4.5. Accordion Sub-expenses Query (Highest to Lowest)
+  Stream<List<Expense>> watchExpensesByCategory(String categoryName, {DateTime? startDate}) {
+    var query = select(expenses)..where((tbl) => tbl.category.equals(categoryName) & tbl.isPendingAi.equals(false));
+    
+    if (startDate != null) {
+      query = query..where((tbl) => tbl.date.isBiggerOrEqualValue(startDate));
+    }
+    
+    query = query..orderBy([(t) => OrderingTerm(expression: t.amount, mode: OrderingMode.desc)]);
+    return query.watch();
   }
 
   // 5. Weekly Daily Trends (Dart Native Grouping - Timezone Safe!)
@@ -146,6 +169,30 @@ class ExpenseDao extends DatabaseAccessor<AppDatabase> with _$ExpenseDaoMixin {
       return trendMap.entries.map((entry) => TrendBarData(entry.key, entry.value)).toList();
     });
   }
+
+  // 7.5 Yearly Trends (All Time)
+  Stream<List<TrendBarData>> watchYearlyTrends() {
+    return (select(expenses)..where((tbl) => tbl.isPendingAi.equals(false)))
+        .watch()
+        .map((rows) {
+      final Map<String, double> trendMap = {};
+      final now = DateTime.now();
+      
+      // Pre-fill the last 3 years so the chart looks nice even if new
+      for (int i = 2; i >= 0; i--) {
+        trendMap[(now.year - i).toString()] = 0.0;
+      }
+
+      for (final row in rows) {
+        final label = row.date.year.toString();
+        trendMap[label] = (trendMap[label] ?? 0.0) + row.amount;
+      }
+
+      final sortedKeys = trendMap.keys.toList()..sort();
+      return sortedKeys.map((k) => TrendBarData(k, trendMap[k]!)).toList();
+    });
+  }
+
   // A direct, one-shot Future query (Bypasses lazy-loaded streams!)
   Future<List<CategorySum>> getCategoryTotals() async {
     final query = customSelect(

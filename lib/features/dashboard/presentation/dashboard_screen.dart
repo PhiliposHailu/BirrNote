@@ -24,6 +24,12 @@ class DashboardScreen extends ConsumerWidget {
     
     final isPieSelected = chartType == 'Pie';
 
+    String currentDisplayFilter = activeFilter;
+    if (activeFilter == 'This Week') currentDisplayFilter = ref.watch(trProvider('this_week'));
+    if (activeFilter == 'This Month') currentDisplayFilter = ref.watch(trProvider('this_month'));
+    if (activeFilter == 'Last 3 Months') currentDisplayFilter = ref.watch(trProvider('last_3_months'));
+    if (activeFilter == 'All Time') currentDisplayFilter = ref.watch(trProvider('all_time'));
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -49,36 +55,58 @@ class DashboardScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
 
-          // 2. Sliding Time Filters Row (Only renders when Bar Chart is selected!)
-          if (!isPieSelected) ...[
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: ['This Week', 'This Month', 'Last 3 Months'].map((filter) {
-                  final isSelected = activeFilter == filter;
+          // 2. Elegant Dropdown Time Filter
+          Align(
+            alignment: Alignment.centerRight,
+            child: PopupMenuButton<String>(
+              initialValue: activeFilter,
+              onSelected: (String filter) {
+                ref.read(timeFilterProvider.notifier).state = filter;
+              },
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              itemBuilder: (BuildContext context) {
+                return ['This Week', 'This Month', 'Last 3 Months', 'All Time'].map((String filter) {
                   String displayFilter = filter;
                   if (filter == 'This Week') displayFilter = ref.watch(trProvider('this_week'));
                   if (filter == 'This Month') displayFilter = ref.watch(trProvider('this_month'));
                   if (filter == 'Last 3 Months') displayFilter = ref.watch(trProvider('last_3_months'));
+                  if (filter == 'All Time') displayFilter = ref.watch(trProvider('all_time'));
                   
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                    child: ChoiceChip(
-                      label: Text(displayFilter),
-                      selected: isSelected,
-                      onSelected: (selected) {
-                        if (selected) {
-                          ref.read(timeFilterProvider.notifier).state = filter;
-                        }
-                      },
+                  return PopupMenuItem<String>(
+                    value: filter,
+                    child: Text(
+                      displayFilter, 
+                      style: TextStyle(
+                        fontWeight: activeFilter == filter ? FontWeight.bold : FontWeight.normal,
+                        color: activeFilter == filter ? Theme.of(context).colorScheme.primary : null,
+                      )
                     ),
                   );
-                }).toList(),
+                }).toList();
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.calendar_today, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                    const SizedBox(width: 8),
+                    Text(
+                      currentDisplayFilter,
+                      style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(Icons.arrow_drop_down, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  ],
+                ),
               ),
             ),
-            const SizedBox(height: 16),
-          ],
+          ),
+          const SizedBox(height: 16),
 
           // 3. THE GRAPH WINDOW AREA
           Expanded(
