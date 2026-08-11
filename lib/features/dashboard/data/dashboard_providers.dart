@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import '../../../core/database/database_provider.dart';
+import '../../../core/database/app_database.dart';
 import '../../../core/database/dtos/category_sum.dart';
 import '../../../core/database/dtos/trend_bar_data.dart'; 
 
@@ -52,4 +53,28 @@ final trendTotalsProvider = StreamProvider<List<TrendBarData>>((ref) {
   } else {
     return expenseDao.watchWeeklyTrends(); // Default fallback for 'This Week'
   }
+});
+
+// 5. Watch sub-expenses for a specific category (respects the active time filter)
+final categoryExpensesProvider = StreamProvider.family<List<Expense>, String>((ref, categoryName) {
+  final expenseDao = ref.watch(expenseDaoProvider);
+  final activeFilter = ref.watch(timeFilterProvider);
+
+  DateTime? startDate;
+  final now = DateTime.now();
+  final nowMidnight = DateTime(now.year, now.month, now.day);
+
+  if (activeFilter == 'This Week') {
+    startDate = nowMidnight.subtract(const Duration(days: 6));
+  } else if (activeFilter == 'This Month') {
+    startDate = nowMidnight.subtract(Duration(days: now.weekday - 1)).subtract(const Duration(days: 21));
+  } else if (activeFilter == 'Last 3 Months') {
+    startDate = DateTime(now.year, now.month - 2, 1);
+  } else if (activeFilter == 'All Time') {
+    startDate = null;
+  } else {
+    startDate = nowMidnight.subtract(const Duration(days: 6));
+  }
+
+  return expenseDao.watchExpensesByCategory(categoryName, startDate: startDate);
 });

@@ -175,11 +175,60 @@ class DashboardScreen extends ConsumerWidget {
                 itemCount: totals.length,
                 itemBuilder: (context, index) {
                   final item = totals[index];
-                  return ListTile(
-                    dense: true,
-                    leading: CircleAvatar(backgroundColor: _getColor(item.category), radius: 6),
-                    title: Text(item.category, style: const TextStyle(fontWeight: FontWeight.w600)),
-                    trailing: Text('${item.total.toStringAsFixed(2)} ETB', style: const TextStyle(fontWeight: FontWeight.bold)),
+                  return Theme(
+                    data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                    child: ExpansionTile(
+                      tilePadding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      leading: CircleAvatar(backgroundColor: _getColor(item.category), radius: 6),
+                      title: Text(item.category, style: const TextStyle(fontWeight: FontWeight.w600)),
+                      trailing: Text('${item.total.toStringAsFixed(2)} ETB', style: const TextStyle(fontWeight: FontWeight.bold)),
+                      children: [
+                        Consumer(
+                          builder: (context, ref, child) {
+                            final expensesAsync = ref.watch(categoryExpensesProvider(item.category));
+                            
+                            return expensesAsync.when(
+                              loading: () => const Padding(
+                                padding: EdgeInsets.all(8.0), 
+                                child: SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+                              ),
+                              error: (e, st) => Text('${ref.watch(trProvider('error_prefix'))}$e'),
+                              data: (expenses) {
+                                if (expenses.isEmpty) return const SizedBox.shrink();
+                                
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 8.0),
+                                  child: Column(
+                                    children: expenses.map((expense) {
+                                      final note = expense.rawNote.isEmpty ? ref.watch(trProvider('manual_entry')) : expense.rawNote;
+                                      return Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 4.0),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                note,
+                                                style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                            Text(
+                                              '${expense.amount.toStringAsFixed(2)} ETB',
+                                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Theme.of(context).colorScheme.primary),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                   );
                 },
               ),
