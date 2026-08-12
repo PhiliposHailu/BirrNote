@@ -55,6 +55,7 @@ dependencies:
   url_launcher: ^6.3.2
   abushakir: ^1.0.0
   permission_handler: ^11.3.1
+  ethiopian_datetime_picker: ^0.2.0
 
 dev_dependencies:
   flutter_test:

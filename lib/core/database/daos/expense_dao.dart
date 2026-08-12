@@ -2,7 +2,8 @@ import 'package:drift/drift.dart';
 import '../app_database.dart';
 import '../tables/expenses_table.dart';
 import '../dtos/category_sum.dart';
-import '../dtos/trend_bar_data.dart'; 
+import '../dtos/trend_bar_data.dart';
+import 'package:abushakir/abushakir.dart';
 
 part 'expense_dao.g.dart';
 
@@ -69,7 +70,7 @@ class ExpenseDao extends DatabaseAccessor<AppDatabase> with _$ExpenseDaoMixin {
   }
 
   // 5. Weekly Daily Trends (Dart Native Grouping - Timezone Safe!)
-  Stream<List<TrendBarData>> watchWeeklyTrends() {
+  Stream<List<TrendBarData>> watchWeeklyTrends({bool isEthiopian = false}) {
     final limitDate = DateTime.now().subtract(const Duration(days: 6));
     final startOfLimit = DateTime(limitDate.year, limitDate.month, limitDate.day);
 
@@ -98,18 +99,32 @@ class ExpenseDao extends DatabaseAccessor<AppDatabase> with _$ExpenseDaoMixin {
   }
 
   // 6. Monthly Weekly Trends (Dart Native Grouping - Timezone Safe!)
-  Stream<List<TrendBarData>> watchMonthlyTrends() {
+  Stream<List<TrendBarData>> watchMonthlyTrends({bool isEthiopian = false}) {
     final now = DateTime.now();
     final nowMidnight = DateTime(now.year, now.month, now.day);
     
-    // Calculate Monday of the current calendar week (DateTime.weekday: 1 = Mon, 7 = Sun)
-    final week4Start = nowMidnight.subtract(Duration(days: now.weekday - 1));
-    final week3Start = week4Start.subtract(const Duration(days: 7));
-    final week2Start = week3Start.subtract(const Duration(days: 7));
-    final week1Start = week2Start.subtract(const Duration(days: 7));
+    DateTime startOfLimit;
+    List<DateTime> weekStarts = [];
     
-    // We only need to fetch data from the very beginning of Week 1
-    final startOfLimit = week1Start;
+    if (isEthiopian) {
+      final etNow = EtDatetime.fromMillisecondsSinceEpoch(nowMidnight.millisecondsSinceEpoch);
+      weekStarts = [
+        DateTime.fromMillisecondsSinceEpoch(EtDatetime(year: etNow.year, month: etNow.month, day: 22).moment),
+        DateTime.fromMillisecondsSinceEpoch(EtDatetime(year: etNow.year, month: etNow.month, day: 15).moment),
+        DateTime.fromMillisecondsSinceEpoch(EtDatetime(year: etNow.year, month: etNow.month, day: 8).moment),
+        DateTime.fromMillisecondsSinceEpoch(EtDatetime(year: etNow.year, month: etNow.month, day: 1).moment),
+      ];
+      startOfLimit = weekStarts[3];
+    } else {
+      final week4Start = nowMidnight.subtract(Duration(days: now.weekday - 1));
+      weekStarts = [
+        week4Start,
+        week4Start.subtract(const Duration(days: 7)),
+        week4Start.subtract(const Duration(days: 14)),
+        week4Start.subtract(const Duration(days: 21)),
+      ];
+      startOfLimit = weekStarts[3];
+    }
     
     return (select(expenses)
           ..where((tbl) => tbl.isPendingAi.equals(false) & tbl.date.isBiggerOrEqualValue(startOfLimit)))
@@ -123,14 +138,13 @@ class ExpenseDao extends DatabaseAccessor<AppDatabase> with _$ExpenseDaoMixin {
       };
 
       for (final row in rows) {
-        // Bucket expenses into their strict calendar week boundaries
-        if (!row.date.isBefore(week4Start)) {
+        if (!row.date.isBefore(weekStarts[0])) {
           trendMap['Week 4'] = trendMap['Week 4']! + row.amount;
-        } else if (!row.date.isBefore(week3Start)) {
+        } else if (!row.date.isBefore(weekStarts[1])) {
           trendMap['Week 3'] = trendMap['Week 3']! + row.amount;
-        } else if (!row.date.isBefore(week2Start)) {
+        } else if (!row.date.isBefore(weekStarts[2])) {
           trendMap['Week 2'] = trendMap['Week 2']! + row.amount;
-        } else if (!row.date.isBefore(week1Start)) {
+        } else if (!row.date.isBefore(weekStarts[3])) {
           trendMap['Week 1'] = trendMap['Week 1']! + row.amount;
         }
       }
@@ -140,52 +154,89 @@ class ExpenseDao extends DatabaseAccessor<AppDatabase> with _$ExpenseDaoMixin {
   }
 
   // 7. Quarterly Monthly Trends (Dart Native Grouping - Timezone Safe!)
-  Stream<List<TrendBarData>> watchQuarterlyTrends() {
+  Stream<List<TrendBarData>> watchQuarterlyTrends({bool isEthiopian = false}) {
     final now = DateTime.now();
-    // True calendar shifting: 1st day of the month, 2 months ago (captures exactly 3 full months)
-    final startOfLimit = DateTime(now.year, now.month - 2, 1);
+    DateTime startOfLimit;
+    List<String> months = [];
+
+    if (isEthiopian) {
+      final etNow = EtDatetime.fromMillisecondsSinceEpoch(now.millisecondsSinceEpoch);
+      int startMonth = etNow.month - 2;
+      int startYear = etNow.year;
+      if (startMonth <= 0) {
+        startMonth += 13;
+        startYear -= 1;
+      }
+      startOfLimit = DateTime.fromMillisecondsSinceEpoch(EtDatetime(year: startYear, month: startMonth, day: 1).moment);
+      months = ['Mesk', 'Tik', 'Hidar', 'Tahsas', 'Tir', 'Yakatit', 'Magabit', 'Miyazya', 'Ginbot', 'Sene', 'Hamle', 'Nehase', 'Pagume'];
+    } else {
+      startOfLimit = DateTime(now.year, now.month - 2, 1);
+      months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    }
 
     return (select(expenses)
           ..where((tbl) => tbl.isPendingAi.equals(false) & tbl.date.isBiggerOrEqualValue(startOfLimit)))
         .watch()
         .map((rows) {
-      final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      
       final Map<String, double> trendMap = {};
-      final now = DateTime.now();
-      for (int i = 2; i >= 0; i--) {
-        final monthDate = DateTime(now.year, now.month - i, 1);
-        final label = months[monthDate.month - 1];
-        trendMap[label] = 0.0;
-      }
 
-      for (final row in rows) {
-        final label = months[row.date.month - 1];
-        if (trendMap.containsKey(label)) {
-          trendMap[label] = trendMap[label]! + row.amount;
+      if (isEthiopian) {
+        final etNow = EtDatetime.fromMillisecondsSinceEpoch(now.millisecondsSinceEpoch);
+        for (int i = 2; i >= 0; i--) {
+          int m = etNow.month - i;
+          if (m <= 0) m += 13;
+          trendMap[months[m - 1]] = 0.0;
+        }
+        for (final row in rows) {
+          final etDate = EtDatetime.fromMillisecondsSinceEpoch(row.date.millisecondsSinceEpoch);
+          final label = months[etDate.month - 1];
+          if (trendMap.containsKey(label)) {
+            trendMap[label] = trendMap[label]! + row.amount;
+          }
+        }
+      } else {
+        for (int i = 2; i >= 0; i--) {
+          final monthDate = DateTime(now.year, now.month - i, 1);
+          final label = months[monthDate.month - 1];
+          trendMap[label] = 0.0;
+        }
+        for (final row in rows) {
+          final label = months[row.date.month - 1];
+          if (trendMap.containsKey(label)) {
+            trendMap[label] = trendMap[label]! + row.amount;
+          }
         }
       }
-
       return trendMap.entries.map((entry) => TrendBarData(entry.key, entry.value)).toList();
     });
   }
 
   // 7.5 Yearly Trends (All Time)
-  Stream<List<TrendBarData>> watchYearlyTrends() {
+  Stream<List<TrendBarData>> watchYearlyTrends({bool isEthiopian = false}) {
     return (select(expenses)..where((tbl) => tbl.isPendingAi.equals(false)))
         .watch()
         .map((rows) {
       final Map<String, double> trendMap = {};
       final now = DateTime.now();
       
-      // Pre-fill the last 3 years so the chart looks nice even if new
-      for (int i = 2; i >= 0; i--) {
-        trendMap[(now.year - i).toString()] = 0.0;
-      }
-
-      for (final row in rows) {
-        final label = row.date.year.toString();
-        trendMap[label] = (trendMap[label] ?? 0.0) + row.amount;
+      if (isEthiopian) {
+        final etNow = EtDatetime.fromMillisecondsSinceEpoch(now.millisecondsSinceEpoch);
+        for (int i = 2; i >= 0; i--) {
+          trendMap[(etNow.year - i).toString()] = 0.0;
+        }
+        for (final row in rows) {
+          final etDate = EtDatetime.fromMillisecondsSinceEpoch(row.date.millisecondsSinceEpoch);
+          final label = etDate.year.toString();
+          trendMap[label] = (trendMap[label] ?? 0.0) + row.amount;
+        }
+      } else {
+        for (int i = 2; i >= 0; i--) {
+          trendMap[(now.year - i).toString()] = 0.0;
+        }
+        for (final row in rows) {
+          final label = row.date.year.toString();
+          trendMap[label] = (trendMap[label] ?? 0.0) + row.amount;
+        }
       }
 
       final sortedKeys = trendMap.keys.toList()..sort();

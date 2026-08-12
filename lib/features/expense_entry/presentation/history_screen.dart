@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:drift/drift.dart' as drift;
 import '../../../core/database/database_provider.dart';
-import '../../../core/database/app_database.dart';
 import '../data/expense_providers.dart';
 import '../../../core/utils/locale_provider.dart';
 import 'widgets/manual_entry_sheet.dart';
 import 'package:abushakir/abushakir.dart';
 import '../../../core/utils/calendar_type_provider.dart';
+import 'package:ethiopian_datetime_picker/ethiopian_datetime_picker.dart' as et_picker;
 
 class HistoryScreen extends ConsumerWidget {
   const HistoryScreen({super.key});
@@ -40,15 +39,37 @@ class HistoryScreen extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     DateTime currentDate,
+    CalendarType calendarType,
   ) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: currentDate,
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2030),
-    );
-    if (picked != null && picked != currentDate) {
-      ref.read(historyDateProvider.notifier).state = picked;
+    if (calendarType == CalendarType.ethiopian) {
+      // Shift to Noon to avoid midnight timezone boundary bugs
+      final noonCurrent = currentDate.add(const Duration(hours: 12));
+      final etCurrent = EtDatetime.fromMillisecondsSinceEpoch(noonCurrent.millisecondsSinceEpoch);
+      final et_picker.ETDateTime? picked = await et_picker.showETDatePicker(
+        context: context,
+        initialDate: et_picker.ETDateTime(etCurrent.year, etCurrent.month, etCurrent.day),
+        firstDate: et_picker.ETDateTime(2010, 1, 1),
+        lastDate: et_picker.ETDateTime(2030, 13, 6),
+      );
+      if (picked != null) {
+        final etDate = EtDatetime(year: picked.year, month: picked.month, day: picked.day);
+        // Shift back via Noon (43200000 ms = 12 hours) to get the safe Gregorian date
+        final convertedNoon = DateTime.fromMillisecondsSinceEpoch(etDate.moment + 43200000);
+        final safeMidnight = DateTime(convertedNoon.year, convertedNoon.month, convertedNoon.day);
+        if (!_isSameDay(safeMidnight, currentDate)) {
+          ref.read(historyDateProvider.notifier).state = safeMidnight;
+        }
+      }
+    } else {
+      final DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: currentDate,
+        firstDate: DateTime(2020),
+        lastDate: DateTime(2030),
+      );
+      if (picked != null && picked != currentDate) {
+        ref.read(historyDateProvider.notifier).state = picked;
+      }
     }
   }
 
@@ -70,7 +91,7 @@ class HistoryScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.calendar_today_outlined),
-            onPressed: () => _selectCalendarDate(context, ref, selectedDate),
+            onPressed: () => _selectCalendarDate(context, ref, selectedDate, calendarType),
           ),
         ],
       ),
@@ -127,7 +148,8 @@ class HistoryScreen extends ConsumerWidget {
                   String dayText;
 
                   if (calendarType == CalendarType.ethiopian) {
-                    final etDate = EtDatetime.fromMillisecondsSinceEpoch(date.millisecondsSinceEpoch);
+                    final noonDate = date.add(const Duration(hours: 12));
+                    final etDate = EtDatetime.fromMillisecondsSinceEpoch(noonDate.millisecondsSinceEpoch);
                     monthText = etMonths[etDate.month - 1];
                     dayText = etDate.day.toString();
                   } else {
@@ -145,7 +167,7 @@ class HistoryScreen extends ConsumerWidget {
                       decoration: BoxDecoration(
                         color: isSelected
                             ? Theme.of(context).colorScheme.primary
-                            : Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                            : Theme.of(context).colorScheme.surfaceContainerHighest.withAlpha(128),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Column(

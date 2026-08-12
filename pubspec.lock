@@ -281,6 +281,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.8"
+  ethiopian_datetime:
+    dependency: transitive
+    description:
+      name: ethiopian_datetime
+      sha256: "50fc1d387f532b0984d6b8573946a01e705acd45374ccea442a5de9fb3609c41"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.5"
+  ethiopian_datetime_picker:
+    dependency: "direct main"
+    description:
+      name: ethiopian_datetime_picker
+      sha256: "88b3ca32a9ad98a4f23a726eaab9fa78a8c8384d2f6f8ae78b1446f3c26ffda3"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.0"
   extension_google_sign_in_as_googleapis_auth:
     dependency: "direct main"
     description:
@@ -398,6 +414,11 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.1"
+  flutter_localizations:
+    dependency: transitive
+    description: flutter
+    source: sdk
+    version: "0.0.0"
   flutter_native_splash:
     dependency: "direct dev"
     description:
@@ -632,6 +653,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.8.0"
+  intl:
+    dependency: transitive
+    description:
+      name: intl
+      sha256: "3df61194eb431efc39c4ceba583b95633a403f46c9fd341e550ce0bfa50e9aa5"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.20.2"
   io:
     dependency: transitive
     description:
