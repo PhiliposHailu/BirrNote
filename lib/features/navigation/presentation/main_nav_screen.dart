@@ -9,6 +9,7 @@ import '../../expense_entry/presentation/history_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../expense_entry/presentation/widgets/onboarding_tour.dart'; // Gives us the Tour launcher!
 import '../../../core/utils/locale_provider.dart';
+import '../../../core/theme/theme_provider.dart';
 
 class MainNavScreen extends ConsumerStatefulWidget {
   const MainNavScreen({super.key});
@@ -59,6 +60,19 @@ class _MainNavScreenState extends ConsumerState<MainNavScreen> {
           IconButton(
             icon: const Icon(Icons.help_outline),
             onPressed: () => OnboardingTour.show(context, ref), // Launches the tour!
+          ),
+          IconButton(
+            icon: Icon(
+              ref.watch(themeModeProvider) == ThemeMode.dark 
+                ? Icons.light_mode 
+                : Icons.dark_mode
+            ),
+            onPressed: () {
+              final currentTheme = ref.read(themeModeProvider);
+              final newTheme = currentTheme == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+              ref.read(themeModeProvider.notifier).state = newTheme;
+              saveThemeMode(newTheme);
+            },
           ),
           IconButton(
             icon: const Icon(Icons.history),
