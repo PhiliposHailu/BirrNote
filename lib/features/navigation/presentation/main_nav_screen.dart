@@ -7,9 +7,24 @@ import '../../ai_advisor/presentation/advisor_screen.dart';
 import '../../../core/notifications/notification_service.dart';
 import '../../expense_entry/presentation/history_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../expense_entry/presentation/widgets/onboarding_tour.dart'; // Gives us the Tour launcher!
+import '../../expense_entry/presentation/widgets/onboarding_tour.dart';
 import '../../../core/utils/locale_provider.dart';
 import '../../../core/theme/theme_provider.dart';
+
+class NavIndexNotifier extends Notifier<int> {
+  @override
+  int build() => 0;
+  void updateState(int index) => state = index;
+}
+
+class TourTriggerNotifier extends Notifier<int> {
+  @override
+  int build() => 0;
+  void increment() => state++;
+}
+
+final navIndexProvider = NotifierProvider<NavIndexNotifier, int>(NavIndexNotifier.new);
+final tourTriggerProvider = NotifierProvider<TourTriggerNotifier, int>(TourTriggerNotifier.new);
 
 class MainNavScreen extends ConsumerStatefulWidget {
   const MainNavScreen({super.key});
@@ -19,12 +34,9 @@ class MainNavScreen extends ConsumerStatefulWidget {
 }
 
 class _MainNavScreenState extends ConsumerState<MainNavScreen> {
-  int _currentIndex = 0;
-
   @override
   void initState() {
     super.initState();
-    _currentIndex = 0;
 
     // Silent startup setups
     Future.microtask(() => NotificationService().checkFirstTimePrompt());
@@ -51,29 +63,24 @@ class _MainNavScreenState extends ConsumerState<MainNavScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final currentIndex = ref.watch(navIndexProvider);
+
+    // NEW: Safely listen for external requests to launch the tour!
+    ref.listen<int>(tourTriggerProvider, (previous, next) {
+      if (next > (previous ?? 0)) {
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted) {
+            OnboardingTour.show(context, ref);
+          }
+        });
+      }
+    });
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('BirrNote'),
         centerTitle: true,
         actions: [
-          // NEW: THE "ON-DEMAND" HELP BUTTON!
-          IconButton(
-            icon: const Icon(Icons.help_outline),
-            onPressed: () => OnboardingTour.show(context, ref), // Launches the tour!
-          ),
-          IconButton(
-            icon: Icon(
-              ref.watch(themeModeProvider) == ThemeMode.dark 
-                ? Icons.light_mode 
-                : Icons.dark_mode
-            ),
-            onPressed: () {
-              final currentTheme = ref.read(themeModeProvider);
-              final newTheme = currentTheme == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
-              ref.read(themeModeProvider.notifier).state = newTheme;
-              saveThemeMode(newTheme);
-            },
-          ),
           IconButton(
             icon: const Icon(Icons.history),
             onPressed: () {
@@ -91,7 +98,7 @@ class _MainNavScreenState extends ConsumerState<MainNavScreen> {
         ],
       ),
       body: IndexedStack(
-        index: _currentIndex,
+        index: currentIndex,
         children: const [
           ExpenseEntryScreen(), // Tab 0
           DashboardScreen(),
@@ -101,11 +108,9 @@ class _MainNavScreenState extends ConsumerState<MainNavScreen> {
 
       // Bottom Navigation Bar
       bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
+        selectedIndex: currentIndex,
         onDestinationSelected: (int index) {
-          setState(() {
-            _currentIndex = index; // Update the state when a tab is clicked
-          });
+          ref.read(navIndexProvider.notifier).updateState(index);
         },
         destinations: [
           NavigationDestination(

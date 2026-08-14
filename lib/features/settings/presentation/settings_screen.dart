@@ -10,6 +10,8 @@ import 'widgets/language_tile.dart';
 import 'widgets/battery_optimization_tile.dart';
 import '../../../core/utils/locale_provider.dart';
 import '../../../core/utils/calendar_type_provider.dart';
+import '../../../core/theme/theme_provider.dart';
+import '../../navigation/presentation/main_nav_screen.dart'; // Gives us the tour triggers!
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -79,6 +81,45 @@ class SettingsScreen extends ConsumerWidget {
                   value: ref.watch(calendarTypeProvider) == CalendarType.ethiopian,
                   onChanged: (val) =>
                       ref.read(calendarTypeProvider.notifier).toggle(),
+                ),
+
+                const Divider(indent: 16, endIndent: 16, height: 1),
+
+                // DARK MODE TOGGLE
+                SwitchListTile(
+                  secondary: const Icon(Icons.dark_mode_outlined, size: 28),
+                  title: const Text(
+                    "Dark Mode",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: const Text("Toggle dark theme"),
+                  value: ref.watch(themeModeProvider) == ThemeMode.dark,
+                  onChanged: (val) {
+                    final newTheme = val ? ThemeMode.dark : ThemeMode.light;
+                    ref.read(themeModeProvider.notifier).updateState(newTheme);
+                    saveThemeMode(newTheme);
+                  },
+                ),
+
+                const Divider(indent: 16, endIndent: 16, height: 1),
+
+                // HELP / TOUR
+                ListTile(
+                  leading: const Icon(Icons.help_outline, size: 28),
+                  title: const Text(
+                    "App Tour",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: const Text("Replay the onboarding tour"),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    // 1. Switch back to the main Expense Entry tab
+                    ref.read(navIndexProvider.notifier).updateState(0);
+                    // 2. Trigger the tour to launch on the main screen
+                    ref.read(tourTriggerProvider.notifier).increment();
+                    // 3. Pop the settings screen so the main screen is visible
+                    Navigator.of(context).popUntil((route) => route.isFirst);
+                  },
                 ),
               ],
             ),

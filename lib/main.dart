@@ -37,7 +37,7 @@ void main() async {
         localeProvider.overrideWith((ref) => LocaleNotifier(initial: savedLocale)),
         aiEnabledProvider.overrideWith((ref) => AiEnabledNotifier(initial: savedAiEnabled)),
         calendarTypeProvider.overrideWith((ref) => CalendarTypeNotifier(initial: initialCalendar)),
-        themeModeProvider.overrideWith((ref) => initialThemeMode),
+        themeModeProvider.overrideWith(() => ThemeModeNotifier(initial: initialThemeMode)),
       ],
       child: const BirrNoteApp(),
     ),
