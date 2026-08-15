@@ -84,7 +84,13 @@ class AppTranslations {
       'reset_categories_q': "Reset Categories?",
       'reset_warning': "This will delete all custom categories and restore the default 5.",
       'reset': "Reset",
-      'language': "Language"
+      'language': "Language",
+      'ethiopian_calendar': "Ethiopian Calendar",
+      'use_ethiopian_dates': "Use Ethiopian dates across the app",
+      'dark_mode': "Dark Mode",
+      'toggle_dark_theme': "Toggle dark theme",
+      'app_tour': "App Tour",
+      'replay_tour': "Replay the onboarding tour"
     },
     'am': {
       'use_ai_parsing': "በኤአይ ወጪዎችን መተንተን",
@@ -170,7 +176,13 @@ class AppTranslations {
       'reset_categories_q': "ምድቦች ይመለሱ?",
       'reset_warning': "ይህ ሁሉንም የራስዎ ምድቦች ይሰርዛል እና ነባሪዎቹን 5 ይመልሳል።",
       'reset': "መልስ",
-      'language': "ቋንቋ"
+      'language': "ቋንቋ",
+      'ethiopian_calendar': "የኢትዮጵያ ቀን አቆጣጠር",
+      'use_ethiopian_dates': "በሁሉም ቦታ የኢትዮጵያን ቀናት ይጠቀሙ",
+      'dark_mode': "ጨለማ ገጽታ",
+      'toggle_dark_theme': "ወደ ጨለማ ገጽታ ቀይር",
+      'app_tour': "ስለ አፕሊኬሽኑ ማብራሪያ",
+      'replay_tour': "የአፕሊኬሽኑን አጠቃቀም በድጋሚ እይ"
     },
     'om': {
       'use_ai_parsing': "Gargaarsa AI'n Baasii Xiinxaluu",
@@ -256,7 +268,13 @@ class AppTranslations {
       'reset_categories_q': "Kutaalee deebisuu barbaaddaa?",
       'reset_warning': "Kun kutaalee ati uumte hunda haqee gara idilee 5tti deebisa.",
       'reset': "Deebisi",
-      'language': "Afaan"
+      'language': "Afaan",
+      'ethiopian_calendar': "Kalaandarii Itoophiyaa",
+      'use_ethiopian_dates': "Guyyoota Itoophiyaa fayyadami",
+      'dark_mode': "Dukkanaawwaa",
+      'toggle_dark_theme': "Gara dukkanaawwaatti jijjiiri",
+      'app_tour': "Ibsa Appii",
+      'replay_tour': "Akkaataa itti fayyadamaa irra deebi'ii ilaali"
     },
     'ti': {
       'use_ai_parsing': "ብኤአይ ወጻኢታት ምትሕልላፍ",
@@ -342,7 +360,13 @@ class AppTranslations {
       'reset_categories_q': "ክፍልታት ይመለሱ ድዮም?",
       'reset_warning:': "እዚ ንኹሎም ናትኩም ክፍልታት ደምሲሱ ናብቶም ናይ ቅድሚ ሕጂ 5 ክመልሶም እዩ።",
       'reset': "ምለስ",
-      'language': "ቋንቋ"
+      'language': "ቋንቋ",
+      'ethiopian_calendar': "ናይ ኢትዮጵያ ኣቆጻጽራ",
+      'use_ethiopian_dates': "ናይ ኢትዮጵያ ዕለታት ተጠቐም",
+      'dark_mode': "ጸሊም ገጽታ",
+      'toggle_dark_theme': "ናብ ጸሊም ገጽታ ቀይር",
+      'app_tour': "መብርሂ ኣፕሊኬሽን",
+      'replay_tour': "ኣጠቓቕማ ኣፕሊኬሽን ብሓድሽ ርአ"
     },
   };
 

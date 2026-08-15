@@ -73,11 +73,11 @@ class SettingsScreen extends ConsumerWidget {
                 // CALENDAR SELECTOR
                 SwitchListTile(
                   secondary: const Icon(Icons.calendar_month_outlined, size: 28),
-                  title: const Text(
-                    "Ethiopian Calendar",
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                  title: Text(
+                    ref.watch(trProvider('ethiopian_calendar')),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  subtitle: const Text("Use Ethiopian dates across the app"),
+                  subtitle: Text(ref.watch(trProvider('use_ethiopian_dates'))),
                   value: ref.watch(calendarTypeProvider) == CalendarType.ethiopian,
                   onChanged: (val) =>
                       ref.read(calendarTypeProvider.notifier).toggle(),
@@ -88,11 +88,11 @@ class SettingsScreen extends ConsumerWidget {
                 // DARK MODE TOGGLE
                 SwitchListTile(
                   secondary: const Icon(Icons.dark_mode_outlined, size: 28),
-                  title: const Text(
-                    "Dark Mode",
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                  title: Text(
+                    ref.watch(trProvider('dark_mode')),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  subtitle: const Text("Toggle dark theme"),
+                  subtitle: Text(ref.watch(trProvider('toggle_dark_theme'))),
                   value: ref.watch(themeModeProvider) == ThemeMode.dark,
                   onChanged: (val) {
                     final newTheme = val ? ThemeMode.dark : ThemeMode.light;
@@ -106,11 +106,11 @@ class SettingsScreen extends ConsumerWidget {
                 // HELP / TOUR
                 ListTile(
                   leading: const Icon(Icons.help_outline, size: 28),
-                  title: const Text(
-                    "App Tour",
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                  title: Text(
+                    ref.watch(trProvider('app_tour')),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  subtitle: const Text("Replay the onboarding tour"),
+                  subtitle: Text(ref.watch(trProvider('replay_tour'))),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () {
                     // 1. Switch back to the main Expense Entry tab
