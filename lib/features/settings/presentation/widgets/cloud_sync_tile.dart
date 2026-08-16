@@ -120,19 +120,19 @@ class _CloudSyncSheetState extends ConsumerState<_CloudSyncSheet> {
                       icon: const Icon(Icons.cloud_upload),
                       label: const Text('Backup'),
                       onPressed: () async {
+                        final messenger = ScaffoldMessenger.of(context);
                         Navigator.pop(context); // Close sheet
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        messenger.showSnackBar(
                           const SnackBar(content: Text('Starting cloud backup...')),
                         );
                         final success = await ref.read(cloudSyncProvider).backupDatabase();
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(success ? 'Backup Successful! 🚀' : 'Backup failed.'),
-                              backgroundColor: success ? Colors.green : Colors.red,
-                            ),
-                          );
-                        }
+                        
+                        messenger.showSnackBar(
+                          SnackBar(
+                            content: Text(success ? 'Backup Successful! 🚀' : 'Backup failed.'),
+                            backgroundColor: success ? Colors.green : Colors.red,
+                          ),
+                        );
                       },
                     ),
                   ),
@@ -143,16 +143,19 @@ class _CloudSyncSheetState extends ConsumerState<_CloudSyncSheet> {
                       icon: const Icon(Icons.cloud_download),
                       label: const Text('Restore'),
                       onPressed: () async {
+                        final messenger = ScaffoldMessenger.of(context);
                         Navigator.pop(context); // Close sheet
+                        messenger.showSnackBar(
+                          const SnackBar(content: Text('Starting cloud restore...')),
+                        );
                         final success = await ref.read(cloudSyncProvider).restoreDatabase();
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(success ? 'Restore Successful! Restart app. 🎉' : 'Restore failed.'),
-                              backgroundColor: success ? Colors.green : Colors.red,
-                            ),
-                          );
-                        }
+                        
+                        messenger.showSnackBar(
+                          SnackBar(
+                            content: Text(success ? 'Restore Successful! Restart app. 🎉' : 'Restore failed.'),
+                            backgroundColor: success ? Colors.green : Colors.red,
+                          ),
+                        );
                       },
                     ),
                   ),
