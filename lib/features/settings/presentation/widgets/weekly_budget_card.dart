@@ -62,7 +62,8 @@ class _WeeklyBudgetCardState extends ConsumerState<WeeklyBudgetCard> {
         final hasBudget = budget != null;
 
         return Card(
-          elevation: 2,
+          elevation: 0,
+          color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.4),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           child: Padding(
             padding: const EdgeInsets.all(16.0),

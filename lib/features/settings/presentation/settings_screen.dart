@@ -16,6 +16,33 @@ import '../../navigation/presentation/main_nav_screen.dart'; // Gives us the tou
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
+  Widget _buildSectionHeader(String title, BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 16, bottom: 8, top: 16),
+      child: Text(
+        title.toUpperCase(),
+        style: TextStyle(
+          color: Theme.of(context).colorScheme.primary,
+          fontWeight: FontWeight.bold,
+          fontSize: 13,
+          letterSpacing: 1.2,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIcon(IconData iconData, Color color) {
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Icon(iconData, color: color, size: 22),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Watch our key provider so we can display a dynamic subtitle on our main row!
@@ -23,11 +50,16 @@ class SettingsScreen extends ConsumerWidget {
     final hasKey = currentKey != null && currentKey.isNotEmpty;
 
     return Scaffold(
-      appBar: AppBar(title: Text(ref.watch(trProvider('settings'))), centerTitle: true),
+      appBar: AppBar(
+        title: Text(ref.watch(trProvider('settings')), style: const TextStyle(fontWeight: FontWeight.w600)), 
+        centerTitle: true,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+      ),
       body: ListView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         children: [
-          // --- CARD 1: BUDGET LIMITS ---
+          _buildSectionHeader("Financial Goals", context),
           const WeeklyBudgetCard(),
           const SizedBox(height: 12),
 
@@ -39,16 +71,17 @@ class SettingsScreen extends ConsumerWidget {
           const BatteryOptimizationTile(),
           const SizedBox(height: 12),
 
-          // --- CARD 3: APP CUSTOMIZATION ---
+          _buildSectionHeader("App Customization", context),
           Card(
-            elevation: 2,
+            elevation: 0,
+            color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.4),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
               children: [
                 ListTile(
-                  leading: const Icon(Icons.category_outlined, size: 28),
+                  leading: _buildIcon(Icons.category_rounded, Colors.orange),
                   title: Text(
                     ref.watch(trProvider('manage_categories')),
                     style: const TextStyle(fontWeight: FontWeight.bold),
@@ -72,7 +105,7 @@ class SettingsScreen extends ConsumerWidget {
 
                 // CALENDAR SELECTOR
                 SwitchListTile(
-                  secondary: const Icon(Icons.calendar_month_outlined, size: 28),
+                  secondary: _buildIcon(Icons.calendar_month_rounded, Colors.teal),
                   title: Text(
                     ref.watch(trProvider('ethiopian_calendar')),
                     style: const TextStyle(fontWeight: FontWeight.bold),
@@ -87,7 +120,7 @@ class SettingsScreen extends ConsumerWidget {
 
                 // DARK MODE TOGGLE
                 SwitchListTile(
-                  secondary: const Icon(Icons.dark_mode_outlined, size: 28),
+                  secondary: _buildIcon(Icons.dark_mode_rounded, Colors.indigo),
                   title: Text(
                     ref.watch(trProvider('dark_mode')),
                     style: const TextStyle(fontWeight: FontWeight.bold),
@@ -105,7 +138,7 @@ class SettingsScreen extends ConsumerWidget {
 
                 // HELP / TOUR
                 ListTile(
-                  leading: const Icon(Icons.help_outline, size: 28),
+                  leading: _buildIcon(Icons.help_rounded, Colors.blue),
                   title: Text(
                     ref.watch(trProvider('app_tour')),
                     style: const TextStyle(fontWeight: FontWeight.bold),
@@ -126,9 +159,10 @@ class SettingsScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
 
-          // --- CARD 4: THE SECURITY VAULT (Gemini Key + Google Drive Sync) ---
+          _buildSectionHeader("Security & Cloud", context),
           Card(
-            elevation: 2.0,
+            elevation: 0,
+            color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.4),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
@@ -136,7 +170,7 @@ class SettingsScreen extends ConsumerWidget {
               children: [
                 // ROW A: GEMINI KEY (ListTile)
                 ListTile(
-                  leading: const Icon(Icons.vpn_key_outlined, size: 28),
+                  leading: _buildIcon(Icons.vpn_key_rounded, Colors.purple),
                   title: Text(
                     ref.watch(trProvider('gemini_api_key')),
                     style: const TextStyle(fontWeight: FontWeight.bold),
@@ -163,7 +197,7 @@ class SettingsScreen extends ConsumerWidget {
 
                 // NEW ROW B: USE AI TOGGLE!
                 SwitchListTile(
-                  secondary: const Icon(Icons.psychology_outlined, size: 28),
+                  secondary: _buildIcon(Icons.psychology_rounded, Colors.pink),
                   title: Text(
                     ref.watch(trProvider('use_ai_parsing')),
                     style: const TextStyle(fontWeight: FontWeight.bold),
