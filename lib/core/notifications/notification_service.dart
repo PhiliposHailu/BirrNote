@@ -83,8 +83,6 @@ class NotificationService {
       channelDescription: 'Reminds you to log your daily spending',
       importance: Importance.max,
       priority: Priority.high,
-      // FIXED: Displays your detailed, colored 3D logo inside the notification!
-      largeIcon: DrawableResourceAndroidBitmap('launcher_icon'), 
     );
 
     final now = tz.TZDateTime.now(tz.local);
@@ -138,8 +136,6 @@ class NotificationService {
       channelDescription: 'Used to test if notifications are working',
       importance: Importance.max,
       priority: Priority.high,
-      // FIXED: Displays your detailed, colored 3D logo inside the notification!
-      largeIcon: DrawableResourceAndroidBitmap('launcher_icon'), 
     );
 
     await _plugin.show(
