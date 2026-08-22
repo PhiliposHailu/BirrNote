@@ -13,6 +13,7 @@ final advisorChatProvider = StateProvider<List<Map<String, String>>>((ref) {
   ];
 });
 
+
 final advisorLogicProvider = Provider((ref) {
   return AdvisorLogic(ref);
 });
