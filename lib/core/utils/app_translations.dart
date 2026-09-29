@@ -8,7 +8,8 @@ class AppTranslations {
       'all_time': "All Time",
       'error_prefix': "Error: ",
       'no_trend_data': "No trend data available yet.",
-      'no_spending_logged_today_start': "No spending logged today! Start typing below.",
+      'no_spending_logged_today_start':
+          "No spending logged today! Start typing below.",
       'waiting_for_ai': "Waiting for AI... • ",
       'note_prefix': "Note: \"",
       'qty_prefix': "\" • Qty: ",
@@ -44,11 +45,14 @@ class AppTranslations {
       'eg_lunch': "e.g., Lunch",
       'save_expense': "Save Expense",
       'budget_tour_title': "Today's Spending Power 📊",
-      'budget_tour_desc': "This card displays exactly how much you can spend today. It automatically rolls over your savings or overspends every week!",
+      'budget_tour_desc':
+          "This card displays exactly how much you can spend today. It automatically rolls over your savings or overspends every week!",
       'log_tour_title': "Your Daily Log 📝",
-      'log_tour_desc': "This is your daily spending feed. If you make a mistake, tap the red trash can icon to delete any item safely with an Undo option.",
+      'log_tour_desc':
+          "This is your daily spending feed. If you make a mistake, tap the red trash can icon to delete any item safely with an Undo option.",
       'chat_tour_title': "Effortless Tracking 💬",
-      'chat_tour_desc': "Type your transactions naturally here (e.g. 'taxi 50' or 'macchiato 40') and Gemini AI will instantly categorize it, or tap the '+' icon to log it manually!",
+      'chat_tour_desc':
+          "Type your transactions naturally here (e.g. 'taxi 50' or 'macchiato 40') and Gemini AI will instantly categorize it, or tap the '+' icon to log it manually!",
       'skip': "SKIP",
       'set_budget': "Set Budget",
       'cycle': "Cycle",
@@ -59,6 +63,10 @@ class AppTranslations {
       'manage_categories': "Manage Categories",
       'manage_categories_desc': "Add, edit, or delete your categories",
       'gemini_api_key': "Gemini API Key",
+      'ai_model': "AI Model",
+      'select_model': "Select Model",
+      'refresh_models': "Refresh Models",
+      'models_refreshed': "Models updated",
       'key_active_secured': "Key Active & Secured",
       'add_key_for_ai': "Add key for AI features",
       'when_disabled_notes': "When disabled, notes save locally only",
@@ -79,10 +87,12 @@ class AppTranslations {
       'remove': "Remove",
       'google_sync': "Google Drive Sync",
       'daily_reminder': "Daily Reminder",
-      'past_expenses_warning': "Past expenses under this category will not be deleted.",
+      'past_expenses_warning':
+          "Past expenses under this category will not be deleted.",
       'reset_to_default_categories': "Reset to Default Categories",
       'reset_categories_q': "Reset Categories?",
-      'reset_warning': "This will delete all custom categories and restore the default 5.",
+      'reset_warning':
+          "This will delete all custom categories and restore the default 5.",
       'reset': "Reset",
       'language': "Language",
       'ethiopian_calendar': "Ethiopian Calendar",
@@ -90,7 +100,7 @@ class AppTranslations {
       'dark_mode': "Dark Mode",
       'toggle_dark_theme': "Toggle dark theme",
       'app_tour': "App Tour",
-      'replay_tour': "Replay the onboarding tour"
+      'replay_tour': "Replay the onboarding tour",
     },
     'am': {
       'use_ai_parsing': "በኤአይ ወጪዎችን መተንተን",
@@ -136,11 +146,14 @@ class AppTranslations {
       'eg_lunch': "ለምሳሌ ምሳ",
       'save_expense': "ወጪ አስቀምጥ",
       'budget_tour_title': "የዛሬ የወጪ አቅም 📊",
-      'budget_tour_desc': "ይህ ካርድ ዛሬ ምን ያህል ማውጣት እንደሚችሉ ያሳያል። ያጠራቀሙትን ወይም ያወጡትን በየሳምንቱ ያሰላል!",
+      'budget_tour_desc':
+          "ይህ ካርድ ዛሬ ምን ያህል ማውጣት እንደሚችሉ ያሳያል። ያጠራቀሙትን ወይም ያወጡትን በየሳምንቱ ያሰላል!",
       'log_tour_title': "የዕለት ምዝገባ 📝",
-      'log_tour_desc': "ይህ የዕለት ወጪዎ ነው። ከተሳሳቱ ቀዩን የቆሻሻ መጣያ ምልክት ነክተው መሰረዝ ይችላሉ።",
+      'log_tour_desc':
+          "ይህ የዕለት ወጪዎ ነው። ከተሳሳቱ ቀዩን የቆሻሻ መጣያ ምልክት ነክተው መሰረዝ ይችላሉ።",
       'chat_tour_title': "ቀላል ምዝገባ 💬",
-      'chat_tour_desc': "ወጪዎን እዚህ ይጻፉ (ለምሳሌ 'ታክሲ 50') ፤ ጀሚናይ ኤአይ (Gemini AI) ወዲያውኑ ይመድበዋል!",
+      'chat_tour_desc':
+          "ወጪዎን እዚህ ይጻፉ (ለምሳሌ 'ታክሲ 50') ፤ ጀሚናይ ኤአይ (Gemini AI) ወዲያውኑ ይመድበዋል!",
       'skip': "ዝለል",
       'set_budget': "በጀት አዘጋጅ",
       'cycle': "ዑደት",
@@ -151,6 +164,10 @@ class AppTranslations {
       'manage_categories': "ምድቦችን አስተካክል",
       'manage_categories_desc': "ምድቦችን ጨምር፣ አስተካክል ወይም ሰርዝ",
       'gemini_api_key': "የጌሚኒ ኤፒአይ ቁልፍ (Gemini API Key)",
+      'ai_model': "የኤአይ ሞዴል (AI Model)",
+      'select_model': "ሞዴል ይምረጡ",
+      'refresh_models': "ሞዴሎችን ያድሱ",
+      'models_refreshed': "ሞዴሎች ተዘምነዋል",
       'key_active_secured': "ቁልፉ ገብቷል እና ደህንነቱ የተጠበቀ ነው",
       'add_key_for_ai': "ለኤአይ አጠቃቀም ቁልፍ ያስገቡ",
       'when_disabled_notes': "ሲጠፋ ማስታወሻዎች በመሣሪያዎ ላይ ብቻ ይቀመጣሉ",
@@ -182,7 +199,7 @@ class AppTranslations {
       'dark_mode': "ጨለማ ገጽታ",
       'toggle_dark_theme': "ወደ ጨለማ ገጽታ ቀይር",
       'app_tour': "ስለ አፕሊኬሽኑ ማብራሪያ",
-      'replay_tour': "የአፕሊኬሽኑን አጠቃቀም በድጋሚ እይ"
+      'replay_tour': "የአፕሊኬሽኑን አጠቃቀም በድጋሚ እይ",
     },
     'om': {
       'use_ai_parsing': "Gargaarsa AI'n Baasii Xiinxaluu",
@@ -192,7 +209,8 @@ class AppTranslations {
       'all_time': "Yeroo Hunda",
       'error_prefix': "Dogoggora: ",
       'no_trend_data': "Ragaan haala yeroo ammaa hin jiru.",
-      'no_spending_logged_today_start': "Har'a baasiin hin galmoofne! As gadiitti barreessuu eegali.",
+      'no_spending_logged_today_start':
+          "Har'a baasiin hin galmoofne! As gadiitti barreessuu eegali.",
       'waiting_for_ai': "AI eegaa jira... • ",
       'note_prefix': "Yaadannoo: \"",
       'qty_prefix': "\" • Baay'ina: ",
@@ -228,11 +246,14 @@ class AppTranslations {
       'eg_lunch': "Fkn., Laaqana",
       'save_expense': "Baasii Ol-kaawi",
       'budget_tour_title': "Humna Baasii Har'aa 📊",
-      'budget_tour_desc': "Kaardiin kun har'a hagam baasuu akka dandeessu siif agarsiisa. Qusannoo ykn baasii torbee dabarse ofumaan itti dabalata!",
+      'budget_tour_desc':
+          "Kaardiin kun har'a hagam baasuu akka dandeessu siif agarsiisa. Qusannoo ykn baasii torbee dabarse ofumaan itti dabalata!",
       'log_tour_title': "Galmee Guyyaa Guyyaa 📝",
-      'log_tour_desc': "Kun galmee baasii guyyaa keetiiti. Yoo dogoggorte mallattoo xurii diimaa tuquun haquu dandeessa.",
+      'log_tour_desc':
+          "Kun galmee baasii guyyaa keetiiti. Yoo dogoggorte mallattoo xurii diimaa tuquun haquu dandeessa.",
       'chat_tour_title': "Galmee Salphaa 💬",
-      'chat_tour_desc': "Baasii kee asitti barreessi (fkn 'taaksii 50'), Gemini AI'n battaluma ofumaan adda fooya!",
+      'chat_tour_desc':
+          "Baasii kee asitti barreessi (fkn 'taaksii 50'), Gemini AI'n battaluma ofumaan adda fooya!",
       'skip': "DARBI",
       'set_budget': "Baajata Murteessi",
       'cycle': "Marsaa",
@@ -243,9 +264,14 @@ class AppTranslations {
       'manage_categories': "Kutaalee Bulchi",
       'manage_categories_desc': "Kutaalee dabali, sirreessi ykn haqi",
       'gemini_api_key': "Furtuu Gemini API",
+      'ai_model': "Moodeela AI",
+      'select_model': "Moodeela Filadhu",
+      'refresh_models': "Moodeelota Haaromsi",
+      'models_refreshed': "Moodeelonni haaromfamaniiru",
       'key_active_secured': "Furtuun galeera, eegamaadha",
       'add_key_for_ai': "Tajaajila AI'f furtuu galchi",
-      'when_disabled_notes': "Yoo cufame, yaadannoon bilbila keerratti qofa hafa",
+      'when_disabled_notes':
+          "Yoo cufame, yaadannoon bilbila keerratti qofa hafa",
       'birr_note_footer:': "Birr Note",
       'budget_updated_success': "Baajanni milkaa'inaan haaromfameera",
       'budget_limit_settings': "Sajoo Daangaa Baajataa",
@@ -263,10 +289,12 @@ class AppTranslations {
       'remove': "Haqi",
       'google_sync': "Google Drive Sync",
       'daily_reminder': "Yaadachiisa Guyyaa",
-      'past_expenses_warning': "Baasiin kanaan dura kutaa kana jalatti galmaa'an hin haqaman.",
+      'past_expenses_warning':
+          "Baasiin kanaan dura kutaa kana jalatti galmaa'an hin haqaman.",
       'reset_to_default_categories': "Kutaalee idileetti deebisi",
       'reset_categories_q': "Kutaalee deebisuu barbaaddaa?",
-      'reset_warning': "Kun kutaalee ati uumte hunda haqee gara idilee 5tti deebisa.",
+      'reset_warning':
+          "Kun kutaalee ati uumte hunda haqee gara idilee 5tti deebisa.",
       'reset': "Deebisi",
       'language': "Afaan",
       'ethiopian_calendar': "Kalaandarii Itoophiyaa",
@@ -274,7 +302,7 @@ class AppTranslations {
       'dark_mode': "Dukkanaawwaa",
       'toggle_dark_theme': "Gara dukkanaawwaatti jijjiiri",
       'app_tour': "Ibsa Appii",
-      'replay_tour': "Akkaataa itti fayyadamaa irra deebi'ii ilaali"
+      'replay_tour': "Akkaataa itti fayyadamaa irra deebi'ii ilaali",
     },
     'ti': {
       'use_ai_parsing': "ብኤአይ ወጻኢታት ምትሕልላፍ",
@@ -320,11 +348,14 @@ class AppTranslations {
       'eg_lunch': "ንኣብነት ምሳሕ",
       'save_expense': "ወጻኢ ዓቅብ",
       'budget_tour_title': "ናይ ሎሚ ዓቕሚ ወጻኢ 📊",
-      'budget_tour_desc': "እዚ ካርድ ሎሚ ክንደይ ከም እተውጽኡ የርኢ። ዝቐመጥኩሞ ወይ ዘውጻእኩሞ ኣብ ነፍሲ ወከፍ ሰሙን የሰልዎ!",
+      'budget_tour_desc':
+          "እዚ ካርድ ሎሚ ክንደይ ከም እተውጽኡ የርኢ። ዝቐመጥኩሞ ወይ ዘውጻእኩሞ ኣብ ነፍሲ ወከፍ ሰሙን የሰልዎ!",
       'log_tour_title': "ናይ ዕለት ምዝገባ 📝",
-      'log_tour_desc': "እዚ ናይ ዕለት ወጻኢኹም እዩ። እንተ ተጋጊኹም ቀይሕ ምልክት ጎሓፍ ብመንካእ ክትድምስስዎ ትኽእሉ ኢኹም።",
+      'log_tour_desc':
+          "እዚ ናይ ዕለት ወጻኢኹም እዩ። እንተ ተጋጊኹም ቀይሕ ምልክት ጎሓፍ ብመንካእ ክትድምስስዎ ትኽእሉ ኢኹም።",
       'chat_tour_title': "ቀሊል ምዝገባ 💬",
-      'chat_tour_desc': "ወጻኢኹም ኣብዚ ይጽሓፉ (ንኣብነት 'ታክሲ 50') ፤ ጀሚናይ ኤአይ ብኡንብኡ ይምድቦ!",
+      'chat_tour_desc':
+          "ወጻኢኹም ኣብዚ ይጽሓፉ (ንኣብነት 'ታክሲ 50') ፤ ጀሚናይ ኤአይ ብኡንብኡ ይምድቦ!",
       'skip': "ሕለፍ",
       'set_budget': "ባጀት ኣውጽእ",
       'cycle': "ዙርያ",
@@ -335,6 +366,10 @@ class AppTranslations {
       'manage_categories': "ክፍልታት ኣመዓራርይ",
       'manage_categories_desc': "ክፍልታት ወስኽ፣ ኣመዓራርይ ወይ ድምስስ",
       'gemini_api_key': "ናይ ጌሚኒ ኤፒኣይ መፍትሕ",
+      'ai_model': "ናይ ኤአይ ሞዴል",
+      'select_model': "ሞዴል ምረጹ",
+      'refresh_models': "ሞዴላት ሓድሽ",
+      'models_refreshed': "ሞዴላት ተሓዲሶም",
       'key_active_secured': "መፍትሕ ኣትዩ ኣሎ፡ ድሕነቱ ዝተሓለወ እዩ",
       'add_key_for_ai': "ንኤአይ ኣገልግሎት መፍትሕ የእትዉ",
       'when_disabled_notes': "እንተ ጠፊኡ መዘኻኸሪ ኣብ ሞባይልኩም ጥራይ ይዕቀብ",
@@ -366,11 +401,13 @@ class AppTranslations {
       'dark_mode': "ጸሊም ገጽታ",
       'toggle_dark_theme': "ናብ ጸሊም ገጽታ ቀይር",
       'app_tour': "መብርሂ ኣፕሊኬሽን",
-      'replay_tour': "ኣጠቓቕማ ኣፕሊኬሽን ብሓድሽ ርአ"
+      'replay_tour': "ኣጠቓቕማ ኣፕሊኬሽን ብሓድሽ ርአ",
     },
   };
 
   static String getText(String languageCode, String key) {
-    return _localizedValues[languageCode]?[key] ?? _localizedValues['en']![key] ?? key;
+    return _localizedValues[languageCode]?[key] ??
+        _localizedValues['en']![key] ??
+        key;
   }
 }

@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart'; 
+import 'package:flutter_riverpod/legacy.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/database/database_provider.dart';
 import '../../../core/database/daos/expense_dao.dart';
@@ -17,7 +17,10 @@ final failedAiNotesProvider = StateProvider<Set<int>>((ref) => {});
 // NEW: A smart provider that automatically rolls over exactly at midnight!
 class TodayNotifier extends StateNotifier<DateTime> {
   Timer? _timer;
-  TodayNotifier() : super(DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day)) {
+  TodayNotifier()
+    : super(
+        DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day),
+      ) {
     // Check every 60 seconds if we've crossed midnight
     _timer = Timer.periodic(const Duration(seconds: 60), (_) {
       final now = DateTime.now();
@@ -27,7 +30,7 @@ class TodayNotifier extends StateNotifier<DateTime> {
       }
     });
   }
-  
+
   @override
   void dispose() {
     _timer?.cancel();
@@ -42,16 +45,18 @@ final todayProvider = StateNotifierProvider<TodayNotifier, DateTime>((ref) {
 // 1. WATCH TODAY'S EXPENSES (For Home Screen)
 final expensesStreamProvider = StreamProvider<List<Expense>>((ref) {
   final expenseDao = ref.watch(expenseDaoProvider);
-  final today = ref.watch(todayProvider); // Now correctly recalculates at midnight!
-  
+  final today = ref.watch(
+    todayProvider,
+  ); // Now correctly recalculates at midnight!
+
   // Use our new dynamic date fetcher
-  return expenseDao.watchExpensesForDate(today); 
+  return expenseDao.watchExpensesForDate(today);
 });
 
 // 2. WATCH ALL EXPENSES (For Budget Engine)
 final allExpensesStreamProvider = StreamProvider<List<Expense>>((ref) {
   final expenseDao = ref.watch(expenseDaoProvider);
-  return expenseDao.watchExpenses(); 
+  return expenseDao.watchExpenses();
 });
 
 // 3. HISTORY FILTER DATE (Normalized to 12:00:00 AM Midnight!)
@@ -83,7 +88,7 @@ class ExpenseLogic {
       ExpensesCompanion.insert(
         rawNote: text,
         date: DateTime.now(),
-        isPendingAi: const Value(true), 
+        isPendingAi: const Value(true),
       ),
     );
 
@@ -96,19 +101,23 @@ class ExpenseLogic {
 
     try {
       final activeCategories = await categoryDao.getActiveCategories();
-      
+
       // FALLBACK: If the user types instantly on launch before the Provider loads the key,
       // we grab it directly from storage so it doesn't fail!
       var key = aiService.apiKey;
       if (key == null || key.isEmpty) {
         key = await const FlutterSecureStorage().read(key: 'gemini_api_key');
       }
-      
-      final serviceToUse = (aiService.apiKey == null || aiService.apiKey!.isEmpty) && key != null
-          ? AiService(key)
+
+      final serviceToUse =
+          (aiService.apiKey == null || aiService.apiKey!.isEmpty) && key != null
+          ? AiService(key, modelName: aiService.modelName)
           : aiService;
 
-      final parsedList = await serviceToUse.parseNoteToExpenses(text, activeCategories);
+      final parsedList = await serviceToUse.parseNoteToExpenses(
+        text,
+        activeCategories,
+      );
 
       if (parsedList != null && parsedList.isNotEmpty) {
         await expenseDao.transaction(() async {
@@ -117,30 +126,35 @@ class ExpenseLogic {
           for (final item in parsedList) {
             await expenseDao.insertExpense(
               ExpensesCompanion.insert(
-                rawNote: item['extractedNote'].toString(), 
+                rawNote: item['extractedNote'].toString(),
                 amount: Value((item['amount'] as num).toDouble()),
                 category: Value(item['category'].toString()),
                 quantity: Value(item['quantity'] as int),
-                date: DateTime.now(), 
-                isPendingAi: const Value(false), 
+                date: DateTime.now(),
+                isPendingAi: const Value(false),
               ),
             );
           }
         });
       } else {
         // Parsing returned null (e.g. timeout or no API key)
-        ref.read(failedAiNotesProvider.notifier).update((state) => Set.from(state)..add(pendingId));
+        ref
+            .read(failedAiNotesProvider.notifier)
+            .update((state) => Set.from(state)..add(pendingId));
       }
     } catch (e) {
       print("Error in addRawNote: $e");
-      ref.read(failedAiNotesProvider.notifier).update((state) => Set.from(state)..add(pendingId));
+      ref
+          .read(failedAiNotesProvider.notifier)
+          .update((state) => Set.from(state)..add(pendingId));
     }
   }
 
   // 2. OFFLINE QUEUE PROCESSOR
   Future<void> syncPendingNotes() async {
-    final pendingNotes = await (expenseDao.select(expenseDao.expenses)
-      ..where((tbl) => tbl.isPendingAi.equals(true))).get();
+    final pendingNotes = await (expenseDao.select(
+      expenseDao.expenses,
+    )..where((tbl) => tbl.isPendingAi.equals(true))).get();
 
     if (pendingNotes.isEmpty) return;
 
@@ -155,7 +169,10 @@ class ExpenseLogic {
           return newState;
         });
 
-        final parsedList = await aiService.parseNoteToExpenses(note.rawNote, activeCategories);
+        final parsedList = await aiService.parseNoteToExpenses(
+          note.rawNote,
+          activeCategories,
+        );
 
         if (parsedList != null && parsedList.isNotEmpty) {
           await expenseDao.transaction(() async {
@@ -168,7 +185,7 @@ class ExpenseLogic {
                   amount: Value((item['amount'] as num).toDouble()),
                   category: Value(item['category'].toString()),
                   quantity: Value(item['quantity'] as int),
-                  date: note.date, 
+                  date: note.date,
                   isPendingAi: const Value(false),
                 ),
               );
@@ -176,14 +193,18 @@ class ExpenseLogic {
           });
         } else {
           // Parsing failed on retry
-          ref.read(failedAiNotesProvider.notifier).update((state) => Set.from(state)..add(note.id));
+          ref
+              .read(failedAiNotesProvider.notifier)
+              .update((state) => Set.from(state)..add(note.id));
         }
       }
     } catch (e) {
       print("Error in syncPendingNotes: $e");
       // Mark all attempted notes as failed if a fatal error occurs
       for (final note in pendingNotes) {
-        ref.read(failedAiNotesProvider.notifier).update((state) => Set.from(state)..add(note.id));
+        ref
+            .read(failedAiNotesProvider.notifier)
+            .update((state) => Set.from(state)..add(note.id));
       }
     }
   }
@@ -203,7 +224,7 @@ class ExpenseLogic {
         category: Value(category),
         quantity: Value(quantity),
         date: date ?? DateTime.now(),
-        isPendingAi: const Value(false), 
+        isPendingAi: const Value(false),
       ),
     );
   }
@@ -225,7 +246,7 @@ class ExpenseLogic {
         category: Value(category),
         quantity: Value(quantity),
         date: Value(date),
-        isPendingAi: const Value(false), 
+        isPendingAi: const Value(false),
       ),
     );
   }

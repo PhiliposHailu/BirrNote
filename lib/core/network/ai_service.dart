@@ -2,11 +2,13 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'api_key_provider.dart';
+import 'model_provider.dart';
 
 class AiService {
   final String? apiKey;
+  final String modelName;
 
-  AiService(this.apiKey);
+  AiService(this.apiKey, {this.modelName = kDefaultModelId});
 
   // returns a List of Maps!
   Future<List<Map<String, dynamic>>?> parseNoteToExpenses(
@@ -19,7 +21,7 @@ class AiService {
     final categoriesString = categories.join(', ');
 
     final model = GenerativeModel(
-      model: 'gemini-3.1-flash-lite',
+      model: modelName,
       apiKey: apiKey!,
       systemInstruction: Content.system('''
         You are a financial parser for BirrNote.
@@ -87,7 +89,7 @@ class AiService {
     }
 
     final model = GenerativeModel(
-      model: 'gemini-3.1-flash-lite',
+      model: modelName,
       apiKey: apiKey!,
       systemInstruction: Content.system('''
         You are a friendly, professional financial advisor for the BirrNote app.
@@ -148,5 +150,6 @@ class AiService {
 
 final aiServiceProvider = Provider<AiService>((ref) {
   final apiKey = ref.watch(apiKeyProvider);
-  return AiService(apiKey);
+  final modelName = ref.watch(selectedModelProvider);
+  return AiService(apiKey, modelName: modelName);
 });

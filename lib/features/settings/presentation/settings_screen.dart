@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/api_key_provider.dart';
+import '../../../core/network/model_provider.dart';
 import 'category_settings_screen.dart';
 import 'widgets/weekly_budget_card.dart';
 import 'widgets/daily_reminder_card.dart';
@@ -51,7 +52,10 @@ class SettingsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(ref.watch(trProvider('settings')), style: const TextStyle(fontWeight: FontWeight.w600)), 
+        title: Text(
+          ref.watch(trProvider('settings')),
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
         centerTitle: true,
         elevation: 0,
         scrolledUnderElevation: 0,
@@ -74,7 +78,9 @@ class SettingsScreen extends ConsumerWidget {
           _buildSectionHeader("App Customization", context),
           Card(
             elevation: 0,
-            color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.4),
+            color: Theme.of(
+              context,
+            ).colorScheme.surfaceContainerHighest.withOpacity(0.4),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
@@ -86,7 +92,9 @@ class SettingsScreen extends ConsumerWidget {
                     ref.watch(trProvider('manage_categories')),
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  subtitle: Text(ref.watch(trProvider('manage_categories_desc'))),
+                  subtitle: Text(
+                    ref.watch(trProvider('manage_categories_desc')),
+                  ),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () {
                     Navigator.of(context).push(
@@ -100,18 +108,22 @@ class SettingsScreen extends ConsumerWidget {
 
                 // ETHIOPIAN MULTILINGUAL LANGUAGE SELECTOR!
                 const LanguageTile(),
-                
+
                 const Divider(indent: 16, endIndent: 16, height: 1),
 
                 // CALENDAR SELECTOR
                 SwitchListTile(
-                  secondary: _buildIcon(Icons.calendar_month_rounded, Colors.teal),
+                  secondary: _buildIcon(
+                    Icons.calendar_month_rounded,
+                    Colors.teal,
+                  ),
                   title: Text(
                     ref.watch(trProvider('ethiopian_calendar')),
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   subtitle: Text(ref.watch(trProvider('use_ethiopian_dates'))),
-                  value: ref.watch(calendarTypeProvider) == CalendarType.ethiopian,
+                  value:
+                      ref.watch(calendarTypeProvider) == CalendarType.ethiopian,
                   onChanged: (val) =>
                       ref.read(calendarTypeProvider.notifier).toggle(),
                 ),
@@ -162,33 +174,53 @@ class SettingsScreen extends ConsumerWidget {
           _buildSectionHeader("Security & Cloud", context),
           Card(
             elevation: 0,
-            color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.4),
+            color: Theme.of(
+              context,
+            ).colorScheme.surfaceContainerHighest.withOpacity(0.4),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
               children: [
                 // ROW A: GEMINI KEY (ListTile)
-                ListTile(
-                  leading: _buildIcon(Icons.vpn_key_rounded, Colors.purple),
-                  title: Text(
-                    ref.watch(trProvider('gemini_api_key')),
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text(
-                    hasKey
-                        ? ref.watch(trProvider('key_active_secured'))
-                        : ref.watch(trProvider('add_key_for_ai')),
-                  ),
-                  trailing: hasKey
-                      ? const Icon(Icons.check_circle, color: Colors.green)
-                      : const Icon(Icons.chevron_right),
-                  onTap: () {
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      useSafeArea: true,
-                      builder: (context) => const GeminiKeySheet(),
+                Builder(
+                  builder: (context) {
+                    final selectedModel = ref.watch(selectedModelProvider);
+                    final models =
+                        ref.watch(availableModelsProvider).valueOrNull ??
+                        kDefaultGeminiModels;
+                    final activeModelName = models
+                        .firstWhere(
+                          (m) => m.id == selectedModel,
+                          orElse: () => GeminiModelInfo(
+                            id: selectedModel,
+                            displayName: selectedModel,
+                          ),
+                        )
+                        .displayName;
+
+                    return ListTile(
+                      leading: _buildIcon(Icons.vpn_key_rounded, Colors.purple),
+                      title: Text(
+                        ref.watch(trProvider('gemini_api_key')),
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Text(
+                        hasKey
+                            ? '${ref.watch(trProvider('key_active_secured'))} • $activeModelName'
+                            : ref.watch(trProvider('add_key_for_ai')),
+                      ),
+                      trailing: hasKey
+                          ? const Icon(Icons.check_circle, color: Colors.green)
+                          : const Icon(Icons.chevron_right),
+                      onTap: () {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          useSafeArea: true,
+                          builder: (context) => const GeminiKeySheet(),
+                        );
+                      },
                     );
                   },
                 ),
@@ -202,9 +234,7 @@ class SettingsScreen extends ConsumerWidget {
                     ref.watch(trProvider('use_ai_parsing')),
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  subtitle: Text(
-                    ref.watch(trProvider('when_disabled_notes')),
-                  ),
+                  subtitle: Text(ref.watch(trProvider('when_disabled_notes'))),
                   value: ref.watch(aiEnabledProvider),
                   onChanged: (val) =>
                       ref.read(aiEnabledProvider.notifier).toggle(val),
