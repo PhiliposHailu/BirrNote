@@ -8,6 +8,7 @@ import '../../settings/presentation/settings_screen.dart';
 import '../data/expense_providers.dart';
 import 'widgets/budget_header_widget.dart';
 import 'widgets/onboarding_tour.dart'; // Gives us the shared GlobalKeys!
+
 // ----------------------------------------------------------------------
 // CLASS 1: The Widget itself. Notice it extends ConsumerStatefulWidget!
 // ----------------------------------------------------------------------
@@ -56,7 +57,7 @@ class _ExpenseEntryScreenState extends ConsumerState<ExpenseEntryScreen> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        BudgetHeaderWidget(key: budgetHeaderKey), 
+        BudgetHeaderWidget(key: budgetHeaderKey),
         Expanded(child: ExpenseList(key: expenseListKey)),
         ChatInputBar(key: chatInputKey),
       ],

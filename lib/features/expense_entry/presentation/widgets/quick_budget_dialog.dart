@@ -13,7 +13,13 @@ class QuickBudgetDialog extends ConsumerStatefulWidget {
 class _QuickBudgetDialogState extends ConsumerState<QuickBudgetDialog> {
   final _amountController = TextEditingController();
   String _selectedPeriod = 'Weekly';
-  final List<String> _periods = ['Daily', 'Weekly', 'Monthly', 'Quarterly', 'Yearly'];
+  final List<String> _periods = [
+    'Daily',
+    'Weekly',
+    'Monthly',
+    'Quarterly',
+    'Yearly',
+  ];
 
   @override
   void dispose() {
@@ -45,7 +51,9 @@ class _QuickBudgetDialogState extends ConsumerState<QuickBudgetDialog> {
               labelText: ref.watch(trProvider('cycle')),
               border: const OutlineInputBorder(),
             ),
-            items: _periods.map((p) => DropdownMenuItem(value: p, child: Text(p))).toList(),
+            items: _periods
+                .map((p) => DropdownMenuItem(value: p, child: Text(p)))
+                .toList(),
             onChanged: (val) {
               if (val != null) setState(() => _selectedPeriod = val);
             },
@@ -75,7 +83,9 @@ class _QuickBudgetDialogState extends ConsumerState<QuickBudgetDialog> {
             final limit = double.tryParse(text);
             if (limit != null && limit > 0) {
               Navigator.pop(context);
-              await ref.read(budgetDaoProvider).setBudget(limit, _selectedPeriod);
+              await ref
+                  .read(budgetDaoProvider)
+                  .setBudget(limit, _selectedPeriod);
             }
           },
           child: Text(ref.watch(trProvider('save'))),

@@ -26,7 +26,11 @@ class BudgetHeaderWidget extends ConsumerWidget {
           elevation: 2,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: Theme.of(context).colorScheme.primary.withOpacity(0.3)),
+            side: BorderSide(
+              color: Theme.of(
+                context,
+              ).colorScheme.primary.withValues(alpha: 0.3),
+            ),
           ),
           child: InkWell(
             borderRadius: BorderRadius.circular(16),
@@ -56,7 +60,10 @@ class BudgetHeaderWidget extends ConsumerWidget {
                         const SizedBox(height: 4),
                         Text(
                           ref.watch(trProvider('tap_to_set_budget')),
-                          style: const TextStyle(fontSize: 13, color: Colors.grey),
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey,
+                          ),
                         ),
                       ],
                     ),
@@ -87,24 +94,61 @@ class BudgetHeaderWidget extends ConsumerWidget {
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: textColor.withOpacity(0.3)),
+        border: Border.all(color: textColor.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             ref.watch(trProvider('today_spending_power')),
-            style: TextStyle(fontSize: 14, color: textColor.withOpacity(0.8), fontWeight: FontWeight.w600),
+            style: TextStyle(
+              fontSize: 14,
+              color: textColor.withValues(alpha: 0.8),
+              fontWeight: FontWeight.w600,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             '${balance.toStringAsFixed(2)} ETB',
-            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: textColor),
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: textColor,
+            ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            '${ref.watch(trProvider('daily_allowance'))}: ${budgetState.dailyLimit.toStringAsFixed(0)} ETB/day',
-            style: TextStyle(fontSize: 12, color: textColor.withOpacity(0.6)),
+          const SizedBox(height: 6),
+          Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 4,
+            children: [
+              Text(
+                '${ref.watch(trProvider('daily_allowance'))}: ${budgetState.dailyLimit.toStringAsFixed(0)} ETB/day',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: textColor.withValues(alpha: 0.7),
+                ),
+              ),
+              if (budgetState.activeAmortizationsCount > 0)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: textColor.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '✦ ${budgetState.activeAmortizationsCount} ${ref.watch(trProvider('active_installments'))} (${budgetState.totalDailyAmortizedBurden.toStringAsFixed(0)} ETB/d)',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: textColor,
+                    ),
+                  ),
+                ),
+            ],
           ),
         ],
       ),

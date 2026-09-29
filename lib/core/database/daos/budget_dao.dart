@@ -19,14 +19,18 @@ class BudgetDao extends DatabaseAccessor<AppDatabase> with _$BudgetDaoMixin {
     await delete(budgets).go();
 
     final now = DateTime.now();
-    
+
     // Default fallback: Today at the very first second of the morning (00:00:00)
-    DateTime adjustedStartDate = DateTime(now.year, now.month, now.day); 
+    DateTime adjustedStartDate = DateTime(now.year, now.month, now.day);
 
     if (period == 'Weekly') {
       // THE MAGIC: Find the nearest past Monday morning at 00:00:00!
       // (now.weekday is 1 for Monday, 3 for Wednesday, etc.)
-      adjustedStartDate = DateTime(now.year, now.month, now.day - (now.weekday - 1));
+      adjustedStartDate = DateTime(
+        now.year,
+        now.month,
+        now.day - (now.weekday - 1),
+      );
     } else if (period == 'Monthly') {
       // THE MAGIC: Find the 1st of the current month at 00:00:00!
       adjustedStartDate = DateTime(now.year, now.month, 1);

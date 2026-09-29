@@ -5,6 +5,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/database/database_provider.dart';
 import '../../../core/database/daos/expense_dao.dart';
 import '../../../core/database/daos/category_dao.dart';
+import '../../../core/database/daos/amortization_dao.dart';
 import '../../../core/network/ai_service.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -79,6 +80,7 @@ class ExpenseLogic {
   ExpenseDao get expenseDao => ref.read(expenseDaoProvider);
   CategoryDao get categoryDao => ref.read(categoryDaoProvider);
   AiService get aiService => ref.read(aiServiceProvider);
+  AmortizationDao get amortizationDao => ref.read(amortizationDaoProvider);
 
   // 1. ADD RAW NOTE (AI Parsing)
   Future<void> addRawNote(String text) async {
@@ -216,17 +218,40 @@ class ExpenseLogic {
     required int quantity,
     required String note,
     DateTime? date,
+    int? amortizeDays,
   }) async {
-    await expenseDao.insertExpense(
+    final expenseDate = date ?? DateTime.now();
+    final expenseId = await expenseDao.insertExpense(
       ExpensesCompanion.insert(
         rawNote: note.trim().isEmpty ? category : note,
         amount: Value(amount),
         category: Value(category),
         quantity: Value(quantity),
-        date: date ?? DateTime.now(),
+        date: expenseDate,
         isPendingAi: const Value(false),
       ),
     );
+
+    if (amortizeDays != null && amortizeDays > 1 && amount > 0) {
+      final startMidnight = DateTime(
+        expenseDate.year,
+        expenseDate.month,
+        expenseDate.day,
+      );
+      final endMidnight = startMidnight.add(Duration(days: amortizeDays));
+      final dailyBurden = amount / amortizeDays;
+
+      await amortizationDao.insertAmortization(
+        AmortizationsCompanion.insert(
+          expenseId: expenseId,
+          totalAmount: amount,
+          durationDays: amortizeDays,
+          dailyBurden: dailyBurden,
+          startDate: startMidnight,
+          endDate: endMidnight,
+        ),
+      );
+    }
   }
 
   // 4. EDIT EXPENSE
@@ -237,6 +262,7 @@ class ExpenseLogic {
     required int quantity,
     required String note,
     required DateTime date,
+    int? amortizeDays,
   }) async {
     await expenseDao.updateExpense(
       ExpensesCompanion(
@@ -249,6 +275,26 @@ class ExpenseLogic {
         isPendingAi: const Value(false),
       ),
     );
+
+    if (amortizeDays != null && amortizeDays > 1 && amount > 0) {
+      final startMidnight = DateTime(date.year, date.month, date.day);
+      final endMidnight = startMidnight.add(Duration(days: amortizeDays));
+      final dailyBurden = amount / amortizeDays;
+
+      await amortizationDao.deleteAmortizationByExpenseId(id);
+      await amortizationDao.insertAmortization(
+        AmortizationsCompanion.insert(
+          expenseId: id,
+          totalAmount: amount,
+          durationDays: amortizeDays,
+          dailyBurden: dailyBurden,
+          startDate: startMidnight,
+          endDate: endMidnight,
+        ),
+      );
+    } else if (amortizeDays != null && amortizeDays <= 1) {
+      await amortizationDao.deleteAmortizationByExpenseId(id);
+    }
   }
 }
 

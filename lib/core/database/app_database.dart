@@ -8,23 +8,31 @@ import 'package:path/path.dart' as p;
 import 'tables/expenses_table.dart';
 import 'tables/category_options_table.dart';
 import 'tables/budgets_table.dart';
+import 'tables/amortizations_table.dart';
 
 // 2. Import our upcoming DAOs (Repositories)
 import 'daos/expense_dao.dart';
 import 'daos/category_dao.dart';
 import 'daos/budget_dao.dart';
+import 'daos/amortization_dao.dart';
 
 part 'app_database.g.dart';
 
 @DriftDatabase(
-  tables: [Expenses, CategoryOptions, Budgets],
-  daos: [ExpenseDao, CategoryDao, BudgetDao], // Plugs in our repositories!
+  tables: [Expenses, CategoryOptions, Budgets, Amortizations],
+  daos: [
+    ExpenseDao,
+    CategoryDao,
+    BudgetDao,
+    AmortizationDao,
+  ], // Plugs in our repositories!
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
+  AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration {
@@ -42,16 +50,16 @@ class AppDatabase extends _$AppDatabase {
         ];
 
         for (final name in defaultCategories) {
-          await into(categoryOptions).insert(
-            CategoryOptionsCompanion.insert(name: name),
-          );
+          await into(
+            categoryOptions,
+          ).insert(CategoryOptionsCompanion.insert(name: name));
         }
       },
       onUpgrade: (m, from, to) async {
         if (from < 2) {
           await m.createTable(budgets);
         }
-        
+
         // --- VERSION 2 TO VERSION 3 MIGRATION ---
         if (from < 3) {
           // 1. Add orderIndex column to CategoryOptions table
@@ -61,10 +69,22 @@ class AppDatabase extends _$AppDatabase {
           await m.addColumn(budgets, budgets.limitAmount);
           await m.addColumn(budgets, budgets.period);
 
-          // 3. THE SENIOR DEV TOUCH: 
+          // 3. THE SENIOR DEV TOUCH:
           // Copy their old 'weekly_limit' data into the new 'limit_amount' column
           // so existing users don't lose their saved budget!
-          await customStatement('UPDATE budgets SET limit_amount = weekly_limit WHERE limit_amount IS NULL');
+          await customStatement(
+            'UPDATE budgets SET limit_amount = weekly_limit WHERE limit_amount IS NULL',
+          );
+        }
+
+        // --- VERSION 3 TO VERSION 4 MIGRATION ---
+        if (from < 4) {
+          // 1. Create Amortizations table
+          await m.createTable(amortizations);
+
+          // 2. Add source and txnRef columns to Expenses table
+          await m.addColumn(expenses, expenses.source);
+          await m.addColumn(expenses, expenses.txnRef);
         }
       },
     );

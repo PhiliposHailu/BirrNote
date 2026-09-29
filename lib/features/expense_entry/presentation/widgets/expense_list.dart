@@ -18,12 +18,17 @@ class ExpenseList extends ConsumerWidget {
 
     return expensesStream.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stack) => Center(child: Text('${ref.watch(trProvider('error_prefix'))}$error')),
+      error: (error, stack) =>
+          Center(child: Text('${ref.watch(trProvider('error_prefix'))}$error')),
       data: (expenses) {
         if (expenses.isEmpty) {
-          return Center(child: Text(ref.watch(trProvider('no_spending_logged_today_start'))));
+          return Center(
+            child: Text(
+              ref.watch(trProvider('no_spending_logged_today_start')),
+            ),
+          );
         }
-        
+
         return ListView.builder(
           reverse: true, // Newest at the bottom
           itemCount: expenses.length,
@@ -34,10 +39,10 @@ class ExpenseList extends ConsumerWidget {
             return Dismissible(
               // Each item MUST have a completely unique key for the animation to work
               key: ValueKey(expense.id),
-              
+
               // Only allow swiping from right to left (HCI Standard for deletion)
               direction: DismissDirection.endToStart,
-              
+
               // The red background with a trash can icon that shows during the swipe
               background: Container(
                 color: Colors.red.shade100,
@@ -55,17 +60,23 @@ class ExpenseList extends ConsumerWidget {
 
                 // 2. THE SAFETY NET: Show the SnackBar with an Undo button
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).clearSnackBars(); // Dismiss old SnackBars
-                  
+                  ScaffoldMessenger.of(
+                    context,
+                  ).clearSnackBars(); // Dismiss old SnackBars
+
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('${ref.watch(trProvider('deleted'))}"${expense.rawNote}"'),
+                      content: Text(
+                        '${ref.watch(trProvider('deleted'))}"${expense.rawNote}"',
+                      ),
                       action: SnackBarAction(
                         label: 'Undo',
                         onPressed: () async {
                           // THE UNDO: Re-insert the exact copy back into SQLite!
                           // .toCompanion(true) tells Drift to keep its original ID
-                          await expenseDao.insertExpense(expense.toCompanion(true));
+                          await expenseDao.insertExpense(
+                            expense.toCompanion(true),
+                          );
                         },
                       ),
                     ),
@@ -79,43 +90,63 @@ class ExpenseList extends ConsumerWidget {
                     showModalBottomSheet(
                       context: context,
                       isScrollControlled: true,
-                      builder: (context) => ManualEntrySheet(existingExpense: expense),
+                      builder: (context) =>
+                          ManualEntrySheet(existingExpense: expense),
                     );
                   }
                 },
-                title: expense.isPendingAi 
-                    ? Text(expense.rawNote, style: const TextStyle(fontStyle: FontStyle.italic))
-                    : Text('${expense.category} - ${expense.amount.toStringAsFixed(2)} ETB', 
-                           style: const TextStyle(fontWeight: FontWeight.bold)),
-                
+                title: expense.isPendingAi
+                    ? Text(
+                        expense.rawNote,
+                        style: const TextStyle(fontStyle: FontStyle.italic),
+                      )
+                    : Text(
+                        '${expense.category} - ${expense.amount.toStringAsFixed(2)} ETB',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+
                 subtitle: expense.isPendingAi
                     ? Text(
                         '${ref.watch(trProvider('waiting_for_ai'))}${calendarType == CalendarType.ethiopian ? EtDatetime.fromMillisecondsSinceEpoch(expense.date.millisecondsSinceEpoch).toString().split('.')[0] : expense.date.toString().split('.')[0]}',
                       )
-                    : Text('${ref.watch(trProvider('note_prefix'))}${expense.rawNote}${ref.watch(trProvider('qty_prefix'))}${expense.quantity}'),
-                
-                trailing: expense.isPendingAi 
+                    : Text(
+                        '${ref.watch(trProvider('note_prefix'))}${expense.rawNote}${ref.watch(trProvider('qty_prefix'))}${expense.quantity}',
+                      ),
+
+                trailing: expense.isPendingAi
                     ? (failedAiNotes.contains(expense.id)
-                        // If it actually failed, show the red retry button!
-                        ? IconButton(
-                            icon: const Icon(Icons.sync_problem, color: Colors.red),
-                            tooltip: 'Retry AI Parsing',
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(ref.watch(trProvider('retrying_ai_sync')))),
-                              );
-                              ref.read(expenseLogicProvider).syncPendingNotes();
-                            },
-                          )
-                        // Otherwise, show the spinning indicator!
-                        : const Padding(
-                            padding: EdgeInsets.all(12.0),
-                            child: SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.orange),
-                            ),
-                          ))
+                          // If it actually failed, show the red retry button!
+                          ? IconButton(
+                              icon: const Icon(
+                                Icons.sync_problem,
+                                color: Colors.red,
+                              ),
+                              tooltip: 'Retry AI Parsing',
+                              onPressed: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      ref.watch(trProvider('retrying_ai_sync')),
+                                    ),
+                                  ),
+                                );
+                                ref
+                                    .read(expenseLogicProvider)
+                                    .syncPendingNotes();
+                              },
+                            )
+                          // Otherwise, show the spinning indicator!
+                          : const Padding(
+                              padding: EdgeInsets.all(12.0),
+                              child: SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.orange,
+                                ),
+                              ),
+                            ))
                     : const Icon(Icons.check_circle, color: Colors.green),
               ),
             );

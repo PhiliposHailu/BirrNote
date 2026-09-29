@@ -8,4 +8,6 @@ class Expenses extends Table {
   DateTimeColumn get date => dateTime()();
   IntColumn get quantity => integer().withDefault(const Constant(1))();
   BoolColumn get isPendingAi => boolean().withDefault(const Constant(false))();
+  TextColumn get source => text().withDefault(const Constant('manual'))();
+  TextColumn get txnRef => text().nullable()();
 }

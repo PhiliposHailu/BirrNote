@@ -7,13 +7,13 @@ import 'package:birr_note/main.dart';
 void main() {
   testWidgets('BirrNoteApp builds smoke test', (WidgetTester tester) async {
     // Build our app wrapped in ProviderScope
-    await tester.pumpWidget(
-      const ProviderScope(
-        child: BirrNoteApp(),
-      ),
-    );
+    await tester.pumpWidget(const ProviderScope(child: BirrNoteApp()));
 
     // Verify that BirrNote app initializes cleanly
     expect(find.byType(MaterialApp), findsOneWidget);
+
+    // Unmount and flush any pending stream teardown timers
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump(Duration.zero);
   });
 }

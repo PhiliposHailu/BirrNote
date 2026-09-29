@@ -266,17 +266,17 @@ final todaySpendingPower = allowedBudgetUpToToday - regularSpentInCycle - amorti
 ```
 
 ### Task Checklist — Phase 2
-- [ ] Create `amortizations_table.dart` with schema above
-- [ ] Create `amortization_dao.dart` with CRUD + active stream query
-- [ ] Register table and DAO in `app_database.dart`, bump to schema v4
-- [ ] Write migration: `if (from < 4) await m.createTable(amortizations);`
-- [ ] Run `dart run build_runner build --delete-conflicting-outputs`
-- [ ] Modify `ExpenseLogic` to accept optional amortization parameters
-- [ ] Modify `budget_providers.dart` to exclude amortized expenses from lump-sum and add daily burden
-- [ ] Add "Spread cost" toggle + duration picker to `manual_entry_sheet.dart`
-- [ ] Add active amortizations indicator to `budget_header_widget.dart`
-- [ ] Add translation keys (4 languages)
-- [ ] Test: verify spending power math, amortization expiry, edge cases (budget cycle boundary overlaps)
+- [x] Create `amortizations_table.dart` with schema above
+- [x] Create `amortization_dao.dart` with CRUD + active stream query
+- [x] Register table and DAO in `app_database.dart`, bump to schema v4
+- [x] Write migration: `if (from < 4) await m.createTable(amortizations);`
+- [x] Run `dart run build_runner build --delete-conflicting-outputs`
+- [x] Modify `ExpenseLogic` to accept optional amortization parameters
+- [x] Modify `budget_providers.dart` to exclude amortized expenses from lump-sum and add daily burden
+- [x] Add "Spread cost" toggle + duration picker to `manual_entry_sheet.dart`
+- [x] Add active amortizations indicator to `budget_header_widget.dart`
+- [x] Add translation keys (4 languages)
+- [x] Test: verify spending power math, amortization expiry, edge cases (budget cycle boundary overlaps)
 
 ---
 

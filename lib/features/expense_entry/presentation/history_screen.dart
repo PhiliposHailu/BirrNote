@@ -6,7 +6,8 @@ import '../../../core/utils/locale_provider.dart';
 import 'widgets/manual_entry_sheet.dart';
 import 'package:abushakir/abushakir.dart';
 import '../../../core/utils/calendar_type_provider.dart';
-import 'package:ethiopian_datetime_picker/ethiopian_datetime_picker.dart' as et_picker;
+import 'package:ethiopian_datetime_picker/ethiopian_datetime_picker.dart'
+    as et_picker;
 
 class HistoryScreen extends ConsumerWidget {
   const HistoryScreen({super.key});
@@ -19,18 +20,22 @@ class HistoryScreen extends ConsumerWidget {
   List<DateTime> _generateTimelineDates(DateTime selectedDate) {
     final today = DateTime.now();
     final todayMidnight = DateTime(today.year, today.month, today.day);
-    final selectedMidnight = DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
-    
+    final selectedMidnight = DateTime(
+      selectedDate.year,
+      selectedDate.month,
+      selectedDate.day,
+    );
+
     final daysFromToday = todayMidnight.difference(selectedMidnight).inDays;
-    
+
     // Shift ensures we never show future dates!
-    int shift = 3; 
+    int shift = 3;
     if (daysFromToday < 3) {
       shift = daysFromToday;
     }
-    
+
     return List.generate(7, (index) {
-      final diff = shift - index; 
+      final diff = shift - index;
       return selectedMidnight.add(Duration(days: diff));
     });
   }
@@ -44,18 +49,34 @@ class HistoryScreen extends ConsumerWidget {
     if (calendarType == CalendarType.ethiopian) {
       // Shift to Noon to avoid midnight timezone boundary bugs
       final noonCurrent = currentDate.add(const Duration(hours: 12));
-      final etCurrent = EtDatetime.fromMillisecondsSinceEpoch(noonCurrent.millisecondsSinceEpoch);
+      final etCurrent = EtDatetime.fromMillisecondsSinceEpoch(
+        noonCurrent.millisecondsSinceEpoch,
+      );
       final et_picker.ETDateTime? picked = await et_picker.showETDatePicker(
         context: context,
-        initialDate: et_picker.ETDateTime(etCurrent.year, etCurrent.month, etCurrent.day),
+        initialDate: et_picker.ETDateTime(
+          etCurrent.year,
+          etCurrent.month,
+          etCurrent.day,
+        ),
         firstDate: et_picker.ETDateTime(2010, 1, 1),
         lastDate: et_picker.ETDateTime(2030, 13, 6),
       );
       if (picked != null) {
-        final etDate = EtDatetime(year: picked.year, month: picked.month, day: picked.day);
+        final etDate = EtDatetime(
+          year: picked.year,
+          month: picked.month,
+          day: picked.day,
+        );
         // Shift back via Noon (43200000 ms = 12 hours) to get the safe Gregorian date
-        final convertedNoon = DateTime.fromMillisecondsSinceEpoch(etDate.moment + 43200000);
-        final safeMidnight = DateTime(convertedNoon.year, convertedNoon.month, convertedNoon.day);
+        final convertedNoon = DateTime.fromMillisecondsSinceEpoch(
+          etDate.moment + 43200000,
+        );
+        final safeMidnight = DateTime(
+          convertedNoon.year,
+          convertedNoon.month,
+          convertedNoon.day,
+        );
         if (!_isSameDay(safeMidnight, currentDate)) {
           ref.read(historyDateProvider.notifier).state = safeMidnight;
         }
@@ -81,8 +102,35 @@ class HistoryScreen extends ConsumerWidget {
 
     final timelineDates = _generateTimelineDates(selectedDate);
     final weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    final etMonths = ['Mesk', 'Tik', 'Hidar', 'Tahsas', 'Tir', 'Yakatit', 'Magabit', 'Miyazya', 'Ginbot', 'Sene', 'Hamle', 'Nehase', 'Pagume'];
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    final etMonths = [
+      'Mesk',
+      'Tik',
+      'Hidar',
+      'Tahsas',
+      'Tir',
+      'Yakatit',
+      'Magabit',
+      'Miyazya',
+      'Ginbot',
+      'Sene',
+      'Hamle',
+      'Nehase',
+      'Pagume',
+    ];
 
     return Scaffold(
       appBar: AppBar(
@@ -91,7 +139,8 @@ class HistoryScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.calendar_today_outlined),
-            onPressed: () => _selectCalendarDate(context, ref, selectedDate, calendarType),
+            onPressed: () =>
+                _selectCalendarDate(context, ref, selectedDate, calendarType),
           ),
         ],
       ),
@@ -149,7 +198,9 @@ class HistoryScreen extends ConsumerWidget {
 
                   if (calendarType == CalendarType.ethiopian) {
                     final noonDate = date.add(const Duration(hours: 12));
-                    final etDate = EtDatetime.fromMillisecondsSinceEpoch(noonDate.millisecondsSinceEpoch);
+                    final etDate = EtDatetime.fromMillisecondsSinceEpoch(
+                      noonDate.millisecondsSinceEpoch,
+                    );
                     monthText = etMonths[etDate.month - 1];
                     dayText = etDate.day.toString();
                   } else {
@@ -162,12 +213,15 @@ class HistoryScreen extends ConsumerWidget {
                       ref.read(historyDateProvider.notifier).state = date;
                     },
                     child: Container(
-                      width: 53, 
+                      width: 53,
                       margin: const EdgeInsets.symmetric(horizontal: 4),
                       decoration: BoxDecoration(
                         color: isSelected
                             ? Theme.of(context).colorScheme.primary
-                            : Theme.of(context).colorScheme.surfaceContainerHighest.withAlpha(128),
+                            : Theme.of(context)
+                                  .colorScheme
+                                  .surfaceContainerHighest
+                                  .withAlpha(128),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Column(
@@ -178,7 +232,9 @@ class HistoryScreen extends ConsumerWidget {
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
-                              color: isSelected ? Colors.white : Colors.grey.shade600,
+                              color: isSelected
+                                  ? Colors.white
+                                  : Colors.grey.shade600,
                             ),
                           ),
                           Text(
@@ -186,7 +242,9 @@ class HistoryScreen extends ConsumerWidget {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface,
+                              color: isSelected
+                                  ? Colors.white
+                                  : Theme.of(context).colorScheme.onSurface,
                             ),
                           ),
                           Text(
@@ -194,7 +252,9 @@ class HistoryScreen extends ConsumerWidget {
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
-                              color: isSelected ? Colors.white70 : Colors.grey.shade500,
+                              color: isSelected
+                                  ? Colors.white70
+                                  : Colors.grey.shade500,
                             ),
                           ),
                         ],
@@ -211,7 +271,9 @@ class HistoryScreen extends ConsumerWidget {
             Expanded(
               child: historyExpenses.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (error, stack) => Center(child: Text('${ref.watch(trProvider('error_prefix'))}$error')),
+                error: (error, stack) => Center(
+                  child: Text('${ref.watch(trProvider('error_prefix'))}$error'),
+                ),
                 data: (expenses) {
                   if (expenses.isEmpty) {
                     return Center(
@@ -237,7 +299,8 @@ class HistoryScreen extends ConsumerWidget {
                             showModalBottomSheet(
                               context: context,
                               isScrollControlled: true,
-                              builder: (context) => ManualEntrySheet(existingExpense: expense),
+                              builder: (context) =>
+                                  ManualEntrySheet(existingExpense: expense),
                             );
                           }
                         },
@@ -266,7 +329,9 @@ class HistoryScreen extends ConsumerWidget {
                               ScaffoldMessenger.of(context).clearSnackBars();
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text('${ref.watch(trProvider('deleted'))}"${expense.rawNote}"'),
+                                  content: Text(
+                                    '${ref.watch(trProvider('deleted'))}"${expense.rawNote}"',
+                                  ),
                                   action: SnackBarAction(
                                     label: 'Undo',
                                     onPressed: () async {

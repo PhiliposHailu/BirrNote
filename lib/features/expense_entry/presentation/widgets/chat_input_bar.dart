@@ -55,9 +55,9 @@ class _ChatInputBarState extends ConsumerState<ChatInputBar> {
   Widget build(BuildContext context) {
     // 1. Watch whether AI Note Parsing is enabled in Settings
     final isAiEnabled = ref.watch(aiEnabledProvider);
-    
-    // 2. Eagerly watch the API key provider. 
-    // This forces Riverpod to start reading the key from Secure Storage the moment 
+
+    // 2. Eagerly watch the API key provider.
+    // This forces Riverpod to start reading the key from Secure Storage the moment
     // the app opens, rather than waiting until the exact millisecond the user hits send!
     ref.watch(apiKeyProvider);
 
@@ -81,7 +81,10 @@ class _ChatInputBarState extends ConsumerState<ChatInputBar> {
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(24),
                         ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                       ),
                       onSubmitted: (_) => _submitNote(),
                     ),
@@ -98,10 +101,18 @@ class _ChatInputBarState extends ConsumerState<ChatInputBar> {
                 width: double.infinity,
                 child: FilledButton.icon(
                   icon: const Icon(Icons.add),
-                  label: Text(ref.watch(trProvider('add_expense')), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  label: Text(
+                    ref.watch(trProvider('add_expense')),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
                   ),
                   onPressed: _openManualSheet, // Opens manual form directly!
                 ),
