@@ -19,7 +19,10 @@ class LanguageTile extends ConsumerWidget {
 
     return ListTile(
       leading: const Icon(Icons.language_outlined, size: 28),
-      title: Text(languageTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+      title: Text(
+        languageTitle,
+        style: const TextStyle(fontWeight: FontWeight.bold),
+      ),
       subtitle: Text(_languages[currentLanguage] ?? 'English'),
       trailing: DropdownButton<String>(
         value: currentLanguage,

@@ -5,11 +5,18 @@ import '../../../settings/data/category_providers.dart';
 import '../../../../core/utils/locale_provider.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../../core/database/database_provider.dart';
+import '../../../../core/sms/sms_models.dart';
 
 class ManualEntrySheet extends ConsumerStatefulWidget {
   final DateTime? initialDate;
   final Expense? existingExpense;
-  const ManualEntrySheet({super.key, this.initialDate, this.existingExpense});
+  final ParsedBankSms? initialSms;
+  const ManualEntrySheet({
+    super.key,
+    this.initialDate,
+    this.existingExpense,
+    this.initialSms,
+  });
 
   @override
   ConsumerState<ManualEntrySheet> createState() => _ManualEntrySheetState();
@@ -37,6 +44,11 @@ class _ManualEntrySheetState extends ConsumerState<ManualEntrySheet> {
       _selectedCategory = expense.category;
       _quantity = expense.quantity;
       _checkExistingAmortization();
+    } else if (widget.initialSms != null) {
+      final sms = widget.initialSms!;
+      _amountController.text = sms.amount.toStringAsFixed(2);
+      _noteController.text = sms.merchant;
+      _selectedCategory = sms.suggestedCategory;
     }
   }
 
@@ -90,8 +102,10 @@ class _ManualEntrySheetState extends ConsumerState<ManualEntrySheet> {
             category: _selectedCategory!,
             quantity: _quantity,
             note: _noteController.text,
-            date: widget.initialDate,
+            date: widget.initialDate ?? widget.initialSms?.timestamp,
             amortizeDays: amortizeDaysToPass,
+            source: widget.initialSms?.source ?? 'manual',
+            txnRef: widget.initialSms?.txnRef,
           );
     }
 
@@ -135,6 +149,68 @@ class _ManualEntrySheetState extends ConsumerState<ManualEntrySheet> {
                 ),
                 textAlign: TextAlign.center,
               ),
+              if (widget.initialSms != null) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: widget.initialSms!.source == 'sms_telebirr'
+                        ? Colors.teal.withValues(alpha: 0.12)
+                        : Colors.purple.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: widget.initialSms!.source == 'sms_telebirr'
+                          ? Colors.teal.withValues(alpha: 0.3)
+                          : Colors.purple.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        widget.initialSms!.source == 'sms_telebirr'
+                            ? Icons.phone_android_rounded
+                            : Icons.account_balance_rounded,
+                        size: 20,
+                        color: widget.initialSms!.source == 'sms_telebirr'
+                            ? Colors.teal
+                            : Colors.purple,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.initialSms!.source == 'sms_telebirr'
+                                  ? ref.watch(trProvider('telebirr_detected'))
+                                  : ref.watch(trProvider('cbe_detected')),
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                color:
+                                    widget.initialSms!.source == 'sms_telebirr'
+                                    ? Colors.teal.shade800
+                                    : Colors.purple.shade800,
+                              ),
+                            ),
+                            if (widget.initialSms!.txnRef != null)
+                              Text(
+                                'Ref: ${widget.initialSms!.txnRef}',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               const SizedBox(height: 16),
 
               // AMOUNT INPUT

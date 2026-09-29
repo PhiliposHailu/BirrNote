@@ -31,10 +31,12 @@ class _TimeRollerColumnState extends State<TimeRollerColumn> {
     super.initState();
     _currentItem = widget.initialItem;
     _scrollController = FixedExtentScrollController(initialItem: _currentItem);
-    
+
     // FIXED: If 12h mode, display 01-12 instead of index 0-11
     final initialDisplay = widget.is12Hour ? _currentItem + 1 : _currentItem;
-    _textController = TextEditingController(text: initialDisplay.toString().padLeft(2, '0'));
+    _textController = TextEditingController(
+      text: initialDisplay.toString().padLeft(2, '0'),
+    );
   }
 
   @override
@@ -66,7 +68,10 @@ class _TimeRollerColumnState extends State<TimeRollerColumn> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(widget.label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+        Text(
+          widget.label,
+          style: const TextStyle(color: Colors.grey, fontSize: 12),
+        ),
         const SizedBox(height: 8),
         SizedBox(
           width: 70,
@@ -79,14 +84,21 @@ class _TimeRollerColumnState extends State<TimeRollerColumn> {
                     textAlign: TextAlign.center,
                     autofocus: true,
                     maxLength: 2,
-                    style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
-                    decoration: const InputDecoration(counterText: '', border: InputBorder.none),
+                    style: const TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                    decoration: const InputDecoration(
+                      counterText: '',
+                      border: InputBorder.none,
+                    ),
                     onSubmitted: _submit,
                   ),
                 )
               : NotificationListener<ScrollNotification>(
                   onNotification: (notification) {
-                    setState(() {}); 
+                    setState(() {});
                     return false;
                   },
                   child: ListWheelScrollView.useDelegate(
@@ -107,19 +119,29 @@ class _TimeRollerColumnState extends State<TimeRollerColumn> {
                           offset = _scrollController.offset / 50.0;
                         }
                         final double distance = (index - offset).abs();
-                        final double opacity = (1.0 - (distance * 0.7)).clamp(0.3, 1.0);
-                        final double fontSize = (32.0 - (distance * 8.0)).clamp(22.0, 32.0);
+                        final double opacity = (1.0 - (distance * 0.7)).clamp(
+                          0.3,
+                          1.0,
+                        );
+                        final double fontSize = (32.0 - (distance * 8.0)).clamp(
+                          22.0,
+                          32.0,
+                        );
                         final isSelected = index == _currentItem;
 
                         // FIXED: Render 1-12 instead of 0-11 in the wheel!
-                        final displayValue = widget.is12Hour ? index + 1 : index;
+                        final displayValue = widget.is12Hour
+                            ? index + 1
+                            : index;
 
                         return GestureDetector(
                           onTap: () {
                             if (isSelected) {
                               setState(() {
                                 _isEditing = true;
-                                _textController.text = displayValue.toString().padLeft(2, '0');
+                                _textController.text = displayValue
+                                    .toString()
+                                    .padLeft(2, '0');
                               });
                             }
                           },
@@ -128,7 +150,9 @@ class _TimeRollerColumnState extends State<TimeRollerColumn> {
                               displayValue.toString().padLeft(2, '0'),
                               style: TextStyle(
                                 fontSize: fontSize,
-                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
                                 color: Colors.white.withOpacity(opacity),
                               ),
                             ),

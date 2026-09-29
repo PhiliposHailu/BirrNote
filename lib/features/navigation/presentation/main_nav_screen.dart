@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../expense_entry/presentation/expense_entry_screen.dart';
@@ -5,11 +6,14 @@ import '../../settings/presentation/settings_screen.dart';
 import '../../dashboard/presentation/dashboard_screen.dart';
 import '../../ai_advisor/presentation/advisor_screen.dart';
 import '../../../core/notifications/notification_service.dart';
+import '../../../core/sms/sms_models.dart';
+import '../../../core/sms/sms_listener_service.dart';
+import '../../../core/database/database_provider.dart';
+import '../../expense_entry/presentation/widgets/manual_entry_sheet.dart';
 import '../../expense_entry/presentation/history_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../expense_entry/presentation/widgets/onboarding_tour.dart';
 import '../../../core/utils/locale_provider.dart';
-import '../../../core/theme/theme_provider.dart';
 
 class NavIndexNotifier extends Notifier<int> {
   @override
@@ -23,8 +27,12 @@ class TourTriggerNotifier extends Notifier<int> {
   void increment() => state++;
 }
 
-final navIndexProvider = NotifierProvider<NavIndexNotifier, int>(NavIndexNotifier.new);
-final tourTriggerProvider = NotifierProvider<TourTriggerNotifier, int>(TourTriggerNotifier.new);
+final navIndexProvider = NotifierProvider<NavIndexNotifier, int>(
+  NavIndexNotifier.new,
+);
+final tourTriggerProvider = NotifierProvider<TourTriggerNotifier, int>(
+  TourTriggerNotifier.new,
+);
 
 class MainNavScreen extends ConsumerStatefulWidget {
   const MainNavScreen({super.key});
@@ -34,6 +42,8 @@ class MainNavScreen extends ConsumerStatefulWidget {
 }
 
 class _MainNavScreenState extends ConsumerState<MainNavScreen> {
+  StreamSubscription<String>? _notificationSub;
+
   @override
   void initState() {
     super.initState();
@@ -43,6 +53,44 @@ class _MainNavScreenState extends ConsumerState<MainNavScreen> {
 
     // NEW: Trigger the onboarding tour on very first launch!
     _checkFirstTimeTour();
+
+    // Listen for notification taps (e.g. detected bank SMS)
+    _setupNotificationListener();
+
+    // Check if SMS tracking was previously enabled and resume listener
+    _checkSmsTrackingOnBoot();
+  }
+
+  void _setupNotificationListener() {
+    _notificationSub = NotificationService().onPayloadTapped.listen((payload) {
+      try {
+        final parsed = ParsedBankSms.fromJson(payload);
+        if (mounted) {
+          ref.read(navIndexProvider.notifier).updateState(0);
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            useSafeArea: true,
+            builder: (context) => ManualEntrySheet(initialSms: parsed),
+          );
+        }
+      } catch (_) {}
+    });
+  }
+
+  Future<void> _checkSmsTrackingOnBoot() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isEnabled = prefs.getBool('auto_track_sms') ?? false;
+    if (isEnabled) {
+      final expenseDao = ref.read(expenseDaoProvider);
+      await SmsListenerService().startListening(expenseDao: expenseDao);
+    }
+  }
+
+  @override
+  void dispose() {
+    _notificationSub?.cancel();
+    super.dispose();
   }
 
   // NEW: Checks if it's first-time launch and triggers the tour

@@ -219,6 +219,8 @@ class ExpenseLogic {
     required String note,
     DateTime? date,
     int? amortizeDays,
+    String source = 'manual',
+    String? txnRef,
   }) async {
     final expenseDate = date ?? DateTime.now();
     final expenseId = await expenseDao.insertExpense(
@@ -229,6 +231,8 @@ class ExpenseLogic {
         quantity: Value(quantity),
         date: expenseDate,
         isPendingAi: const Value(false),
+        source: Value(source),
+        txnRef: Value(txnRef),
       ),
     );
 
@@ -252,6 +256,28 @@ class ExpenseLogic {
         ),
       );
     }
+  }
+
+  // 3.5 SMS TRANSACTION ENTRY
+  Future<void> addSmsExpense({
+    required double amount,
+    required String category,
+    required String merchant,
+    required String source,
+    String? txnRef,
+    DateTime? date,
+    int? amortizeDays,
+  }) async {
+    return addManualExpense(
+      amount: amount,
+      category: category,
+      quantity: 1,
+      note: merchant,
+      date: date,
+      amortizeDays: amortizeDays,
+      source: source,
+      txnRef: txnRef,
+    );
   }
 
   // 4. EDIT EXPENSE

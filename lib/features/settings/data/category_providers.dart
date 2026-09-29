@@ -16,7 +16,7 @@ class CategoryManager {
   Future<void> add(String name) async {
     final cleanedName = name.trim();
     if (cleanedName.isEmpty) return;
-    
+
     try {
       await categoryDao.addCategoryOption(cleanedName);
     } catch (e) {
@@ -25,7 +25,7 @@ class CategoryManager {
   }
 
   Future<void> delete(String name) async {
-    if (name == 'Others') return; 
+    if (name == 'Others') return;
     await categoryDao.deleteCategoryOption(name);
   }
 

@@ -7,6 +7,7 @@ import 'widgets/weekly_budget_card.dart';
 import 'widgets/daily_reminder_card.dart';
 import 'widgets/gemini_key_sheet.dart';
 import 'widgets/cloud_sync_tile.dart';
+import 'widgets/sms_tracking_tile.dart';
 import 'widgets/language_tile.dart';
 import 'widgets/battery_optimization_tile.dart';
 import '../../../core/utils/locale_provider.dart';
@@ -244,6 +245,11 @@ class SettingsScreen extends ConsumerWidget {
 
                 // ROW C: GOOGLE SYNC
                 const CloudSyncTile(),
+
+                const Divider(indent: 16, endIndent: 16, height: 1),
+
+                // ROW D: AUTO-TRACK BANK SMS
+                const SmsTrackingTile(),
               ],
             ),
           ),

@@ -273,6 +273,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.33.0"
+  easy_sms_receiver:
+    dependency: "direct main"
+    description:
+      name: easy_sms_receiver
+      sha256: cddbac574d26052166715a8c6968996cad40eafb4939a4442dc5de11a15950b7
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.2"
   equatable:
     dependency: transitive
     description:

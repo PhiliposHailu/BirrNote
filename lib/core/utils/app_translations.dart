@@ -77,6 +77,26 @@ class AppTranslations {
       'active_installments': "Active Installments",
       'for_duration': "for",
       'days_suffix': "days",
+      'auto_track_sms': "Auto-Track Bank SMS",
+      'auto_track_sms_desc':
+          "Detect Telebirr & CBE payment SMS and log with 1-tap",
+      'sms_tracking_active_sub': "Active • Listening for Telebirr & CBE alerts",
+      'sms_tracking_active_snack':
+          "Bank SMS tracking activated! Telebirr & CBE alerts will be detected.",
+      'sms_permission_needed':
+          "SMS permission is required to detect bank payments.",
+      'sms_supported_banks': "Supported Institutions",
+      'sms_supported_banks_desc':
+          "Telebirr (Ethio telecom) and CBE (Commercial Bank of Ethiopia).",
+      'sms_privacy_guarantee': "100% On-Device & Private",
+      'sms_privacy_note':
+          "SMS texts are parsed locally and never uploaded to any remote server or AI.",
+      'sms_1tap_confirm': "1-Tap Interactive Logging",
+      'sms_1tap_confirm_desc':
+          "When a payment arrives, tap the notification to review and save in seconds.",
+      'got_it': "Got it",
+      'telebirr_detected': "Telebirr Payment Detected",
+      'cbe_detected': "CBE Debit Detected",
       'key_active_secured': "Key Active & Secured",
       'add_key_for_ai': "Add key for AI features",
       'when_disabled_notes': "When disabled, notes save locally only",
@@ -188,6 +208,25 @@ class AppTranslations {
       'active_installments': "ገባሪ ክፍፍሎች",
       'for_duration': "ለ",
       'days_suffix': "ቀናት",
+      'auto_track_sms': "የባንክ ክፍያዎችን በራስ-ሰር መከታተል",
+      'auto_track_sms_desc':
+          "የቴሌብር እና የኢትዮጵያ ንግድ ባንክ ክፍያዎችን በመለየት በአንድ ንክኪ ይመዝግቡ",
+      'sms_tracking_active_sub':
+          "ንቁ • የቴሌብር እና የኢትዮጵያ ንግድ ባንክ መልዕክቶችን በማዳመጥ ላይ",
+      'sms_tracking_active_snack':
+          "የባንክ ኤስኤምኤስ ክትትል ተጀምሯል! የቴሌብር እና የኢትዮጵያ ንግድ ባንክ ክፍያዎች ይታወቃሉ።",
+      'sms_permission_needed': "የባንክ ክፍያዎችን ለመለየት የኤስኤምኤስ ፈቃድ ያስፈልጋል።",
+      'sms_supported_banks': "የሚደገፉ ባንኮች",
+      'sms_supported_banks_desc': "ቴሌብር (ኢትዮ ቴሌኮም) እና የኢትዮጵያ ንግድ ባንክ (CBE)።",
+      'sms_privacy_guarantee': "100% በስልክዎ ላይ ብቻ & ሚስጥራዊ",
+      'sms_privacy_note':
+          "መልዕክቶች በስልክዎ ላይ ብቻ ይተነተናሉ፤ ወደ ምንም አገልጋይ ወይም ኤአይ አይላኩም።",
+      'sms_1tap_confirm': "በአንድ ንክኪ ማረጋገጥ",
+      'sms_1tap_confirm_desc':
+          "ክፍያ ሲፈጸም ማሳወቂያውን በመንካት በሰከንዶች ውስጥ አረጋግጠው ያስቀምጡ።",
+      'got_it': "ተረድቻለሁ",
+      'telebirr_detected': "የቴሌብር ክፍያ ተገኝቷል",
+      'cbe_detected': "የኢትዮጵያ ንግድ ባንክ ክፍያ ተገኝቷል",
       'key_active_secured': "ቁልፉ ገብቷል እና ደህንነቱ የተጠበቀ ነው",
       'add_key_for_ai': "ለኤአይ አጠቃቀም ቁልፍ ያስገቡ",
       'when_disabled_notes': "ሲጠፋ ማስታወሻዎች በመሣሪያዎ ላይ ብቻ ይቀመጣሉ",
@@ -298,6 +337,27 @@ class AppTranslations {
       'active_installments': "Kaffaltiiwwan Hojjatan",
       'for_duration': "hanga",
       'days_suffix': "guyyoottan",
+      'auto_track_sms': "Kaffaltii Ergaa Baankii Ofumaan Hordofuu",
+      'auto_track_sms_desc':
+          "Kaffaltii Telebirr fi CBE adda baasuun tuqaa tokkoon galmeessi",
+      'sms_tracking_active_sub':
+          "Hojiirra jira • Ergaa Telebirr fi CBE eegaa jira",
+      'sms_tracking_active_snack':
+          "Hordoffiin ergaa baankii eegalameera! Kaffaltiiwwan Telebirr fi CBE ni beekamu.",
+      'sms_permission_needed':
+          "Kaffaltii baankii adda baasuuf heyyama ergaa barbaachisa.",
+      'sms_supported_banks': "Dhaabbilee Deeggaraman",
+      'sms_supported_banks_desc':
+          "Telebirr (Ityoo telekoom) fi Baankii Daldala Ityoophiyaa (CBE).",
+      'sms_privacy_guarantee': "100% Bilbila Keessan Qofa & Iccitii",
+      'sms_privacy_note':
+          "Ergaawwan bilbila keessan irratti qofa qaaccessamu; gara sarvarii kamiyyuu hin ergaman.",
+      'sms_1tap_confirm': "Tuqaa Tokkoon Mirkaneessuu",
+      'sms_1tap_confirm_desc':
+          "Kaffaltiin yeroo dhufe, beeksisa tuquun sekondii muraasa keessatti mirkaneessaa galmeessi.",
+      'got_it': "Hubadheera",
+      'telebirr_detected': "Kaffaltiin Telebirr Argameera",
+      'cbe_detected': "Kaffaltiin CBE Argameera",
       'key_active_secured': "Furtuun galeera, eegamaadha",
       'add_key_for_ai': "Tajaajila AI'f furtuu galchi",
       'when_disabled_notes':
@@ -410,6 +470,23 @@ class AppTranslations {
       'active_installments': "ዝሰርሑ ምምቃላት",
       'for_duration': "ን",
       'days_suffix': "መዓልታት",
+      'auto_track_sms': "ናይ ባንኪ ኤስኤምኤስ ክፍሊታት ብኣውቶማቲክ ምክትታል",
+      'auto_track_sms_desc': "ናይ ቴሌብርን ንግዲ ባንኪን ክፍሊታት ብምልላይ ብሓደ ጠውቂ መዝግብ",
+      'sms_tracking_active_sub':
+          "ንቁሕ • ናይ ቴሌብርን ንግዲ ባንኪን መልእኽትታት ኣብ ምክትታል ይርከብ",
+      'sms_tracking_active_snack':
+          "ናይ ባንኪ ኤስኤምኤስ ምክትታል ተጀሚሩ! ናይ ቴሌብርን ንግዲ ባንኪን ክፍሊታት ክልለዩ እዮም።",
+      'sms_permission_needed': "ናይ ባንኪ ክፍሊታት ንምልላይ ናይ ኤስኤምኤስ ፍቓድ የድሊ።",
+      'sms_supported_banks': "ዝድገፉ ትካላት",
+      'sms_supported_banks_desc': "ቴሌብር (ኢትዮ ቴሌኮም)ን ንግዲ ባንኪ ኢትዮጵያን (CBE)።",
+      'sms_privacy_guarantee': "100% ኣብ ሞባይልኩም ጥራይ & ምስጢራዊ",
+      'sms_privacy_note': "መልእኽትታት ኣብ ሞባይልኩም ጥራይ ይትንተኑ፤ ናብ ዝኾነ ሰርቨር ኣይስደዱን።",
+      'sms_1tap_confirm': "ብሓደ ጠውቂ ምርግጋጽ",
+      'sms_1tap_confirm_desc':
+          "ክፍሊት ምስ ተፈጸመ፣ ነቲ ምልክታ ብምጥዋቕ ኣብ ካልኢታት ኣረጋጊጽኩም ኣቐምጡ።",
+      'got_it': "ተረዲአዮ",
+      'telebirr_detected': "ናይ ቴሌብር ክፍሊት ተረኺቡ",
+      'cbe_detected': "ናይ ንግዲ ባንኪ ክፍሊት ተረኺቡ",
       'key_active_secured': "መፍትሕ ኣትዩ ኣሎ፡ ድሕነቱ ዝተሓለወ እዩ",
       'add_key_for_ai': "ንኤአይ ኣገልግሎት መፍትሕ የእትዉ",
       'when_disabled_notes': "እንተ ጠፊኡ መዘኻኸሪ ኣብ ሞባይልኩም ጥራይ ይዕቀብ",

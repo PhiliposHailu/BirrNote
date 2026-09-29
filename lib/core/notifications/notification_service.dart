@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:timezone/data/latest_all.dart' as tz_data; // FIXED: Loads complete database!
+import 'package:timezone/data/latest_all.dart'
+    as tz_data; // FIXED: Loads complete database!
 import 'package:timezone/timezone.dart' as tz;
 
 class NotificationService {
@@ -9,7 +11,12 @@ class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
   factory NotificationService() => _instance;
 
-  final FlutterLocalNotificationsPlugin _plugin = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _plugin =
+      FlutterLocalNotificationsPlugin();
+  final StreamController<String> _payloadStreamController =
+      StreamController<String>.broadcast();
+
+  Stream<String> get onPayloadTapped => _payloadStreamController.stream;
 
   // 1. INITIALIZE (Silent setup)
   Future<void> initialize() async {
@@ -20,25 +27,37 @@ class NotificationService {
       // Fetch the Timezone identifier (e.g. Africa/Addis_Ababa)
       final currentTimeZoneInfo = await FlutterTimezone.getLocalTimezone();
       tz.setLocalLocation(tz.getLocation(currentTimeZoneInfo.identifier));
-      
     } catch (e) {
-      // SECURE FALLBACK: If lookup fails, try to load Addis Ababa. 
+      // SECURE FALLBACK: If lookup fails, try to load Addis Ababa.
       // If that somehow fails, fallback to UTC so it NEVER crashes your bootup!
-      print("⚠️ Timezone setup failed, attempting fallback to Africa/Addis_Ababa. Error: $e");
+      print(
+        "⚠️ Timezone setup failed, attempting fallback to Africa/Addis_Ababa. Error: $e",
+      );
       try {
         tz.setLocalLocation(tz.getLocation('Africa/Addis_Ababa'));
-        print("🔔 BirrNote Fallback Match: Success! Set default local zone to Addis_Ababa.");
+        print(
+          "🔔 BirrNote Fallback Match: Success! Set default local zone to Addis_Ababa.",
+        );
       } catch (innerError) {
         tz.setLocalLocation(tz.UTC);
         print("🔔 BirrNote Fallback Match: Extreme recovery! Set zone to UTC.");
       }
     }
 
-    const androidSettings = AndroidInitializationSettings('@mipmap/launcher_icon');
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/launcher_icon',
+    );
     const initSettings = InitializationSettings(android: androidSettings);
 
-    await _plugin.initialize(settings: initSettings);
-    
+    await _plugin.initialize(
+      settings: initSettings,
+      onDidReceiveNotificationResponse: (response) {
+        if (response.payload != null && response.payload!.isNotEmpty) {
+          _payloadStreamController.add(response.payload!);
+        }
+      },
+    );
+
     // Explicitly request permissions on first launch for Android 13+
     await checkFirstTimePrompt();
   }
@@ -56,21 +75,25 @@ class NotificationService {
 
   // 3. CHECK / REQUEST PERMISSION
   Future<bool> requestPermission() async {
-    final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
-    
+    final androidPlugin = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+
     final granted = await androidPlugin?.requestNotificationsPermission();
     return granted ?? false;
   }
 
   // NEW: Request EXACT ALARM Permission (Android 14+ requirement)
   Future<bool> requestExactAlarmsPermission() async {
-    final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
-    
+    final androidPlugin = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+
     // Returns true if permission was granted, false if denied, null if older Android
     final granted = await androidPlugin?.requestExactAlarmsPermission();
-    return granted ?? true; 
+    return granted ?? true;
   }
 
   // 4. SCHEDULE DAILY REMINDER (With Large Icon support!)
@@ -78,16 +101,23 @@ class NotificationService {
     await cancelReminder();
 
     const androidDetails = AndroidNotificationDetails(
-      'daily_reminder_channel', 
-      'Daily Reminders',        
+      'daily_reminder_channel',
+      'Daily Reminders',
       channelDescription: 'Reminds you to log your daily spending',
       importance: Importance.max,
       priority: Priority.high,
     );
 
     final now = tz.TZDateTime.now(tz.local);
-    var scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
-    
+    var scheduledDate = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      hour,
+      minute,
+    );
+
     if (scheduledDate.isBefore(now)) {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
     }
@@ -98,33 +128,39 @@ class NotificationService {
     print("Inferred App Timezone:       ${tz.local.name}");
     print("Selected Hour:Minute:        $hour:$minute");
     print("Calculated Schedule Time:    $scheduledDate");
-    print("Is Scheduled for Tomorrow?   ${scheduledDate.isAfter(now.add(const Duration(hours: 1)))}");
+    print(
+      "Is Scheduled for Tomorrow?   ${scheduledDate.isAfter(now.add(const Duration(hours: 1)))}",
+    );
     print("---------------------------------------------");
 
     try {
       await _plugin.zonedSchedule(
-        id: 100, 
-        title: 'Time to log your spending! 📝', 
-        body: 'Keep your daily budget on track. Tap to log today\'s expenses.', 
-        scheduledDate: scheduledDate, 
-        notificationDetails: const NotificationDetails(android: androidDetails), 
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle, 
-        matchDateTimeComponents: DateTimeComponents.time, 
+        id: 100,
+        title: 'Time to log your spending! 📝',
+        body: 'Keep your daily budget on track. Tap to log today\'s expenses.',
+        scheduledDate: scheduledDate,
+        notificationDetails: const NotificationDetails(android: androidDetails),
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        matchDateTimeComponents: DateTimeComponents.time,
       );
       print("✅ Daily Reminder scheduled successfully with EXACT precision.");
     } catch (e) {
-      print("⚠️ Android exact alarm permission was blocked by your device. Auto-falling back to inexact. Error: $e");
-      
-      await _plugin.zonedSchedule(
-        id: 100, 
-        title: 'Time to log your spending! 📝', 
-        body: 'Keep your daily budget on track. Tap to log today\'s expenses.', 
-        scheduledDate: scheduledDate, 
-        notificationDetails: const NotificationDetails(android: androidDetails), 
-        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle, 
-        matchDateTimeComponents: DateTimeComponents.time, 
+      print(
+        "⚠️ Android exact alarm permission was blocked by your device. Auto-falling back to inexact. Error: $e",
       );
-      print("✅ Daily Reminder scheduled successfully in inexact battery-saver mode.");
+
+      await _plugin.zonedSchedule(
+        id: 100,
+        title: 'Time to log your spending! 📝',
+        body: 'Keep your daily budget on track. Tap to log today\'s expenses.',
+        scheduledDate: scheduledDate,
+        notificationDetails: const NotificationDetails(android: androidDetails),
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        matchDateTimeComponents: DateTimeComponents.time,
+      );
+      print(
+        "✅ Daily Reminder scheduled successfully in inexact battery-saver mode.",
+      );
     }
   }
 
@@ -141,7 +177,32 @@ class NotificationService {
     await _plugin.show(
       id: 200,
       title: 'BirrNote Notifications Working! 🎉',
-      body: 'If you see this, your phone\'s local notification system is 100% operational.',
+      body:
+          'If you see this, your phone\'s local notification system is 100% operational.',
+      notificationDetails: const NotificationDetails(android: androidDetails),
+    );
+  }
+
+  // 5.5 SMS TRANSACTION NOTIFICATION
+  Future<void> showSmsTransactionNotification({
+    required int id,
+    required String title,
+    required String body,
+    required String payload,
+  }) async {
+    const androidDetails = AndroidNotificationDetails(
+      'sms_transactions_channel',
+      'Bank Transactions',
+      channelDescription: 'Alerts when a bank payment SMS is detected',
+      importance: Importance.max,
+      priority: Priority.high,
+    );
+
+    await _plugin.show(
+      id: id,
+      title: title,
+      body: body,
+      payload: payload,
       notificationDetails: const NotificationDetails(android: androidDetails),
     );
   }

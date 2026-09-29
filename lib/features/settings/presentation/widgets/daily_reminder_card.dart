@@ -42,15 +42,15 @@ class _DailyReminderCardState extends State<DailyReminderCard> {
   String _getTimeRemaining(int hour, int minute) {
     final now = DateTime.now();
     var scheduled = DateTime(now.year, now.month, now.day, hour, minute);
-    
+
     if (scheduled.isBefore(now)) {
       scheduled = scheduled.add(const Duration(days: 1));
     }
-    
+
     final difference = scheduled.difference(now);
     final hrs = difference.inHours;
     final mins = difference.inMinutes % 60;
-    
+
     if (hrs == 0) {
       return 'In $mins min';
     }
@@ -67,11 +67,14 @@ class _DailyReminderCardState extends State<DailyReminderCard> {
 
       // NEW: Explicitly request Exact Alarms permission for Android 14+
       // This will open the settings page if they haven't granted it yet.
-      final exactGranted = await _notificationService.requestExactAlarmsPermission();
+      final exactGranted = await _notificationService
+          .requestExactAlarmsPermission();
       if (!exactGranted && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Warning: Exact alarms are disabled in your settings! Your reminder may be delayed by up to 30 minutes to save battery.'),
+            content: Text(
+              'Warning: Exact alarms are disabled in your settings! Your reminder may be delayed by up to 30 minutes to save battery.',
+            ),
             duration: Duration(seconds: 5),
           ),
         );
@@ -113,10 +116,12 @@ class _DailyReminderCardState extends State<DailyReminderCard> {
   @override
   Widget build(BuildContext context) {
     final time = TimeOfDay(hour: _hour, minute: _minute);
-    
+
     return Card(
       elevation: 0,
-      color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.4),
+      color: Theme.of(
+        context,
+      ).colorScheme.surfaceContainerHighest.withOpacity(0.4),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -134,7 +139,7 @@ class _DailyReminderCardState extends State<DailyReminderCard> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    _isEnabled 
+                    _isEnabled
                         ? 'Remind me daily at ${_formatTime12h(_hour, _minute)} (${_getTimeRemaining(_hour, _minute)})'
                         : 'Receive a reminder to log your spending every night',
                     style: const TextStyle(color: Colors.grey, fontSize: 13),
@@ -142,10 +147,7 @@ class _DailyReminderCardState extends State<DailyReminderCard> {
                 ],
               ),
             ),
-            Switch(
-              value: _isEnabled,
-              onChanged: _toggleReminder,
-            ),
+            Switch(value: _isEnabled, onChanged: _toggleReminder),
           ],
         ),
       ),

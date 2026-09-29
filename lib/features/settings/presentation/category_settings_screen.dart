@@ -7,10 +7,12 @@ class CategorySettingsScreen extends ConsumerStatefulWidget {
   const CategorySettingsScreen({super.key});
 
   @override
-  ConsumerState<CategorySettingsScreen> createState() => _CategorySettingsScreenState();
+  ConsumerState<CategorySettingsScreen> createState() =>
+      _CategorySettingsScreenState();
 }
 
-class _CategorySettingsScreenState extends ConsumerState<CategorySettingsScreen> {
+class _CategorySettingsScreenState
+    extends ConsumerState<CategorySettingsScreen> {
   final _categoryController = TextEditingController();
 
   void _handleAdd() {
@@ -23,14 +25,16 @@ class _CategorySettingsScreenState extends ConsumerState<CategorySettingsScreen>
   }
 
   // NEW: Clean helper dialog (Keeps our file size short and modular!)
-  Future<bool?> _showConfirmDeleteDialog(BuildContext context, WidgetRef ref, String category) {
+  Future<bool?> _showConfirmDeleteDialog(
+    BuildContext context,
+    WidgetRef ref,
+    String category,
+  ) {
     return showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('${ref.watch(trProvider('delete_category_q'))}$category"?'),
-        content: Text(
-          ref.watch(trProvider('past_expenses_warning')),
-        ),
+        content: Text(ref.watch(trProvider('past_expenses_warning'))),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -77,7 +81,10 @@ class _CategorySettingsScreenState extends ConsumerState<CategorySettingsScreen>
                   ),
                 ),
                 const SizedBox(width: 8),
-                IconButton.filled(icon: const Icon(Icons.add), onPressed: _handleAdd),
+                IconButton.filled(
+                  icon: const Icon(Icons.add),
+                  onPressed: _handleAdd,
+                ),
               ],
             ),
             const SizedBox(height: 24),
@@ -86,7 +93,9 @@ class _CategorySettingsScreenState extends ConsumerState<CategorySettingsScreen>
             Expanded(
               child: categoriesStream.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (error, stack) => Center(child: Text('${ref.watch(trProvider('error_prefix'))}$error')),
+                error: (error, stack) => Center(
+                  child: Text('${ref.watch(trProvider('error_prefix'))}$error'),
+                ),
                 data: (categories) {
                   return ReorderableListView.builder(
                     itemCount: categories.length,
@@ -102,21 +111,36 @@ class _CategorySettingsScreenState extends ConsumerState<CategorySettingsScreen>
                       final isOthers = category == 'Others';
 
                       return ListTile(
-                        key: ValueKey(category), 
-                        leading: const Icon(Icons.drag_indicator), 
+                        key: ValueKey(category),
+                        leading: const Icon(Icons.drag_indicator),
                         title: Text(category),
                         trailing: isOthers
                             ? Tooltip(
-                                message: ref.watch(trProvider('default_fallback_category')),
-                                child: const Icon(Icons.lock_outline, color: Colors.grey),
+                                message: ref.watch(
+                                  trProvider('default_fallback_category'),
+                                ),
+                                child: const Icon(
+                                  Icons.lock_outline,
+                                  color: Colors.grey,
+                                ),
                               )
                             : IconButton(
-                                icon: const Icon(Icons.delete_outline, color: Colors.red),
+                                icon: const Icon(
+                                  Icons.delete_outline,
+                                  color: Colors.red,
+                                ),
                                 onPressed: () async {
                                   // FIXED: Show the confirm dialog before deleting!
-                                  final confirm = await _showConfirmDeleteDialog(context, ref, category);
+                                  final confirm =
+                                      await _showConfirmDeleteDialog(
+                                        context,
+                                        ref,
+                                        category,
+                                      );
                                   if (confirm == true) {
-                                    ref.read(categoryManagerProvider).delete(category);
+                                    ref
+                                        .read(categoryManagerProvider)
+                                        .delete(category);
                                   }
                                 },
                               ),
@@ -132,7 +156,9 @@ class _CategorySettingsScreenState extends ConsumerState<CategorySettingsScreen>
               width: double.infinity,
               child: OutlinedButton.icon(
                 icon: const Icon(Icons.restore),
-                label: Text(ref.watch(trProvider('reset_to_default_categories'))),
+                label: Text(
+                  ref.watch(trProvider('reset_to_default_categories')),
+                ),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.orange,
                   side: const BorderSide(color: Colors.orange),
@@ -142,9 +168,7 @@ class _CategorySettingsScreenState extends ConsumerState<CategorySettingsScreen>
                     context: context,
                     builder: (context) => AlertDialog(
                       title: Text(ref.watch(trProvider('reset_categories_q'))),
-                      content: Text(
-                        ref.watch(trProvider('reset_warning'))
-                      ),
+                      content: Text(ref.watch(trProvider('reset_warning'))),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(context, false),
@@ -152,7 +176,9 @@ class _CategorySettingsScreenState extends ConsumerState<CategorySettingsScreen>
                         ),
                         FilledButton(
                           onPressed: () => Navigator.pop(context, true),
-                          style: FilledButton.styleFrom(backgroundColor: Colors.orange),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: Colors.orange,
+                          ),
                           child: Text(ref.watch(trProvider('reset'))),
                         ),
                       ],

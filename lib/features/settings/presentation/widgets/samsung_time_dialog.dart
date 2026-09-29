@@ -58,7 +58,11 @@ class _SamsungTimeDialogState extends State<SamsungTimeDialog> {
       title: const Text(
         'Set Reminder',
         textAlign: TextAlign.center,
-        style: TextStyle(color: Colors.grey, fontSize: 16, fontWeight: FontWeight.w500),
+        style: TextStyle(
+          color: Colors.grey,
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+        ),
       ),
       content: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -72,7 +76,14 @@ class _SamsungTimeDialogState extends State<SamsungTimeDialog> {
             onChanged: (val) => _selectedHourIndex = val,
           ),
 
-          const Text(':', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.grey)),
+          const Text(
+            ':',
+            style: TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey,
+            ),
+          ),
 
           // 2. THE MINUTES COLUMN
           TimeRollerColumn(
@@ -88,7 +99,10 @@ class _SamsungTimeDialogState extends State<SamsungTimeDialog> {
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('AM/PM', style: TextStyle(color: Colors.grey, fontSize: 12)),
+              const Text(
+                'AM/PM',
+                style: TextStyle(color: Colors.grey, fontSize: 12),
+              ),
               const SizedBox(height: 8),
               SizedBox(
                 width: 50,
@@ -103,18 +117,26 @@ class _SamsungTimeDialogState extends State<SamsungTimeDialog> {
                     perspective: 0.005,
                     diameterRatio: 1.2,
                     physics: const FixedExtentScrollPhysics(),
-                    controller: FixedExtentScrollController(initialItem: _selectedAmPmIndex),
-                    onSelectedItemChanged: (index) => _selectedAmPmIndex = index,
+                    controller: FixedExtentScrollController(
+                      initialItem: _selectedAmPmIndex,
+                    ),
+                    onSelectedItemChanged: (index) =>
+                        _selectedAmPmIndex = index,
                     children: ['AM', 'PM'].map((label) {
-                      final isSelected = (_selectedAmPmIndex == 0 && label == 'AM') || 
-                                         (_selectedAmPmIndex == 1 && label == 'PM');
+                      final isSelected =
+                          (_selectedAmPmIndex == 0 && label == 'AM') ||
+                          (_selectedAmPmIndex == 1 && label == 'PM');
                       return Center(
                         child: Text(
                           label,
                           style: TextStyle(
                             fontSize: isSelected ? 24 : 18,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                            color: isSelected ? Colors.white : Colors.grey.withOpacity(0.4),
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                            color: isSelected
+                                ? Colors.white
+                                : Colors.grey.withOpacity(0.4),
                           ),
                         ),
                       );
@@ -131,10 +153,7 @@ class _SamsungTimeDialogState extends State<SamsungTimeDialog> {
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancel', style: TextStyle(color: Colors.red)),
         ),
-        FilledButton(
-          onPressed: _handleSave,
-          child: const Text('Save'),
-        ),
+        FilledButton(onPressed: _handleSave, child: const Text('Save')),
       ],
     );
   }

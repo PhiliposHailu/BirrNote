@@ -1,8 +1,8 @@
 # Master Plan 1 — BirrNote v2.0: Smart Finance Engine
 
-> **Status:** Draft — Awaiting approval
+> **Status:** Completed (Phase 1, Phase 2, & Phase 3 Implemented & Verified)
 > **Author:** Antigravity × Philipos
-> **Date:** 2026-09-27
+> **Date:** 2026-09-29
 > **Scope:** Three new features, all on-device, zero server cost
 
 ---
@@ -11,11 +11,11 @@
 
 Three features that transform BirrNote from a daily expense logger into a **smart personal finance system**, while keeping everything free and local:
 
-| Phase | Feature | Core Problem it Solves |
-|-------|---------|----------------------|
-| **Phase 1** | Dynamic Gemini Model Picker | Models get deprecated/added frequently; hardcoded `gemini-3.1-flash-lite` will inevitably break |
-| **Phase 2** | Expense Amortization Engine | A single 350 ETB purchase tanks your daily budget to -250 ETB, making the tracker useless for days |
-| **Phase 3** | SMS-Based Transaction Tracking | CBE and Telebirr payments are invisible to the app — you must manually re-enter every digital payment |
+| Phase | Feature | Core Problem it Solves | Status |
+|-------|---------|----------------------|:------:|
+| **Phase 1** | Dynamic Gemini Model Picker | Models get deprecated/added frequently; hardcoded `gemini-3.1-flash-lite` will inevitably break | ✅ Complete |
+| **Phase 2** | Expense Amortization Engine | A single 350 ETB purchase tanks your daily budget to -250 ETB, making the tracker useless for days | ✅ Complete |
+| **Phase 3** | SMS-Based Transaction Tracking | CBE and Telebirr payments are invisible to the app — you must manually re-enter every digital payment | ✅ Complete |
 
 ---
 
@@ -389,18 +389,18 @@ if (from < 4) {
 ```
 
 ### Task Checklist — Phase 3
-- [ ] Add `easy_sms_receiver` to `pubspec.yaml`
-- [ ] Add `RECEIVE_SMS` permission to `AndroidManifest.xml`
-- [ ] Create `sms_parser.dart` with regex patterns for Telebirr + CBE
-- [ ] Create `sms_listener_service.dart` with sender filtering logic
-- [ ] Create `sms_providers.dart` with SMS toggle persistence
-- [ ] Add `source` and `txnRef` columns to `expenses_table.dart`
-- [ ] Add dedup query to `expense_dao.dart`
-- [ ] Add `addSmsExpense()` to `ExpenseLogic`
-- [ ] Add SMS toggle to settings screen
-- [ ] Wire notification tap → pre-filled `ManualEntrySheet`
-- [ ] Add translation keys (4 languages)
-- [ ] Test: mock SMS parsing, dedup logic, notification flow
+- [x] Add `easy_sms_receiver` to `pubspec.yaml`
+- [x] Add `RECEIVE_SMS` permission to `AndroidManifest.xml`
+- [x] Create `sms_parser.dart` with regex patterns for Telebirr + CBE
+- [x] Create `sms_listener_service.dart` with sender filtering logic
+- [x] Create `sms_providers.dart` with SMS toggle persistence
+- [x] Add `source` and `txnRef` columns to `expenses_table.dart`
+- [x] Add dedup query to `expense_dao.dart`
+- [x] Add `addSmsExpense()` to `ExpenseLogic`
+- [x] Add SMS toggle to settings screen
+- [x] Wire notification tap → pre-filled `ManualEntrySheet`
+- [x] Add translation keys (4 languages)
+- [x] Test: mock SMS parsing, dedup logic, notification flow
 
 ---
 

@@ -34,6 +34,20 @@ class ExpenseDao extends DatabaseAccessor<AppDatabase> with _$ExpenseDaoMixin {
     return update(expenses).replace(companion);
   }
 
+  // 3.6 Check duplicate transaction reference (for SMS tracking)
+  Future<bool> hasExpenseWithTxnRef(String txnRef) async {
+    final query = select(expenses)..where((tbl) => tbl.txnRef.equals(txnRef));
+    final match = await query.getSingleOrNull();
+    return match != null;
+  }
+
+  // 3.7 Fetch expense by transaction reference
+  Future<Expense?> getExpenseByTxnRef(String txnRef) {
+    return (select(
+      expenses,
+    )..where((tbl) => tbl.txnRef.equals(txnRef))).getSingleOrNull();
+  }
+
   // 4. Pie Chart Query (Group by Category)
   Stream<List<CategorySum>> watchTotalSpentByCategory({DateTime? startDate}) {
     String sql =

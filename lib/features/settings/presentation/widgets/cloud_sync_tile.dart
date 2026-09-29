@@ -22,10 +22,13 @@ class CloudSyncTile extends ConsumerWidget {
 
     return ListTile(
       leading: const Icon(Icons.cloud_sync_outlined, size: 28),
-      title: Text(ref.watch(trProvider('google_sync')), style: const TextStyle(fontWeight: FontWeight.bold)),
+      title: Text(
+        ref.watch(trProvider('google_sync')),
+        style: const TextStyle(fontWeight: FontWeight.bold),
+      ),
       subtitle: Text(
-        isLoggedIn 
-            ? 'Logged in as ${authService.currentUser!.email}' 
+        isLoggedIn
+            ? 'Logged in as ${authService.currentUser!.email}'
             : 'Backup or restore your data securely',
       ),
       trailing: const Icon(Icons.chevron_right),
@@ -108,7 +111,10 @@ class _CloudSyncSheetState extends ConsumerState<_CloudSyncSheet> {
               // --- STATE B: LOGGED IN (Show Backup & Restore) ---
               Text(
                 'Connected Account: ${_user!.email}',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
@@ -123,14 +129,24 @@ class _CloudSyncSheetState extends ConsumerState<_CloudSyncSheet> {
                         final messenger = ScaffoldMessenger.of(context);
                         Navigator.pop(context); // Close sheet
                         messenger.showSnackBar(
-                          const SnackBar(content: Text('Starting cloud backup...')),
+                          const SnackBar(
+                            content: Text('Starting cloud backup...'),
+                          ),
                         );
-                        final success = await ref.read(cloudSyncProvider).backupDatabase();
-                        
+                        final success = await ref
+                            .read(cloudSyncProvider)
+                            .backupDatabase();
+
                         messenger.showSnackBar(
                           SnackBar(
-                            content: Text(success ? 'Backup Successful! 🚀' : 'Backup failed.'),
-                            backgroundColor: success ? Colors.green : Colors.red,
+                            content: Text(
+                              success
+                                  ? 'Backup Successful! 🚀'
+                                  : 'Backup failed.',
+                            ),
+                            backgroundColor: success
+                                ? Colors.green
+                                : Colors.red,
                           ),
                         );
                       },
@@ -146,14 +162,24 @@ class _CloudSyncSheetState extends ConsumerState<_CloudSyncSheet> {
                         final messenger = ScaffoldMessenger.of(context);
                         Navigator.pop(context); // Close sheet
                         messenger.showSnackBar(
-                          const SnackBar(content: Text('Starting cloud restore...')),
+                          const SnackBar(
+                            content: Text('Starting cloud restore...'),
+                          ),
                         );
-                        final success = await ref.read(cloudSyncProvider).restoreDatabase();
-                        
+                        final success = await ref
+                            .read(cloudSyncProvider)
+                            .restoreDatabase();
+
                         messenger.showSnackBar(
                           SnackBar(
-                            content: Text(success ? 'Restore Successful! Restart app. 🎉' : 'Restore failed.'),
-                            backgroundColor: success ? Colors.green : Colors.red,
+                            content: Text(
+                              success
+                                  ? 'Restore Successful! Restart app. 🎉'
+                                  : 'Restore failed.',
+                            ),
+                            backgroundColor: success
+                                ? Colors.green
+                                : Colors.red,
                           ),
                         );
                       },
@@ -164,7 +190,10 @@ class _CloudSyncSheetState extends ConsumerState<_CloudSyncSheet> {
               const SizedBox(height: 16),
               TextButton(
                 onPressed: _handleSignOut,
-                child: const Text('Sign Out', style: TextStyle(color: Colors.red)),
+                child: const Text(
+                  'Sign Out',
+                  style: TextStyle(color: Colors.red),
+                ),
               ),
             ],
             const SizedBox(height: 16),
