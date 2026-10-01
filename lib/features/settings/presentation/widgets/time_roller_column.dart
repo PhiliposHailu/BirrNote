@@ -153,7 +153,7 @@ class _TimeRollerColumnState extends State<TimeRollerColumn> {
                                 fontWeight: isSelected
                                     ? FontWeight.bold
                                     : FontWeight.normal,
-                                color: Colors.white.withOpacity(opacity),
+                                color: Colors.white.withValues(alpha: opacity),
                               ),
                             ),
                           ),

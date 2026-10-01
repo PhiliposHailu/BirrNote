@@ -1,5 +1,4 @@
 import 'package:drift/drift.dart';
-import 'expenses_table.dart';
 
 class Amortizations extends Table {
   IntColumn get id => integer().autoIncrement()();

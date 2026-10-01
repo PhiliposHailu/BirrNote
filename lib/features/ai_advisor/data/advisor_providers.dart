@@ -7,12 +7,12 @@ import '../../expense_entry/data/budget_providers.dart';
 final advisorChatProvider = StateProvider<List<Map<String, String>>>((ref) {
   return [
     {
-      'role': 'ai', 
-      'text': 'Hello! I am your BirrNote AI Advisor. Ask me anything about your spending!'
-    }
+      'role': 'ai',
+      'text':
+          'Hello! I am your BirrNote AI Advisor. Ask me anything about your spending!',
+    },
   ];
 });
-
 
 final advisorLogicProvider = Provider((ref) {
   return AdvisorLogic(ref);
@@ -26,11 +26,11 @@ class AdvisorLogic {
     if (text.trim().isEmpty) return;
 
     final chatHistory = ref.read(advisorChatProvider);
-    
+
     final updatedHistoryWithTyping = [
       ...chatHistory,
       {'role': 'user', 'text': text},
-      {'role': 'ai_typing', 'text': 'AI is thinking...'}
+      {'role': 'ai_typing', 'text': 'AI is thinking...'},
     ];
     ref.read(advisorChatProvider.notifier).state = updatedHistoryWithTyping;
 
@@ -41,20 +41,25 @@ class AdvisorLogic {
       final budgetState = ref.read(budgetEngineProvider);
       String budgetStatus = "No active budget configured.";
       if (budgetState.hasBudget) {
-        budgetStatus = "Daily allowance: ${budgetState.dailyLimit.toStringAsFixed(2)} ETB/day. TODAY'S REMAINING SPENDING POWER: ${budgetState.todaySpendingPower.toStringAsFixed(2)} ETB.";
+        budgetStatus =
+            "Daily allowance: ${budgetState.dailyLimit.toStringAsFixed(2)} ETB/day. TODAY'S REMAINING SPENDING POWER: ${budgetState.todaySpendingPower.toStringAsFixed(2)} ETB.";
       }
 
       // 2. We use our one-shot query to fetch the entire active Quarter of transactions
       final last90DaysExpenses = await expenseDao.getExpensesForLastQuarter();
-      
+
       // Pack them into an extremely space-saving, dense text block!
-      final formattedExpenses = last90DaysExpenses.map((e) {
-        final dateStr = "${e.date.year}-${e.date.month.toString().padLeft(2, '0')}-${e.date.day.toString().padLeft(2, '0')}";
-        return "$dateStr: ${e.category} - ${e.amount.toStringAsFixed(2)} ETB (${e.rawNote})";
-      }).join('\n');
+      final formattedExpenses = last90DaysExpenses
+          .map((e) {
+            final dateStr =
+                "${e.date.year}-${e.date.month.toString().padLeft(2, '0')}-${e.date.day.toString().padLeft(2, '0')}";
+            return "$dateStr: ${e.category} - ${e.amount.toStringAsFixed(2)} ETB (${e.rawNote})";
+          })
+          .join('\n');
 
       // C. COMBINE THE ENTIRE FINANCIAL PORTFOLIO CONTEXT
-      final fullContext = '''
+      final fullContext =
+          '''
         --- ACTIVE SYSTEM BUDGET STATUS ---
         $budgetStatus
         
@@ -63,31 +68,40 @@ class AdvisorLogic {
       ''';
 
       final aiService = ref.read(aiServiceProvider);
-      
+
       final historyForAi = [
         ...chatHistory,
-        {'role': 'user', 'text': text}
+        {'role': 'user', 'text': text},
       ];
 
       // D. Send the entire portfolio context and the active session history!
       final response = await aiService.askAdvisor(historyForAi, fullContext);
 
-      final currentHistory = List<Map<String, String>>.from(ref.read(advisorChatProvider));
-      final typingIndex = currentHistory.indexWhere((msg) => msg['role'] == 'ai_typing');
-      
+      final currentHistory = List<Map<String, String>>.from(
+        ref.read(advisorChatProvider),
+      );
+      final typingIndex = currentHistory.indexWhere(
+        (msg) => msg['role'] == 'ai_typing',
+      );
+
       if (typingIndex != -1) {
         currentHistory[typingIndex] = {'role': 'ai', 'text': response};
         ref.read(advisorChatProvider.notifier).state = currentHistory;
       }
     } catch (e) {
       print("Advisor Sync Error: $e");
-      final currentHistory = List<Map<String, String>>.from(ref.read(advisorChatProvider));
-      final typingIndex = currentHistory.indexWhere((msg) => msg['role'] == 'ai_typing');
-      
+      final currentHistory = List<Map<String, String>>.from(
+        ref.read(advisorChatProvider),
+      );
+      final typingIndex = currentHistory.indexWhere(
+        (msg) => msg['role'] == 'ai_typing',
+      );
+
       if (typingIndex != -1) {
         currentHistory[typingIndex] = {
-          'role': 'ai_error', 
-          'text': 'Connection failed. Please check your internet and try again.'
+          'role': 'ai_error',
+          'text':
+              'Connection failed. Please check your internet and try again.',
         };
         ref.read(advisorChatProvider.notifier).state = currentHistory;
       }

@@ -11,7 +11,7 @@ class BatteryOptimizationTile extends ConsumerWidget {
       elevation: 0,
       color: Theme.of(
         context,
-      ).colorScheme.surfaceContainerHighest.withOpacity(0.4),
+      ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: ListTile(
         leading: const Icon(Icons.battery_charging_full_outlined, size: 28),

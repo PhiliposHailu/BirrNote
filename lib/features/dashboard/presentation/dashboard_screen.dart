@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../data/dashboard_providers.dart';
-import 'widgets/trend_bar_chart.dart'; 
+import 'widgets/trend_bar_chart.dart';
 import '../../../core/utils/locale_provider.dart';
 
 class DashboardScreen extends ConsumerWidget {
@@ -10,8 +10,15 @@ class DashboardScreen extends ConsumerWidget {
 
   Color _getColor(String category) {
     final colors = [
-      Colors.blue, Colors.red, Colors.green, Colors.orange, 
-      Colors.purple, Colors.teal, Colors.pink, Colors.amber, Colors.indigo
+      Colors.blue,
+      Colors.red,
+      Colors.green,
+      Colors.orange,
+      Colors.purple,
+      Colors.teal,
+      Colors.pink,
+      Colors.amber,
+      Colors.indigo,
     ];
     return colors[category.hashCode.abs() % colors.length];
   }
@@ -21,14 +28,18 @@ class DashboardScreen extends ConsumerWidget {
     // Watch active segment settings
     final chartType = ref.watch(chartTypeProvider);
     final activeFilter = ref.watch(timeFilterProvider);
-    
+
     final isPieSelected = chartType == 'Pie';
 
     String currentDisplayFilter = activeFilter;
-    if (activeFilter == 'This Week') currentDisplayFilter = ref.watch(trProvider('this_week'));
-    if (activeFilter == 'This Month') currentDisplayFilter = ref.watch(trProvider('this_month'));
-    if (activeFilter == 'Last 3 Months') currentDisplayFilter = ref.watch(trProvider('last_3_months'));
-    if (activeFilter == 'All Time') currentDisplayFilter = ref.watch(trProvider('all_time'));
+    if (activeFilter == 'This Week')
+      currentDisplayFilter = ref.watch(trProvider('this_week'));
+    if (activeFilter == 'This Month')
+      currentDisplayFilter = ref.watch(trProvider('this_month'));
+    if (activeFilter == 'Last 3 Months')
+      currentDisplayFilter = ref.watch(trProvider('last_3_months'));
+    if (activeFilter == 'All Time')
+      currentDisplayFilter = ref.watch(trProvider('all_time'));
 
     return Padding(
       padding: const EdgeInsets.all(16.0),
@@ -63,44 +74,74 @@ class DashboardScreen extends ConsumerWidget {
               onSelected: (String filter) {
                 ref.read(timeFilterProvider.notifier).state = filter;
               },
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
               itemBuilder: (BuildContext context) {
-                return ['This Week', 'This Month', 'Last 3 Months', 'All Time'].map((String filter) {
+                return [
+                  'This Week',
+                  'This Month',
+                  'Last 3 Months',
+                  'All Time',
+                ].map((String filter) {
                   String displayFilter = filter;
-                  if (filter == 'This Week') displayFilter = ref.watch(trProvider('this_week'));
-                  if (filter == 'This Month') displayFilter = ref.watch(trProvider('this_month'));
-                  if (filter == 'Last 3 Months') displayFilter = ref.watch(trProvider('last_3_months'));
-                  if (filter == 'All Time') displayFilter = ref.watch(trProvider('all_time'));
-                  
+                  if (filter == 'This Week')
+                    displayFilter = ref.watch(trProvider('this_week'));
+                  if (filter == 'This Month')
+                    displayFilter = ref.watch(trProvider('this_month'));
+                  if (filter == 'Last 3 Months')
+                    displayFilter = ref.watch(trProvider('last_3_months'));
+                  if (filter == 'All Time')
+                    displayFilter = ref.watch(trProvider('all_time'));
+
                   return PopupMenuItem<String>(
                     value: filter,
                     child: Text(
-                      displayFilter, 
+                      displayFilter,
                       style: TextStyle(
-                        fontWeight: activeFilter == filter ? FontWeight.bold : FontWeight.normal,
-                        color: activeFilter == filter ? Theme.of(context).colorScheme.primary : null,
-                      )
+                        fontWeight: activeFilter == filter
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                        color: activeFilter == filter
+                            ? Theme.of(context).colorScheme.primary
+                            : null,
+                      ),
                     ),
                   );
                 }).toList();
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.surfaceVariant.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.calendar_today, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                    Icon(
+                      Icons.calendar_today,
+                      size: 16,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                     const SizedBox(width: 8),
                     Text(
                       currentDisplayFilter,
-                      style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                     ),
                     const SizedBox(width: 4),
-                    Icon(Icons.arrow_drop_down, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                    Icon(
+                      Icons.arrow_drop_down,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ],
                 ),
               ),
@@ -114,7 +155,8 @@ class DashboardScreen extends ConsumerWidget {
                 ? _buildPieChartWindow(context, ref) // Render Category Share
                 : const Padding(
                     padding: EdgeInsets.symmetric(vertical: 24.0),
-                    child: TrendBarChart(), // Renders our new separate Bar Chart widget!
+                    child:
+                        TrendBarChart(), // Renders our new separate Bar Chart widget!
                   ),
           ),
         ],
@@ -129,7 +171,8 @@ class DashboardScreen extends ConsumerWidget {
 
     return categoryTotals.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stack) => Center(child: Text('${ref.watch(trProvider('error_prefix'))}$error')),
+      error: (error, stack) =>
+          Center(child: Text('${ref.watch(trProvider('error_prefix'))}$error')),
       data: (totals) {
         if (totals.isEmpty) {
           return Center(child: Text(ref.watch(trProvider('no_data_yet'))));
@@ -144,7 +187,10 @@ class DashboardScreen extends ConsumerWidget {
               '${grandTotal.toStringAsFixed(2)} ETB',
               style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
             ),
-            Text(ref.watch(trProvider('total_spent')), style: const TextStyle(color: Colors.grey)),
+            Text(
+              ref.watch(trProvider('total_spent')),
+              style: const TextStyle(color: Colors.grey),
+            ),
             const SizedBox(height: 16),
 
             // Pie Drawing
@@ -161,7 +207,11 @@ class DashboardScreen extends ConsumerWidget {
                       value: item.total,
                       title: '${percentage.toStringAsFixed(0)}%',
                       radius: 50,
-                      titleStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+                      titleStyle: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     );
                   }).toList(),
                 ),
@@ -176,46 +226,87 @@ class DashboardScreen extends ConsumerWidget {
                 itemBuilder: (context, index) {
                   final item = totals[index];
                   return Theme(
-                    data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                    data: Theme.of(
+                      context,
+                    ).copyWith(dividerColor: Colors.transparent),
                     child: ExpansionTile(
                       tilePadding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      leading: CircleAvatar(backgroundColor: _getColor(item.category), radius: 6),
-                      title: Text(item.category, style: const TextStyle(fontWeight: FontWeight.w600)),
-                      trailing: Text('${item.total.toStringAsFixed(2)} ETB', style: const TextStyle(fontWeight: FontWeight.bold)),
+                      leading: CircleAvatar(
+                        backgroundColor: _getColor(item.category),
+                        radius: 6,
+                      ),
+                      title: Text(
+                        item.category,
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      trailing: Text(
+                        '${item.total.toStringAsFixed(2)} ETB',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
                       children: [
                         Consumer(
                           builder: (context, ref, child) {
-                            final expensesAsync = ref.watch(categoryExpensesProvider(item.category));
-                            
+                            final expensesAsync = ref.watch(
+                              categoryExpensesProvider(item.category),
+                            );
+
                             return expensesAsync.when(
                               loading: () => const Padding(
-                                padding: EdgeInsets.all(8.0), 
-                                child: SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+                                padding: EdgeInsets.all(8.0),
+                                child: SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
                               ),
-                              error: (e, st) => Text('${ref.watch(trProvider('error_prefix'))}$e'),
+                              error: (e, st) => Text(
+                                '${ref.watch(trProvider('error_prefix'))}$e',
+                              ),
                               data: (expenses) {
-                                if (expenses.isEmpty) return const SizedBox.shrink();
-                                
+                                if (expenses.isEmpty)
+                                  return const SizedBox.shrink();
+
                                 return Padding(
                                   padding: const EdgeInsets.only(bottom: 8.0),
                                   child: Column(
                                     children: expenses.map((expense) {
-                                      final note = expense.rawNote.isEmpty ? ref.watch(trProvider('manual_entry')) : expense.rawNote;
+                                      final note = expense.rawNote.isEmpty
+                                          ? ref.watch(
+                                              trProvider('manual_entry'),
+                                            )
+                                          : expense.rawNote;
                                       return Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 4.0),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 32.0,
+                                          vertical: 4.0,
+                                        ),
                                         child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
                                           children: [
                                             Expanded(
                                               child: Text(
                                                 note,
-                                                style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                                                style: TextStyle(
+                                                  fontSize: 13,
+                                                  color: Theme.of(context)
+                                                      .colorScheme
+                                                      .onSurfaceVariant,
+                                                ),
                                                 overflow: TextOverflow.ellipsis,
                                               ),
                                             ),
                                             Text(
                                               '${expense.amount.toStringAsFixed(2)} ETB',
-                                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Theme.of(context).colorScheme.primary),
+                                              style: TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w500,
+                                                color: Theme.of(
+                                                  context,
+                                                ).colorScheme.primary,
+                                              ),
                                             ),
                                           ],
                                         ),

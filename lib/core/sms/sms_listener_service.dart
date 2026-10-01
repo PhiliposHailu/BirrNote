@@ -53,6 +53,13 @@ class SmsListenerService {
     required String? body,
     required ExpenseDao expenseDao,
     Future<void> Function(ParsedBankSms)? onParsedTransaction,
+    Future<void> Function({
+      required int id,
+      required String title,
+      required String body,
+      required String payload,
+    })?
+    onNotify,
   }) async {
     if (sender == null || body == null || body.trim().isEmpty) {
       return null;
@@ -74,34 +81,70 @@ class SmsListenerService {
     }
 
     // 3. Deduplication check against local Drift database
-    if (parsed.txnRef != null && parsed.txnRef!.isNotEmpty) {
-      final exists = await expenseDao.hasExpenseWithTxnRef(parsed.txnRef!);
-      if (exists) {
-        return null; // Already logged, suppress notification
-      }
+    String? effectiveRef = parsed.txnRef;
+
+    // 3a. Fallback: compute fingerprint if bank SMS has no txnRef
+    if (effectiveRef == null || effectiveRef.isEmpty) {
+      // Round timestamp to nearest minute to tolerate slight delivery time variance
+      final roundedTs = DateTime(
+        parsed.timestamp.year,
+        parsed.timestamp.month,
+        parsed.timestamp.day,
+        parsed.timestamp.hour,
+        parsed.timestamp.minute,
+      );
+      effectiveRef =
+          '${parsed.source}_${parsed.amount.toStringAsFixed(2)}_${roundedTs.millisecondsSinceEpoch}';
     }
+
+    final exists = await expenseDao.hasExpenseWithTxnRef(effectiveRef);
+    if (exists) {
+      return null; // Already logged or fingerprint matches, suppress notification
+    }
+
+    // Store the effective ref in parsed object for downstream use
+    // (overwrite null txnRef so ManualEntrySheet saves the fingerprint for future dedup)
+    final enrichedParsed = ParsedBankSms(
+      amount: parsed.amount,
+      merchant: parsed.merchant,
+      txnRef: effectiveRef,
+      source: parsed.source,
+      rawBody: parsed.rawBody,
+      timestamp: parsed.timestamp,
+      suggestedCategory: parsed.suggestedCategory,
+    );
 
     // 4. Trigger rich local notification
     final notifId =
-        (parsed.txnRef?.hashCode ?? DateTime.now().millisecondsSinceEpoch)
+        (enrichedParsed.txnRef?.hashCode ??
+                DateTime.now().millisecondsSinceEpoch)
             .abs() %
         100000;
 
     final title =
-        '✦ Detected ${parsed.amount.toStringAsFixed(2)} ETB to ${parsed.merchant}';
+        '✦ Detected ${enrichedParsed.amount.toStringAsFixed(2)} ETB to ${enrichedParsed.merchant}';
     final notifBody = 'Tap to review and log in BirrNote.';
 
-    await NotificationService().showSmsTransactionNotification(
-      id: notifId,
-      title: title,
-      body: notifBody,
-      payload: parsed.toJson(),
-    );
-
-    if (onParsedTransaction != null) {
-      await onParsedTransaction(parsed);
+    if (onNotify != null) {
+      await onNotify(
+        id: notifId,
+        title: title,
+        body: notifBody,
+        payload: enrichedParsed.toJson(),
+      );
+    } else {
+      await NotificationService().showSmsTransactionNotification(
+        id: notifId,
+        title: title,
+        body: notifBody,
+        payload: enrichedParsed.toJson(),
+      );
     }
 
-    return parsed;
+    if (onParsedTransaction != null) {
+      await onParsedTransaction(enrichedParsed);
+    }
+
+    return enrichedParsed;
   }
 }

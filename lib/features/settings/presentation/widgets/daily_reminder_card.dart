@@ -115,13 +115,11 @@ class _DailyReminderCardState extends State<DailyReminderCard> {
 
   @override
   Widget build(BuildContext context) {
-    final time = TimeOfDay(hour: _hour, minute: _minute);
-
     return Card(
       elevation: 0,
       color: Theme.of(
         context,
-      ).colorScheme.surfaceContainerHighest.withOpacity(0.4),
+      ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16.0),

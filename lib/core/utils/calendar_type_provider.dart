@@ -1,11 +1,11 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 enum CalendarType { gregorian, ethiopian }
 
 class CalendarTypeNotifier extends StateNotifier<CalendarType> {
-  CalendarTypeNotifier({CalendarType? initial}) : super(initial ?? CalendarType.gregorian) {
+  CalendarTypeNotifier({CalendarType? initial})
+    : super(initial ?? CalendarType.gregorian) {
     if (initial == null) {
       _load();
     }
@@ -33,6 +33,7 @@ class CalendarTypeNotifier extends StateNotifier<CalendarType> {
   }
 }
 
-final calendarTypeProvider = StateNotifierProvider<CalendarTypeNotifier, CalendarType>((ref) {
-  return CalendarTypeNotifier();
-});
+final calendarTypeProvider =
+    StateNotifierProvider<CalendarTypeNotifier, CalendarType>((ref) {
+      return CalendarTypeNotifier();
+    });

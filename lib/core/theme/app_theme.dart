@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 class AppTheme {
   // Brand Colors
   static const Color primaryBlue = Color(0xFF1E88E5);
-  
+
   // Dark Mode specific colors
   static const Color darkBackground = Color(0xFF121212);
   static const Color darkSurface = Color(0xFF1E1E1E);

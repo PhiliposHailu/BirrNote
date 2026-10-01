@@ -38,7 +38,7 @@ class SettingsScreen extends ConsumerWidget {
       width: 40,
       height: 40,
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
+        color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Icon(iconData, color: color, size: 22),
@@ -81,7 +81,7 @@ class SettingsScreen extends ConsumerWidget {
             elevation: 0,
             color: Theme.of(
               context,
-            ).colorScheme.surfaceContainerHighest.withOpacity(0.4),
+            ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
@@ -177,7 +177,7 @@ class SettingsScreen extends ConsumerWidget {
             elevation: 0,
             color: Theme.of(
               context,
-            ).colorScheme.surfaceContainerHighest.withOpacity(0.4),
+            ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),

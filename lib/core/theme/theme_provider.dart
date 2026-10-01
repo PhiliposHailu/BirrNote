@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 class ThemeModeNotifier extends Notifier<ThemeMode> {
   final ThemeMode initial;
   ThemeModeNotifier({this.initial = ThemeMode.system});
@@ -13,7 +14,9 @@ class ThemeModeNotifier extends Notifier<ThemeMode> {
   }
 }
 
-final themeModeProvider = NotifierProvider<ThemeModeNotifier, ThemeMode>(ThemeModeNotifier.new);
+final themeModeProvider = NotifierProvider<ThemeModeNotifier, ThemeMode>(
+  ThemeModeNotifier.new,
+);
 
 Future<void> saveThemeMode(ThemeMode mode) async {
   final prefs = await SharedPreferences.getInstance();

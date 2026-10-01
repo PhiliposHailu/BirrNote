@@ -13,15 +13,18 @@ class TrendBarChart extends ConsumerWidget {
 
     return trendsAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, s) => Center(child: Text('${ref.watch(trProvider('error_prefix'))}$e')),
+      error: (e, s) =>
+          Center(child: Text('${ref.watch(trProvider('error_prefix'))}$e')),
       data: (trends) {
         if (trends.isEmpty) {
           return Center(child: Text(ref.watch(trProvider('no_trend_data'))));
         }
 
-        final maxSpent = trends.map((t) => t.total).reduce((a, b) => a > b ? a : b);
+        final maxSpent = trends
+            .map((t) => t.total)
+            .reduce((a, b) => a > b ? a : b);
         // We increase headroom to 30% to make sure the static labels don't get cut off at the top!
-        final maxY = maxSpent == 0 ? 100.0 : maxSpent * 1.3; 
+        final maxY = maxSpent == 0 ? 100.0 : maxSpent * 1.3;
 
         return BarChart(
           BarChartData(
@@ -29,13 +32,13 @@ class TrendBarChart extends ConsumerWidget {
             maxY: maxY,
             gridData: const FlGridData(show: false),
             borderData: FlBorderData(show: false),
-            
+
             // 1. THE STATIC NUMBER RENDERING Logic
             barTouchData: BarTouchData(
               enabled: true, // Allows tapping on bars
               touchTooltipData: BarTouchTooltipData(
                 // We make the tooltip container completely invisible!
-                getTooltipColor: (group) => Colors.transparent, 
+                getTooltipColor: (group) => Colors.transparent,
                 tooltipPadding: EdgeInsets.zero,
                 tooltipMargin: 4, // Clean gap above the column
                 getTooltipItem: (group, groupIndex, rod, rodIndex) {
@@ -44,7 +47,7 @@ class TrendBarChart extends ConsumerWidget {
 
                   return BarTooltipItem(
                     // Display raw integer without decimals (e.g. 200 instead of 200.00)
-                    rod.toY.toStringAsFixed(0), 
+                    rod.toY.toStringAsFixed(0),
                     TextStyle(
                       color: Colors.grey.shade600, // Subtle, blend-in grey
                       fontWeight: FontWeight.bold,
@@ -54,12 +57,18 @@ class TrendBarChart extends ConsumerWidget {
                 },
               ),
             ),
-            
+
             titlesData: FlTitlesData(
               show: true,
-              topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-              rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-              leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              topTitles: const AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
+              ),
+              rightTitles: const AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
+              ),
+              leftTitles: const AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
+              ),
               bottomTitles: AxisTitles(
                 sideTitles: SideTitles(
                   showTitles: true,
@@ -70,7 +79,11 @@ class TrendBarChart extends ConsumerWidget {
                         padding: const EdgeInsets.only(top: 8.0),
                         child: Text(
                           trends[index].label,
-                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey),
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey,
+                          ),
                         ),
                       );
                     }
@@ -79,7 +92,7 @@ class TrendBarChart extends ConsumerWidget {
                 ),
               ),
             ),
-            
+
             barGroups: trends.asMap().entries.map((entry) {
               final index = entry.key;
               final trend = entry.value;
@@ -100,7 +113,9 @@ class TrendBarChart extends ConsumerWidget {
                     backDrawRodData: BackgroundBarChartRodData(
                       show: true,
                       toY: maxY,
-                      color: Theme.of(context).colorScheme.primary.withOpacity(0.04),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withValues(alpha: 0.04),
                     ),
                   ),
                 ],

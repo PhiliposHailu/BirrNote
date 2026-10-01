@@ -136,7 +136,7 @@ class _SamsungTimeDialogState extends State<SamsungTimeDialog> {
                                 : FontWeight.normal,
                             color: isSelected
                                 ? Colors.white
-                                : Colors.grey.withOpacity(0.4),
+                                : Colors.grey.withValues(alpha: 0.4),
                           ),
                         ),
                       );

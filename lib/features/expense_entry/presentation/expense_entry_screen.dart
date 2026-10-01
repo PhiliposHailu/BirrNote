@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'widgets/expense_list.dart';
 import 'widgets/chat_input_bar.dart';
-import '../../settings/presentation/settings_screen.dart';
 import '../data/expense_providers.dart';
 import 'widgets/budget_header_widget.dart';
 import 'widgets/onboarding_tour.dart'; // Gives us the shared GlobalKeys!

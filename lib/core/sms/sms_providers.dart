@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'sms_models.dart';
@@ -28,7 +27,10 @@ final smsTrackingEnabledProvider =
       return SmsTrackingNotifier();
     });
 
-/// Holds a detected bank transaction that needs confirmation in ManualEntrySheet
+/// Reserved for future use: in-app SMS queue and review flow.
+/// Currently unused — the production deep-link flow uses the notification
+/// payload stream (NotificationService.onPayloadTapped → ManualEntrySheet)
+/// rather than this provider. Retained for future expansion (e.g. batch SMS review).
 final pendingSmsTransactionProvider = StateProvider<ParsedBankSms?>(
   (ref) => null,
 );

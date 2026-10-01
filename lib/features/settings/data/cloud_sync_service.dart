@@ -18,7 +18,6 @@ class CloudSyncService {
       await init();
       final account = await GoogleSignIn.instance.authenticate();
       _currentAccount = account;
-      if (account == null) return null;
 
       await account.authorizationClient.authorizeScopes([
         drive.DriveApi.driveAppdataScope,

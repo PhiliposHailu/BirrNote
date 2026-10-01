@@ -103,9 +103,8 @@ class _GeminiKeySheetState extends ConsumerState<GeminiKeySheet> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest
+                        .withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Column(
@@ -141,9 +140,8 @@ class _GeminiKeySheetState extends ConsumerState<GeminiKeySheet> {
                     vertical: 14,
                   ),
                   decoration: BoxDecoration(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest
+                        .withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Column(
@@ -217,7 +215,7 @@ class _GeminiKeySheetState extends ConsumerState<GeminiKeySheet> {
                           border: Border.all(
                             color: Theme.of(
                               context,
-                            ).colorScheme.outlineVariant.withOpacity(0.5),
+                            ).colorScheme.outlineVariant.withValues(alpha: 0.5),
                           ),
                         ),
                         child: DropdownButtonHideUnderline(

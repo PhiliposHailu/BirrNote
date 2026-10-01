@@ -44,7 +44,7 @@ class _AdvisorScreenState extends ConsumerState<AdvisorScreen> {
             itemBuilder: (context, index) {
               final message = chatHistory[index];
               final role = message['role'];
-              
+
               final isUser = role == 'user';
               final isTyping = role == 'ai_typing';
               final isError = role == 'ai_error';
@@ -60,8 +60,8 @@ class _AdvisorScreenState extends ConsumerState<AdvisorScreen> {
               // Determine the Text Style
               TextStyle textStyle = TextStyle(
                 fontSize: 16,
-                color: isUser 
-                    ? Theme.of(context).colorScheme.onPrimary 
+                color: isUser
+                    ? Theme.of(context).colorScheme.onPrimary
                     : Theme.of(context).colorScheme.onSurfaceVariant,
               );
 
@@ -80,10 +80,15 @@ class _AdvisorScreenState extends ConsumerState<AdvisorScreen> {
               }
 
               return Align(
-                alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+                alignment: isUser
+                    ? Alignment.centerRight
+                    : Alignment.centerLeft,
                 child: Container(
                   margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     color: bubbleColor,
                     borderRadius: BorderRadius.only(
@@ -92,14 +97,11 @@ class _AdvisorScreenState extends ConsumerState<AdvisorScreen> {
                       bottomLeft: Radius.circular(isUser ? 16 : 0),
                       bottomRight: Radius.circular(isUser ? 0 : 16),
                     ),
-                    border: isError 
-                        ? Border.all(color: Colors.red.shade200) 
+                    border: isError
+                        ? Border.all(color: Colors.red.shade200)
                         : null,
                   ),
-                  child: Text(
-                    message['text']!,
-                    style: textStyle,
-                  ),
+                  child: Text(message['text']!, style: textStyle),
                 ),
               );
             },
@@ -120,7 +122,10 @@ class _AdvisorScreenState extends ConsumerState<AdvisorScreen> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                     ),
                     onSubmitted: (_) => _handleSend(),
                   ),

@@ -74,7 +74,7 @@ class _WeeklyBudgetCardState extends ConsumerState<WeeklyBudgetCard> {
           elevation: 0,
           color: Theme.of(
             context,
-          ).colorScheme.surfaceContainerHighest.withOpacity(0.4),
+          ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),

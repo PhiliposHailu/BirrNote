@@ -223,39 +223,43 @@ class ExpenseLogic {
     String? txnRef,
   }) async {
     final expenseDate = date ?? DateTime.now();
-    final expenseId = await expenseDao.insertExpense(
-      ExpensesCompanion.insert(
-        rawNote: note.trim().isEmpty ? category : note,
-        amount: Value(amount),
-        category: Value(category),
-        quantity: Value(quantity),
-        date: expenseDate,
-        isPendingAi: const Value(false),
-        source: Value(source),
-        txnRef: Value(txnRef),
-      ),
-    );
 
-    if (amortizeDays != null && amortizeDays > 1 && amount > 0) {
-      final startMidnight = DateTime(
-        expenseDate.year,
-        expenseDate.month,
-        expenseDate.day,
-      );
-      final endMidnight = startMidnight.add(Duration(days: amortizeDays));
-      final dailyBurden = amount / amortizeDays;
-
-      await amortizationDao.insertAmortization(
-        AmortizationsCompanion.insert(
-          expenseId: expenseId,
-          totalAmount: amount,
-          durationDays: amortizeDays,
-          dailyBurden: dailyBurden,
-          startDate: startMidnight,
-          endDate: endMidnight,
+    // Atomic transaction: expense + optional amortization are committed together
+    await expenseDao.transaction(() async {
+      final expenseId = await expenseDao.insertExpense(
+        ExpensesCompanion.insert(
+          rawNote: note.trim().isEmpty ? category : note,
+          amount: Value(amount),
+          category: Value(category),
+          quantity: Value(quantity),
+          date: expenseDate,
+          isPendingAi: const Value(false),
+          source: Value(source),
+          txnRef: Value(txnRef),
         ),
       );
-    }
+
+      if (amortizeDays != null && amortizeDays > 1 && amount > 0) {
+        final startMidnight = DateTime(
+          expenseDate.year,
+          expenseDate.month,
+          expenseDate.day,
+        );
+        final endMidnight = startMidnight.add(Duration(days: amortizeDays));
+        final dailyBurden = amount / amortizeDays;
+
+        await amortizationDao.insertAmortization(
+          AmortizationsCompanion.insert(
+            expenseId: expenseId,
+            totalAmount: amount,
+            durationDays: amortizeDays,
+            dailyBurden: dailyBurden,
+            startDate: startMidnight,
+            endDate: endMidnight,
+          ),
+        );
+      }
+    });
   }
 
   // 3.5 SMS TRANSACTION ENTRY
@@ -290,37 +294,39 @@ class ExpenseLogic {
     required DateTime date,
     int? amortizeDays,
   }) async {
-    await expenseDao.updateExpense(
-      ExpensesCompanion(
-        id: Value(id),
-        rawNote: Value(note.trim().isEmpty ? category : note),
-        amount: Value(amount),
-        category: Value(category),
-        quantity: Value(quantity),
-        date: Value(date),
-        isPendingAi: const Value(false),
-      ),
-    );
-
-    if (amortizeDays != null && amortizeDays > 1 && amount > 0) {
-      final startMidnight = DateTime(date.year, date.month, date.day);
-      final endMidnight = startMidnight.add(Duration(days: amortizeDays));
-      final dailyBurden = amount / amortizeDays;
-
-      await amortizationDao.deleteAmortizationByExpenseId(id);
-      await amortizationDao.insertAmortization(
-        AmortizationsCompanion.insert(
-          expenseId: id,
-          totalAmount: amount,
-          durationDays: amortizeDays,
-          dailyBurden: dailyBurden,
-          startDate: startMidnight,
-          endDate: endMidnight,
+    await expenseDao.transaction(() async {
+      await expenseDao.updateExpense(
+        ExpensesCompanion(
+          id: Value(id),
+          rawNote: Value(note.trim().isEmpty ? category : note),
+          amount: Value(amount),
+          category: Value(category),
+          quantity: Value(quantity),
+          date: Value(date),
+          isPendingAi: const Value(false),
         ),
       );
-    } else if (amortizeDays != null && amortizeDays <= 1) {
-      await amortizationDao.deleteAmortizationByExpenseId(id);
-    }
+
+      if (amortizeDays != null && amortizeDays > 1 && amount > 0) {
+        final startMidnight = DateTime(date.year, date.month, date.day);
+        final endMidnight = startMidnight.add(Duration(days: amortizeDays));
+        final dailyBurden = amount / amortizeDays;
+
+        await amortizationDao.deleteAmortizationByExpenseId(id);
+        await amortizationDao.insertAmortization(
+          AmortizationsCompanion.insert(
+            expenseId: id,
+            totalAmount: amount,
+            durationDays: amortizeDays,
+            dailyBurden: dailyBurden,
+            startDate: startMidnight,
+            endDate: endMidnight,
+          ),
+        );
+      } else if (amortizeDays != null && amortizeDays <= 1) {
+        await amortizationDao.deleteAmortizationByExpenseId(id);
+      }
+    });
   }
 }
 
